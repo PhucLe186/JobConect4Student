@@ -1,0 +1,55 @@
+.body {
+    height: auto;
+    border: 1px;
+    position: relative;
+}
+.baby1 {
+    height: 869px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.baby3 {
+    height: 350px;
+    width: 100%;
+
+    margin: auto;
+}
+.baby4 {
+    height: 400px;
+    width: 100%;
+}
+.baby5 {
+    height: 350px;
+    width: 100%;
+
+    margin: auto;
+}
+.picture {
+    background-size: 100% 100%;
+    width: 100%;
+    min-height: 100vh;
+    box-shadow: 20px 20px 10px gray;
+    animation: slider 10s linear infinite;
+}
+@keyframes slider {
+    0% {
+        background-image: url('../../../../../asset/img/bg1.jpg');
+    }
+    30% {
+        background-image: url('../../../../../asset/img/bg2.jpg');
+    }
+    60% {
+        background-image: url('../../../../../asset/img/bg3.jpg');
+    }
+    100% {
+        background-image: url('../../../../../asset/img/bg4.jpg');
+    }
+}
+.wrapper {
+    margin-top: 0;
+    padding: 0;
+    box-sizing: border-box;
+    top: 0;
+}
