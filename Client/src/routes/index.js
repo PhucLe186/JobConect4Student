@@ -1,5 +1,5 @@
 import routesconfig from '~/config/routes';
-import home from '~/user/component/pages/Home';
+import AdminDashboard from '~/admin/Admin_dashboard';
 
-const publicRoutes = [{ path: routesconfig.home, component: home }];
+const publicRoutes = [{ path: routesconfig.home, component: AdminDashboard, layout: null }];
 export { publicRoutes };

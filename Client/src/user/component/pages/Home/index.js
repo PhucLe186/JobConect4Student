@@ -1,5 +1,7 @@
+import AdminDashboard from '~/admin/Admin_dashboard';
+
 function home() {
-    return <div>hello word</div>;
+    return <AdminDashboard />;
 }
 
 export default home;
