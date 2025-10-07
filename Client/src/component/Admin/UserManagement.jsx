@@ -30,53 +30,45 @@ const UserManagement = ({ t, showSection, searchTerm, setSearchTerm, filterType,
                 <table className="data-table">
                     <thead>
                         <tr>
-                            <th>{t.fullName}</th>
-                            <th>{t.email}</th>
-                            <th>{t.type}</th>
-                            <th>{t.status}</th>
-                            <th>{t.actions}</th>
+                            {[
+                                { key: 'fullName', label: t.fullName },
+                                { key: 'email', label: t.email },
+                                { key: 'type', label: t.type },
+                                { key: 'status', label: t.status },
+                                { key: 'actions', label: t.actions }
+                            ].map(column => (
+                                <th key={column.key}>{column.label}</th>
+                            ))}
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>Nguyễn Văn A</td>
-                            <td>a@email.com</td>
-                            <td>{t.student}</td>
-                            <td>
-                                <span className="status active">{t.active}</span>
-                            </td>
-                            <td>
-                                <button className="btn-edit">{t.edit}</button>
-                                <button className="btn-view">{t.view}</button>
-                                <button className="btn-delete">{t.delete}</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Trần Thị B</td>
-                            <td>tranthib@email.com</td>
-                            <td>{t.recruiter}</td>
-                            <td>
-                                <span className="status active">{t.active}</span>
-                            </td>
-                            <td>
-                                <button className="btn-edit">{t.edit}</button>
-                                <button className="btn-view">{t.view}</button>
-                                <button className="btn-delete">{t.delete}</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Lê Văn C</td>
-                            <td>levanc@email.com</td>
-                            <td>{t.student}</td>
-                            <td>
-                                <span className="status pending">{t.offline}</span>
-                            </td>
-                            <td>
-                                <button className="btn-edit">{t.edit}</button>
-                                <button className="btn-view">{t.view}</button>
-                                <button className="btn-delete">{t.delete}</button>
-                            </td>
-                        </tr>
+                        {[
+                            { name: 'Nguyễn Văn A', email: 'a@email.com', type: t.student, status: 'active' },
+                            { name: 'Trần Thị B', email: 'tranthib@email.com', type: t.recruiter, status: 'active' },
+                            { name: 'Lê Văn C', email: 'levanc@email.com', type: t.student, status: 'offline' }
+                        ].map((user, index) => (
+                            <tr key={index}>
+                                <td>{user.name}</td>
+                                <td>{user.email}</td>
+                                <td>{user.type}</td>
+                                <td>
+                                    <span className={`status ${user.status === 'active' ? 'active' : 'pending'}`}>
+                                        {user.status === 'active' ? t.active : t.offline}
+                                    </span>
+                                </td>
+                                <td>
+                                    {[
+                                        { label: t.edit, className: 'btn-edit', onClick: null },
+                                        { label: t.view, className: 'btn-view', onClick: null },
+                                        { label: t.delete, className: 'btn-delete', onClick: null }
+                                    ].map((btn, btnIndex) => (
+                                        <button key={btnIndex} className={btn.className} onClick={btn.onClick}>
+                                            {btn.label}
+                                        </button>
+                                    ))}
+                                </td>
+                            </tr>
+                        ))}
                     </tbody>
                 </table>
             </div>

@@ -6,7 +6,7 @@ import UserManagement from '../component/Admin/UserManagement';
 import ForumManagement from '../component/Admin/ForumManagement';
 import { useTranslations } from '../component/Admin/useTranslations';
 
-const AdminDashboard = () => {
+const AdminDashboard = ({ onLogout }) => {
     const [activeSection, setActiveSection] = useState('dashboard');
     const [showLogoutPopup, setShowLogoutPopup] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -78,6 +78,9 @@ const AdminDashboard = () => {
         alert(t.logoutSuccess);
         setShowLogoutPopup(false);
         setShowUserMenu(false);
+        if (onLogout) {
+            onLogout();
+        }
     };
 
     const handleLanguageChange = (lang) => {

@@ -80,24 +80,20 @@ const ForumManagement = ({
                                     </span>
                                 </td>
                                 <td>
-                                    <button className="btn-view">{t.view}</button>
-                                    {post.status === 'pending' ? (
-                                        <>
-                                            <button className="btn-edit" onClick={() => handleApprovePost(post.id)}>
-                                                {t.approve}
-                                            </button>
-                                            <button className="btn-delete" onClick={() => handleRejectPost(post.id)}>
-                                                {t.reject}
-                                            </button>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <button className="btn-edit">{t.edit}</button>
-                                            <button className="btn-delete" onClick={() => handleDeletePost(post.id)}>
-                                                {t.delete}
-                                            </button>
-                                        </>
-                                    )}
+                                    {[
+                                        { label: t.view, className: 'btn-view', onClick: null },
+                                        ...(post.status === 'pending' ? [
+                                            { label: t.approve, className: 'btn-edit', onClick: () => handleApprovePost(post.id) },
+                                            { label: t.reject, className: 'btn-delete', onClick: () => handleRejectPost(post.id) }
+                                        ] : [
+                                            { label: t.edit, className: 'btn-edit', onClick: null },
+                                            { label: t.delete, className: 'btn-delete', onClick: () => handleDeletePost(post.id) }
+                                        ])
+                                    ].map((btn, index) => (
+                                        <button key={index} className={btn.className} onClick={btn.onClick}>
+                                            {btn.label}
+                                        </button>
+                                    ))}
                                 </td>
                             </tr>
                         ))}

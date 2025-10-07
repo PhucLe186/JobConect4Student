@@ -30,11 +30,15 @@ const JobManagement = ({ t, showSection, jobs, searchTerm, setSearchTerm, filter
                 <table className="data-table">
                     <thead>
                         <tr>
-                            <th>{t.title}</th>
-                            <th>{t.company}</th>
-                            <th>{t.salary}</th>
-                            <th>{t.status}</th>
-                            <th>{t.actions}</th>
+                            {[
+                                { key: 'title', label: t.title },
+                                { key: 'company', label: t.company },
+                                { key: 'salary', label: t.salary },
+                                { key: 'status', label: t.status },
+                                { key: 'actions', label: t.actions }
+                            ].map(column => (
+                                <th key={column.key}>{column.label}</th>
+                            ))}
                         </tr>
                     </thead>
                     <tbody>
@@ -53,23 +57,17 @@ const JobManagement = ({ t, showSection, jobs, searchTerm, setSearchTerm, filter
                                     </span>
                                 </td>
                                 <td>
-                                    {job.status === 'pending' ? (
-                                        <>
-                                            <button className="btn-edit" onClick={() => handleApproveJob(job.id)}>
-                                                {t.approve}
-                                            </button>
-                                            <button className="btn-delete" onClick={() => handleRejectJob(job.id)}>
-                                                {t.reject}
-                                            </button>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <button className="btn-edit">{t.edit}</button>
-                                            <button className="btn-delete" onClick={() => handleDeleteJob(job.id)}>
-                                                {t.delete}
-                                            </button>
-                                        </>
-                                    )}
+                                    {(job.status === 'pending' ? [
+                                        { label: t.approve, className: 'btn-edit', onClick: () => handleApproveJob(job.id) },
+                                        { label: t.reject, className: 'btn-delete', onClick: () => handleRejectJob(job.id) }
+                                    ] : [
+                                        { label: t.edit, className: 'btn-edit', onClick: null },
+                                        { label: t.delete, className: 'btn-delete', onClick: () => handleDeleteJob(job.id) }
+                                    ]).map((btn, index) => (
+                                        <button key={index} className={btn.className} onClick={btn.onClick}>
+                                            {btn.label}
+                                        </button>
+                                    ))}
                                 </td>
                             </tr>
                         ))}
