@@ -1,5 +1,5 @@
 import routesconfig from '~/config/routes';
-import home from '~/user/component/pages/Home';
+import HomepageSimple from '~/Home/HomepageSimple';
 
-const publicRoutes = [{ path: routesconfig.home, component: home }];
+const publicRoutes = [{ path: routesconfig.home, component: HomepageSimple }];
 export { publicRoutes };
