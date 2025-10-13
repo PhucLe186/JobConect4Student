@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./stylee.scss";
 
 const Homepage = (props) => {
+  const { companyFilter } = props;
   const [salaryValue, setSalaryValue] = useState(50);
   const [experience, setExperience] = useState("");
   const [location, setLocation] = useState("");
@@ -88,25 +89,29 @@ const Homepage = (props) => {
     setJobType(e.target.value);
   };
 
-  const jobData = [
-    { logo: "LongThanh.png", title: "Dev", company: "Công ty TNHH Long Thành" },
-    { logo: "Samsung.png", title: "Junior", company: "Công ty Samsung" },
-    { logo: "MB.png", title: "Software Engineer", company: "Ngân hàng MB" },
-    { logo: "NEC.png", title: "Senior AI Specialist", company: "Công ty NEC" },
-    { logo: "LG.png", title: "Electronics Development", company: "Công ty LG" },
-    { logo: "Naver.png", title: "Dev", company: "Công ty Naver" },
+  const allJobData = [
+    { logo: "LongThanh.png", title: "Dev", company: "Công ty TNHH Long Thành", companyKey: "longthanh" },
+    { logo: "Samsung.png", title: "Junior", company: "Công ty Samsung", companyKey: "samsung" },
+    { logo: "MB.png", title: "Software Engineer", company: "Ngân hàng MB", companyKey: "mb" },
+    { logo: "NEC.png", title: "Senior AI Specialist", company: "Công ty NEC", companyKey: "nec" },
+    { logo: "LG.png", title: "Electronics Development", company: "Công ty LG", companyKey: "lg" },
+    { logo: "Naver.png", title: "Dev", company: "Công ty Naver", companyKey: "naver" },
     {
       logo: "Google.png",
       title: "Software Engineer",
       company: "Công ty Google",
+      companyKey: "google"
     },
     {
       logo: "Microsoft.png",
       title: "Cloud Developer",
       company: "Công ty Microsoft",
+      companyKey: "microsoft"
     },
-    { logo: "Apple.png", title: "iOS Developer", company: "Công ty Apple" },
+    { logo: "Apple.png", title: "iOS Developer", company: "Công ty Apple", companyKey: "apple" },
   ];
+
+  const jobData = companyFilter ? allJobData.filter(job => job.companyKey === companyFilter) : allJobData;
 
   return (
     <div>
@@ -128,14 +133,14 @@ const Homepage = (props) => {
               </a>
             </li>
             <li className="nav-item">
-              <a className="nav-link" href="https://www.facebook.com/doanhoikhoacnttvaa" target="_blank" rel="noopener noreferrer" style={{cursor: 'pointer'}}>
+              <a className="nav-link" href="#" onClick={() => props.onPageChange('community')} style={{cursor: 'pointer'}}>
                 {t.community}
               </a>
             </li>
             <li className="nav-item">
-              <a className="nav-link" href="https://www.facebook.com/nguyen.tan.loc.87930" target="_blank" rel="noopener noreferrer" style={{cursor: 'pointer'}}>
+              <span className="nav-link" style={{cursor: 'pointer'}} onClick={() => props.onPageChange('contact')}>
                 {t.contact}
-              </a>
+              </span>
             </li>
             <li className="nav-item">
               <button className="btn btn-primary me-2" onClick={handleLogin}>
@@ -163,11 +168,21 @@ const Homepage = (props) => {
       </nav>
 
       {/* Banner */}
-      <div className="container my-4 text-center">
-        <div className="banner-container">
-          <img src="LookJobs.png" className="shadow-sm" alt="banner" />
+      {!companyFilter && (
+        <div className="container my-4 text-center">
+          <div className="banner-container">
+            <img src="LookJobs.png" className="shadow-sm" alt="banner" />
+          </div>
         </div>
-      </div>
+      )}
+
+      {companyFilter && (
+        <div className="container mt-4 text-center">
+          <h2 style={{color: '#007bff', marginBottom: '20px'}}>
+            {language === 'vi' ? 'Việc làm tại Samsung' : 'Jobs at Samsung'}
+          </h2>
+        </div>
+      )}
 
       {/* Main Search Bar */}
       <div className="container">

@@ -132,8 +132,8 @@ const Home2 = (props) => {
           <ul className="navbar-nav ms-auto">
             <li className="nav-item"><span className="nav-link" style={{cursor: 'pointer'}} onClick={() => props.onPageChange('company')}>{t.company}</span></li>
             <li className="nav-item"><span className="nav-link">{t.jobs}</span></li>
-            <li className="nav-item"><a className="nav-link" href="https://www.facebook.com/doanhoikhoacnttvaa" target="_blank" rel="noopener noreferrer" style={{cursor: 'pointer', textDecoration: 'none'}}>{t.community}</a></li>
-            <li className="nav-item"><a className="nav-link" href="https://www.facebook.com/nguyen.tan.loc.87930" target="_blank" rel="noopener noreferrer" style={{cursor: 'pointer', textDecoration: 'none'}}>{t.contact}</a></li>
+            <li className="nav-item"><span className="nav-link" style={{cursor: 'pointer'}} onClick={() => props.onPageChange('community')}>{t.community}</span></li>
+            <li className="nav-item"><span className="nav-link" style={{cursor: 'pointer'}} onClick={() => props.onPageChange('contact')}>{t.contact}</span></li>
             <li className="nav-item"><button className="btn btn-primary me-2" onClick={handleLogin}>{t.signIn}</button></li>
             <li className="nav-item"><button className="btn btn-primary" onClick={handleSignup}>{t.signUp}</button></li>
           </ul>

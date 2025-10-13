@@ -135,11 +135,22 @@ form {
   }
 }
 
+.input-row {
+  display: flex;
+  gap: 15px;
+  margin: 20px 0;
+}
+
 .input-box {
   position: relative;
-  margin: 30px 0;
+  margin: 20px 0;
 
-  input {
+  &.half-width {
+    flex: 1;
+    margin: 0;
+  }
+
+  input, select {
     width: 100%;
     padding: 13px 50px 13px 20px;
     background: $input-bg;
@@ -156,12 +167,22 @@ form {
     }
   }
 
+  select {
+    cursor: pointer;
+    
+    option {
+      background: $background-color;
+      color: $text-color;
+    }
+  }
+
   i {
     position: absolute;
     right: 20px;
     top: 50%;
     transform: translateY(-50%);
     font-size: 20px;
+    pointer-events: none;
   }
 }
 
@@ -264,4 +285,76 @@ form {
   background: $background-color !important;
   color: $primary-color !important;
   border: 2px solid $background-color !important;
+}
+
+.role-selection-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: $background-color;
+}
+
+.role-selection-box {
+  background: $background-color;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 0 30px $shadow-color;
+  text-align: center;
+  max-width: 800px;
+  width: 100%;
+  
+  h1 {
+    color: $primary-color;
+    margin-bottom: 10px;
+  }
+  
+  p {
+    color: $text-color;
+    margin-bottom: 30px;
+  }
+}
+
+.role-options {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.role-card {
+  background: $input-bg;
+  padding: 30px 20px;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 200px;
+  
+  &:hover {
+    background: $primary-color;
+    color: $background-color;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 123, 255, 0.3);
+  }
+  
+  i {
+    font-size: 48px;
+    margin-bottom: 15px;
+    color: $primary-color;
+  }
+  
+  &:hover i {
+    color: $background-color;
+  }
+  
+  h3 {
+    margin: 15px 0 10px 0;
+    font-size: 24px;
+  }
+  
+  p {
+    font-size: 14px;
+    margin: 0;
+    opacity: 0.8;
+  }
 }

@@ -3,6 +3,9 @@ import './style.scss';
 
 const LoginSignup = () => {
   const [isActive, setIsActive] = useState(false);
+  const [genderSelected, setGenderSelected] = useState(false);
+  const [showRoleSelection, setShowRoleSelection] = useState(true);
+  const [selectedRole, setSelectedRole] = useState('');
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -26,6 +29,42 @@ const LoginSignup = () => {
     e.preventDefault();
     console.log(`${type} form submitted`);
   };
+
+  const handleRoleSelect = (role) => {
+    setSelectedRole(role);
+    setShowRoleSelection(false);
+  };
+
+  if (showRoleSelection) {
+    return (
+      <div className="role-selection-container">
+        <div className="role-selection-box">
+          <button className="back-btn" onClick={() => window.history.back()}>
+            <i className="fa-solid fa-arrow-left"></i>
+          </button>
+          <h1>Choose Your Role</h1>
+          <p>Please select your role to continue</p>
+          <div className="role-options">
+            <div className="role-card" onClick={() => handleRoleSelect('student')}>
+              <i className="fa-solid fa-graduation-cap"></i>
+              <h3>Student</h3>
+              <p>Looking for jobs and internships</p>
+            </div>
+            <div className="role-card" onClick={() => handleRoleSelect('employer')}>
+              <i className="fa-solid fa-building"></i>
+              <h3>Employer</h3>
+              <p>Hiring talented individuals</p>
+            </div>
+            <div className="role-card" onClick={() => handleRoleSelect('admin')}>
+              <i className="fa-solid fa-user-shield"></i>
+              <h3>Admin</h3>
+              <p>Managing the platform</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`container ${isActive ? 'active' : ''}`}>
@@ -66,6 +105,21 @@ const LoginSignup = () => {
           <div className="input-box">
             <input type="password" placeholder="Password" required />
             <i className="fa-solid fa-lock"></i>
+          </div>
+          <div className="input-row">
+            <div className="input-box half-width">
+              <input type="date" placeholder="Date of Birth" required />
+              <i className="fa-solid fa-calendar"></i>
+            </div>
+            <div className="input-box half-width">
+              <select required onChange={(e) => setGenderSelected(e.target.value !== '')}>
+                <option value="">Select Gender</option>
+                <option value="male">♂️ Male</option>
+                <option value="female">♀️ Female</option>
+                <option value="other">⚧️ Other</option>
+              </select>
+              {!genderSelected && <i className="fa-solid fa-venus-mars"></i>}
+            </div>
           </div>
           <button type="submit" className="btn">Register</button>
           <p>or register with social platforms</p>

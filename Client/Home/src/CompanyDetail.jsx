@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './JobStyle.scss';
 
-const CompanyDetail = ({ onBack, companyData }) => {
+const CompanyDetail = ({ onBack, onPageChange, companyData }) => {
   const [language, setLanguage] = useState('vi');
 
   const translations = {
@@ -120,7 +120,7 @@ const CompanyDetail = ({ onBack, companyData }) => {
             className="btn btn-secondary btn-sm me-3"
             onClick={onBack}
           >
-            ← {t.back}
+            ←
           </button>
           <a className="navbar-brand fw-bold" href="#" style={{fontSize: '24px'}}>
             <span style={{color: '#007bff'}}>JobConnect</span><span style={{color: '#28a745'}}>4Students</span>
@@ -137,14 +137,14 @@ const CompanyDetail = ({ onBack, companyData }) => {
               </a>
             </li>
             <li className="nav-item">
-              <a className="nav-link" href="https://www.facebook.com/doanhoikhoacnttvaa" target="_blank" rel="noopener noreferrer" style={{cursor: 'pointer'}}>
+              <span className="nav-link" style={{cursor: 'pointer'}} onClick={() => onBack('community')}>
                 {t.community}
-              </a>
+              </span>
             </li>
             <li className="nav-item">
-              <a className="nav-link" href="https://www.facebook.com/nguyen.tan.loc.87930" target="_blank" rel="noopener noreferrer" style={{cursor: 'pointer'}}>
+              <span className="nav-link" style={{cursor: 'pointer'}} onClick={() => onBack('contact')}>
                 {t.contact}
-              </a>
+              </span>
             </li>
             <li className="nav-item">
               <button className="btn btn-primary me-2" onClick={handleLogin}>
@@ -190,7 +190,7 @@ const CompanyDetail = ({ onBack, companyData }) => {
             <p className="job-detail"><i className="fas fa-users"></i> {data.size}</p>
             <p className="job-detail"><i className="fas fa-calendar-alt"></i> {t.founded}: {data.founded}</p>
             <div className="action-buttons">
-              <button className="btn-action">{t.viewJobs}</button>
+              <button className="btn-action" onClick={() => onPageChange(1, 'samsung')}>{t.viewJobs}</button>
             </div>
           </div>
         </div>
@@ -231,14 +231,7 @@ const CompanyDetail = ({ onBack, companyData }) => {
             <p style={{marginBottom: '15px'}}>{data.description}</p>
           </div>
 
-          <div style={{background: '#fff', borderRadius: '8px', padding: '20px', marginBottom: '20px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'}}>
-            <h2 style={{fontSize: '24px', color: '#007bff', marginBottom: '15px'}}>{t.benefits}</h2>
-            <ul>
-              {data.benefits.map((benefit, index) => (
-                <li key={index} style={{marginBottom: '8px'}}>{benefit}</li>
-              ))}
-            </ul>
-          </div>
+
 
           <div style={{background: '#fff', borderRadius: '8px', padding: '20px', marginBottom: '20px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'}}>
             <h2 style={{fontSize: '24px', color: '#007bff', marginBottom: '15px'}}>{t.workEnvironment}</h2>

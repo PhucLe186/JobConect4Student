@@ -222,14 +222,14 @@ const Company = ({ onPageChange }) => {
               </a>
             </li>
             <li className="nav-item">
-              <a className="nav-link" href="https://www.facebook.com/doanhoikhoacnttvaa" target="_blank" rel="noopener noreferrer" style={{cursor: 'pointer'}}>
+              <span className="nav-link" style={{cursor: 'pointer'}} onClick={() => onPageChange('community')}>
                 {t.community}
-              </a>
+              </span>
             </li>
             <li className="nav-item">
-              <a className="nav-link" href="https://www.facebook.com/nguyen.tan.loc.87930" target="_blank" rel="noopener noreferrer" style={{cursor: 'pointer'}}>
+              <span className="nav-link" style={{cursor: 'pointer'}} onClick={() => onPageChange('contact')}>
                 {t.contact}
-              </a>
+              </span>
             </li>
             <li className="nav-item">
               <button className="btn btn-primary me-2" onClick={handleLogin}>

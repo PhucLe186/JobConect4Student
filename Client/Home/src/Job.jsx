@@ -9,7 +9,7 @@ if (!document.querySelector('link[href*="fontawesome"]')) {
   document.head.appendChild(link);
 }
 
-const Job = ({ onBack }) => {
+const Job = ({ onBack, onPageChange }) => {
   const [language, setLanguage] = useState('vi');
   const [favorites, setFavorites] = useState({});
 
@@ -113,7 +113,7 @@ const Job = ({ onBack }) => {
             className="btn btn-secondary btn-sm me-3"
             onClick={onBack}
           >
-            ← {t.back}
+            ←
           </button>
           <span className="navbar-brand fw-bold" style={{fontSize: '24px'}}>
             <span style={{color: '#007bff'}}>JobConnect</span><span style={{color: '#28a745'}}>4Students</span>
@@ -121,8 +121,8 @@ const Job = ({ onBack }) => {
           <ul className="navbar-nav ms-auto">
             <li className="nav-item"><span className="nav-link" style={{cursor: 'pointer'}} onClick={() => onBack()}>{t.company}</span></li>
             <li className="nav-item"><span className="nav-link" style={{cursor: 'pointer'}} onClick={onBack}>{t.jobs}</span></li>
-            <li className="nav-item"><a className="nav-link" href="https://www.facebook.com/doanhoikhoacnttvaa" target="_blank" rel="noopener noreferrer" style={{cursor: 'pointer', textDecoration: 'none'}}>{t.community}</a></li>
-            <li className="nav-item"><a className="nav-link" href="https://www.facebook.com/nguyen.tan.loc.87930" target="_blank" rel="noopener noreferrer" style={{cursor: 'pointer', textDecoration: 'none'}}>{t.contact}</a></li>
+            <li className="nav-item"><span className="nav-link" style={{cursor: 'pointer'}} onClick={() => onBack('community')}>{t.community}</span></li>
+            <li className="nav-item"><span className="nav-link" style={{cursor: 'pointer'}} onClick={() => onBack('contact')}>{t.contact}</span></li>
             <li className="nav-item">
               <button className="btn btn-primary me-2" onClick={handleLogin}>{t.signIn}</button>
             </li>
@@ -165,7 +165,7 @@ const Job = ({ onBack }) => {
               <i className="fas fa-calendar-alt"></i> {t.posted}
             </p>
             <div className="action-buttons">
-              <button className="btn-action">{t.applyNow}</button>
+              <button className="btn-action" onClick={() => onPageChange('cvbuilder')}>{t.applyNow}</button>
               <button className="btn-action">{t.save}</button>
             </div>
           </div>
