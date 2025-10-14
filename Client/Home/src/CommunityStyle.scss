@@ -1,0 +1,237 @@
+// Variables
+$primary-color: #007bff;
+$success-color: #28a745;
+$background-color: #f8f9fa;
+$white: #fff;
+$gray-light: #e9ecef;
+$gray-medium: #6c757d;
+$gray-dark: #343a40;
+$border-radius: 8px;
+$shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+.community-page {
+  background-color: $background-color;
+  min-height: 100vh;
+
+  .forum-title {
+    color: $primary-color;
+    text-align: center;
+    margin-bottom: 30px;
+    font-weight: bold;
+  }
+
+  .create-post-section {
+    background: $white;
+    padding: 20px;
+    border-radius: $border-radius;
+    box-shadow: $shadow;
+    margin-bottom: 30px;
+
+    h4 {
+      color: $gray-dark;
+      margin-bottom: 15px;
+    }
+
+    .post-input {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+
+      textarea {
+        border: 1px solid $gray-light;
+        border-radius: $border-radius;
+        padding: 15px;
+        font-size: 16px;
+        resize: vertical;
+        min-height: 100px;
+
+        &:focus {
+          outline: none;
+          border-color: $primary-color;
+          box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+      }
+
+      button {
+        align-self: flex-end;
+        padding: 10px 25px;
+        border-radius: $border-radius;
+      }
+    }
+  }
+
+  .posts-section {
+    .post-card {
+      background: $white;
+      border-radius: $border-radius;
+      box-shadow: $shadow;
+      margin-bottom: 20px;
+      overflow: hidden;
+
+      .post-header {
+        display: flex;
+        align-items: center;
+        padding: 15px 20px;
+        border-bottom: 1px solid $gray-light;
+
+        .avatar {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          margin-right: 12px;
+        }
+
+        .post-info {
+          h5 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: $gray-dark;
+          }
+
+          .post-time {
+            font-size: 12px;
+            color: $gray-medium;
+          }
+        }
+      }
+
+      .post-content {
+        padding: 15px 20px;
+
+        p {
+          margin: 0;
+          line-height: 1.6;
+          color: $gray-dark;
+        }
+      }
+
+      .post-actions {
+        display: flex;
+        padding: 10px 20px;
+        border-top: 1px solid $gray-light;
+        border-bottom: 1px solid $gray-light;
+
+        .action-btn {
+          background: none;
+          border: none;
+          color: $gray-medium;
+          padding: 8px 15px;
+          border-radius: $border-radius;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          font-size: 14px;
+
+          &:hover {
+            background-color: $gray-light;
+            color: $primary-color;
+          }
+
+          i {
+            margin-right: 5px;
+          }
+        }
+      }
+
+      .comments-section {
+        padding: 15px 20px;
+
+        .comment {
+          padding: 10px 0;
+          border-bottom: 1px solid $gray-light;
+
+          &:last-of-type {
+            border-bottom: none;
+          }
+
+          strong {
+            color: $gray-dark;
+            font-size: 14px;
+          }
+
+          p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: $gray-dark;
+          }
+
+          .comment-time {
+            font-size: 12px;
+            color: $gray-medium;
+          }
+        }
+
+        .add-comment {
+          display: flex;
+          gap: 10px;
+          margin-top: 15px;
+          padding-top: 15px;
+          border-top: 1px solid $gray-light;
+
+          input {
+            flex: 1;
+            border: 1px solid $gray-light;
+            border-radius: $border-radius;
+            padding: 8px 12px;
+            font-size: 14px;
+
+            &:focus {
+              outline: none;
+              border-color: $primary-color;
+            }
+          }
+
+          button {
+            padding: 8px 15px;
+            font-size: 14px;
+          }
+        }
+      }
+    }
+  }
+
+  footer {
+    background: $white;
+    padding: 30px 0;
+    margin-top: 50px;
+    border-top: 1px solid $gray-light;
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .community-page {
+    .create-post-section {
+      margin: 15px;
+      padding: 15px;
+    }
+
+    .posts-section {
+      margin: 0 15px;
+
+      .post-card {
+        .post-header {
+          padding: 12px 15px;
+        }
+
+        .post-content {
+          padding: 12px 15px;
+        }
+
+        .post-actions {
+          padding: 8px 15px;
+          flex-wrap: wrap;
+
+          .action-btn {
+            padding: 6px 10px;
+            font-size: 12px;
+          }
+        }
+
+        .comments-section {
+          padding: 12px 15px;
+        }
+      }
+    }
+  }
+}

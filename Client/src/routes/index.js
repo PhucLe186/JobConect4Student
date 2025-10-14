@@ -1,5 +1,9 @@
 import routesconfig from '~/config/routes';
-import home from '~/user/component/pages/Home';
+import Community from '~/user/component/pages/Community';
+import Home from '~/user/component/pages/Home';
 
-const publicRoutes = [{ path: routesconfig.home, component: home }];
+const publicRoutes = [
+    { path: routesconfig.Community, component: Community },
+    { path: routesconfig.Home, component: Home },
+];
 export { publicRoutes };
