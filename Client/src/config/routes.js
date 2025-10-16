@@ -1,4 +1,5 @@
 const routes = {
-    home: '/',
+    studentprofile: '/',
+    applicationhistory: '/applicationhistory',
 };
 export default routes;

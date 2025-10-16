@@ -1,0 +1,316 @@
+/* RESET & GLOBAL */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f8f9fa;
+    color: #212529;
+    line-height: 1.6;
+}
+
+/* layout: 1 cột, không chia trái/phải */
+.profile-page {
+    max-width: 1210px;
+    margin: 2.2rem auto;
+    padding: 1.375rem;
+}
+
+.profile-page__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.65rem;
+}
+
+.profile-page__title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #0d6efd;
+}
+
+.profile-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.925rem;
+}
+
+.profile-form__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.825rem;
+}
+
+/* card */
+.card {
+    background-color: #ffffff;
+    border-radius: 19.25px;
+    padding: 1.925rem 2.2rem;
+    box-shadow: 0 4px 13px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e9ecef;
+}
+
+.card__title {
+    font-size: 1.375rem;
+    font-weight: 600;
+    margin-bottom: 1.375rem;
+    color: #0d6efd;
+}
+
+.card__body {
+    display: grid;
+    gap: 1.1rem;
+    grid-template-columns: repeat(auto-fit, minmax(242px, 1fr));
+}
+
+.card__body--grid {
+    grid-template-columns: auto 1fr;
+    align-items: flex-start;
+    gap: 1.375rem;
+}
+
+.card__fields {
+    display: grid;
+    gap: 1.1rem;
+    grid-template-columns: repeat(auto-fit, minmax(242px, 1fr));
+}
+
+/* avatar */
+.avatar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.825rem;
+    padding-right: 1.1rem;
+}
+
+.avatar__preview {
+    width: 132px;
+    height: 132px;
+    border-radius: 50%;
+    background-color: #f8f9fa;
+    border: 2px dashed #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    background-size: cover;
+    background-position: center;
+}
+
+.avatar__preview:empty::before {
+    content: 'Tải ảnh';
+}
+
+.avatar__input {
+    display: none;
+}
+
+/* form */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+}
+
+.form-group--inline {
+    flex-direction: row;
+    align-items: center;
+    gap: 1.375rem;
+    flex-wrap: wrap;
+}
+
+.form-group--full-col {
+    grid-column: 1 / -1;
+}
+
+.form-group__label {
+    font-weight: 500;
+    color: #6c757d;
+    font-size: 1.05rem;
+}
+
+.form-group__input,
+.form-group__textarea {
+    width: 100%;
+    max-width: 480px;
+    padding: 0.825rem 1rem;
+    border-radius: 9.5px;
+    border: 1px solid #e9ecef;
+    font-size: 1.1rem;
+    background-color: #fdfdfd;
+}
+
+/* radio */
+.radio {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.44rem;
+    cursor: pointer;
+}
+
+.radio__input {
+    accent-color: #0d6efd;
+}
+
+/* skills */
+.skills__form {
+    display: grid;
+    gap: 1rem;
+    align-items: end;
+    margin-bottom: 1.2rem;
+    padding-bottom: 1.2rem;
+    border-bottom: 1px solid #e9ecef;
+    grid-template-columns: 1.4fr 1fr auto;
+}
+
+.skills__level-indicator {
+    font-weight: 600;
+}
+
+.skills__list {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.66rem;
+}
+
+.skills__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.66rem;
+    background-color: #eef7ff;
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    font-weight: 500;
+}
+
+.skills__rating {
+    color: #ffc107;
+}
+
+.skills__remove-btn {
+    padding: 0;
+    width: 26px;
+    height: 26px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 20px;
+}
+
+.skills__remove-btn:hover {
+    opacity: 1;
+}
+
+/* buttons */
+.btn {
+    padding: 0.77rem 1.32rem;
+    border: 1px solid transparent;
+    border-radius: 9.5px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.btn--primary {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.btn--primary:hover {
+    background-color: #0069d9;
+    transform: translateY(-2px);
+}
+
+
+/* === RESPONSIVE === */
+
+/* Tablet (1024px) và nhỏ hơn */
+@media (max-width: 1024px) {
+    .profile-page {
+        /* THÊM DÒNG NÀY ĐỂ THU GỌN CARD */
+        max-width: 800px;
+        margin: 1.5rem auto;
+        padding: 0 1rem;
+    }
+
+    .card {
+        padding: 1.5rem 1.2rem;
+    }
+
+    .card__body--grid {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        gap: 1.5rem;
+    }
+
+    .avatar {
+        padding-right: 0;
+    }
+}
+
+/* Mobile (740px) và nhỏ hơn */
+@media (max-width: 740px) {
+    .profile-page {
+        padding: 0 0.75rem;
+    }
+
+    .profile-page__header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        padding: 0;
+    }
+
+    .profile-page__title {
+        font-size: 1.8rem;
+    }
+    
+    .card__body,
+    .card__fields {
+        grid-template-columns: 1fr;
+        justify-items: center;
+    }
+
+    .form-group {
+        max-width: 480px;
+        width: 100%;
+    }
+
+    .skills__form {
+        grid-template-columns: 1fr;
+        align-items: stretch;
+    }
+    
+    .form-group--inline {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .profile-form__actions {
+        justify-content: center;
+    }
+
+    .profile-form__actions .btn {
+        flex-grow: 1;
+        justify-content: center;
+    }
+}
