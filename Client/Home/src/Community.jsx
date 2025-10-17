@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import './CommunityStyle.scss';
 
 const Community = ({ onPageChange }) => {
   const [language, setLanguage] = useState('vi');
@@ -124,118 +123,109 @@ const Community = ({ onPageChange }) => {
   };
 
   return (
-    <div className="community-page">
-      <nav className="navbar navbar-expand-lg bg-white shadow-sm">
-        <div className="container">
-          <span className="navbar-brand fw-bold" style={{fontSize: '24px'}}>
-            <span style={{color: '#007bff'}}>JobConnect</span><span style={{color: '#28a745'}}>4Students</span>
-          </span>
-          <ul className="navbar-nav ms-auto">
-            <li className="nav-item">
-              <span className="nav-link" style={{cursor: 'pointer'}} onClick={() => onPageChange('company')}>
+    <div className="min-h-screen bg-gray-50">
+      <nav className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex justify-between items-center py-4">
+            <span className="text-2xl font-bold">
+              <span className="text-blue-600">JobConnect</span><span className="text-green-600">4Students</span>
+            </span>
+            <div className="flex items-center space-x-6">
+              <span className="cursor-pointer hover:text-blue-600" onClick={() => onPageChange('company')}>
                 {t.company}
               </span>
-            </li>
-            <li className="nav-item">
-              <span className="nav-link" style={{cursor: 'pointer'}} onClick={() => onPageChange(1)}>
+              <span className="cursor-pointer hover:text-blue-600" onClick={() => onPageChange(1)}>
                 {t.jobs}
               </span>
-            </li>
-            <li className="nav-item">
-              <span className="nav-link active">{t.community}</span>
-            </li>
-            <li className="nav-item">
-              <span className="nav-link" style={{cursor: 'pointer'}} onClick={() => onPageChange('contact')}>
+              <span className="text-blue-600 font-medium">{t.community}</span>
+              <span className="cursor-pointer hover:text-blue-600" onClick={() => onPageChange('contact')}>
                 {t.contact}
               </span>
-            </li>
-            <li className="nav-item">
-              <button className="btn btn-primary me-2" onClick={handleLogin}>
+              <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" onClick={handleLogin}>
                 {t.signIn}
               </button>
-            </li>
-            <li className="nav-item">
-              <button className="btn btn-primary" onClick={handleSignup}>
+              <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" onClick={handleSignup}>
                 {t.signUp}
               </button>
-            </li>
-          </ul>
-          <button
-            className="btn btn-outline-secondary ms-3"
-            onClick={() => setLanguage(language === "vi" ? "en" : "vi")}
-            style={{ padding: "6px 12px" }}
-          >
-            <img
-              src={language === "vi" ? "vietnam-flag.svg" : "uk-flag.svg"}
-              alt={language === "vi" ? "VI" : "EN"}
-              style={{ width: "20px", height: "14px" }}
-            />
-          </button>
+              <button
+                className="border border-gray-300 px-3 py-1.5 rounded hover:bg-gray-50"
+                onClick={() => setLanguage(language === "vi" ? "en" : "vi")}
+              >
+                <img
+                  src={language === "vi" ? "vietnam-flag.svg" : "uk-flag.svg"}
+                  alt={language === "vi" ? "VI" : "EN"}
+                  className="w-5 h-3.5"
+                />
+              </button>
+            </div>
+          </div>
         </div>
       </nav>
 
-      <div className="container mt-4">
-        <h2 className="forum-title">{t.forum}</h2>
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <h2 className="text-3xl font-bold text-blue-600 text-center mb-8">{t.forum}</h2>
         
-        <div className="create-post-section">
-          <h4>{t.createPost}</h4>
-          <div className="post-input">
+        <div className="bg-white p-6 rounded-lg shadow-md mb-8">
+          <h4 className="text-lg font-semibold text-gray-800 mb-4">{t.createPost}</h4>
+          <div className="space-y-4">
             <textarea
               value={newPost}
               onChange={(e) => setNewPost(e.target.value)}
               placeholder={t.postPlaceholder}
               rows="3"
+              className="w-full p-4 border-2 border-gray-200 rounded-lg resize-y focus:outline-none focus:border-blue-600"
             />
-            <button onClick={handleCreatePost} className="btn btn-primary">
+            <button onClick={handleCreatePost} className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
               {t.post}
             </button>
           </div>
         </div>
 
-        <div className="posts-section">
+        <div className="space-y-6">
           {posts.map(post => (
-            <div key={post.id} className="post-card">
-              <div className="post-header">
-                <img src={post.avatar} alt="avatar" className="avatar" />
-                <div className="post-info">
-                  <h5>{post.author}</h5>
-                  <span className="post-time">{post.time}</span>
+            <div key={post.id} className="bg-white p-6 rounded-lg shadow-md">
+              <div className="flex items-center mb-4">
+                <img src={post.avatar} alt="avatar" className="w-10 h-10 rounded-full mr-4" />
+                <div>
+                  <h5 className="font-medium text-gray-800">{post.author}</h5>
+                  <span className="text-sm text-gray-500">{post.time}</span>
                 </div>
               </div>
               
-              <div className="post-content">
-                <p>{post.content}</p>
+              <div className="mb-4">
+                <p className="text-gray-800 leading-relaxed">{post.content}</p>
               </div>
               
-              <div className="post-actions">
-                <button onClick={() => handleLike(post.id)} className="action-btn">
-                  <i className="fa-regular fa-heart"></i> {t.like} ({post.likes})
+              <div className="flex gap-4 mb-4 pt-4 border-t border-gray-200">
+                <button onClick={() => handleLike(post.id)} className="flex items-center text-gray-600 hover:bg-gray-50 hover:text-blue-600 px-2 py-1 rounded transition-colors">
+                  <i className="fa-regular fa-heart mr-2"></i> {t.like} ({post.likes})
                 </button>
-                <button className="action-btn">
-                  <i className="fa-regular fa-comment"></i> {t.comment} ({post.comments.length})
+                <button className="flex items-center text-gray-600 hover:bg-gray-50 hover:text-blue-600 px-2 py-1 rounded transition-colors">
+                  <i className="fa-regular fa-comment mr-2"></i> {t.comment} ({post.comments.length})
                 </button>
-                <button className="action-btn">
-                  <i className="fa-regular fa-share-from-square"></i> {t.share}
+                <button className="flex items-center text-gray-600 hover:bg-gray-50 hover:text-blue-600 px-2 py-1 rounded transition-colors">
+                  <i className="fa-regular fa-share-from-square mr-2"></i> {t.share}
                 </button>
               </div>
               
-              <div className="comments-section">
+              <div className="border-t border-gray-200 pt-4">
                 {post.comments.map(comment => (
-                  <div key={comment.id} className="comment">
-                    <strong>{comment.author}</strong>
-                    <p>{comment.content}</p>
-                    <span className="comment-time">{comment.time}</span>
+                  <div key={comment.id} className="bg-gray-50 p-3 rounded-lg mb-3">
+                    <strong className="text-gray-800 text-sm">{comment.author}</strong>
+                    <p className="text-gray-700 text-sm mt-1">{comment.content}</p>
+                    <span className="text-gray-500 text-xs">{comment.time}</span>
                   </div>
                 ))}
                 
-                <div className="add-comment">
+                <div className="flex gap-3 mt-4">
                   <input
                     type="text"
                     value={newComment[post.id] || ''}
                     onChange={(e) => setNewComment({...newComment, [post.id]: e.target.value})}
                     placeholder={t.writeComment}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-600"
                   />
-                  <button onClick={() => handleAddComment(post.id)} className="btn btn-sm btn-primary">
+                  <button onClick={() => handleAddComment(post.id)} className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">
                     {t.send}
                   </button>
                 </div>
@@ -245,16 +235,17 @@ const Community = ({ onPageChange }) => {
         </div>
       </div>
 
-      <footer>
-        <div className="container text-center">
-          <h5 className="fw-bold text-primary">
-            JobConnect <span className="text-success">4Students</span>
+      <footer className="bg-white border-t mt-16">
+        <div className="max-w-7xl mx-auto px-4 py-8 text-center">
+          <h5 className="text-lg font-bold">
+            <span className="text-blue-600">JobConnect</span> <span className="text-green-600">4Students</span>
           </h5>
-          <p>497 Hoa Hao Street, Ward 7, District 10, Ho Chi Minh City</p>
-          <p>Hotline : 0943009243</p>
-          <div className="mt-2">
-            <a href="#">Facebook</a> · <a href="#">Instagram</a> ·
-            <a href="#">YouTube</a>
+          <p className="text-gray-600 mt-2">497 Hoa Hao Street, Ward 7, District 10, Ho Chi Minh City</p>
+          <p className="text-gray-600">Hotline : 0943009243</p>
+          <div className="mt-4 space-x-2">
+            <a href="#" className="text-blue-600 hover:underline">Facebook</a> ·
+            <a href="#" className="text-blue-600 hover:underline">Instagram</a> ·
+            <a href="#" className="text-blue-600 hover:underline">YouTube</a>
           </div>
         </div>
       </footer>
