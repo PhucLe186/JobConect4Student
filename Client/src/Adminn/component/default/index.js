@@ -1,5 +1,5 @@
-import Header from '~/user/component/mainlayout/Header';
-import Footer from '~/user/component/mainlayout/Footer';
+import Header from '~/Adminn/component/mainlayout/Header';
+import Footer from '~/Adminn/component/mainlayout/Footer';
 
 function Default({ children }) {
     return (

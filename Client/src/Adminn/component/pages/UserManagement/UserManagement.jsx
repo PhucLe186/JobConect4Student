@@ -1,18 +1,21 @@
 import React from 'react';
+import classNames from 'classnames/bind';
+import styles from './UserManagement.module.scss';
+const cx = classNames.bind(styles);
 
-const JobManagement = ({ t, showSection, jobs, searchTerm, setSearchTerm, filterType, setFilterType, handleApproveJob, handleRejectJob, handleDeleteJob }) => {
+const UserManagement = ({ t, showSection, searchTerm, setSearchTerm, filterType, setFilterType }) => {
     return (
         <div className="content-section">
             <button className="back-btn" onClick={() => showSection('dashboard')}>
                 {t.backToDashboard}
             </button>
-            <h2>{t.jobManagement}</h2>
+            <h2>{t.userManagement}</h2>
             <div className="section-controls">
                 <div className="search-filter-container">
                     <input
                         type="text"
                         className="section-search"
-                        placeholder={t.searchJobs}
+                        placeholder={t.searchUsers}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -31,40 +34,38 @@ const JobManagement = ({ t, showSection, jobs, searchTerm, setSearchTerm, filter
                     <thead>
                         <tr>
                             {[
-                                { key: 'title', label: t.title },
-                                { key: 'company', label: t.company },
-                                { key: 'salary', label: t.salary },
+                                { key: 'fullName', label: t.fullName },
+                                { key: 'email', label: t.email },
+                                { key: 'type', label: t.type },
                                 { key: 'status', label: t.status },
-                                { key: 'actions', label: t.actions }
-                            ].map(column => (
+                                { key: 'actions', label: t.actions },
+                            ].map((column) => (
                                 <th key={column.key}>{column.label}</th>
                             ))}
                         </tr>
                     </thead>
                     <tbody>
-                        {jobs.map(job => (
-                            <tr key={job.id}>
-                                <td>{job.title}</td>
-                                <td>{job.company}</td>
-                                <td>{job.salary}</td>
+                        {[
+                            { name: 'Nguyễn Văn A', email: 'a@email.com', type: t.student, status: 'active' },
+                            { name: 'Trần Thị B', email: 'tranthib@email.com', type: t.recruiter, status: 'active' },
+                            { name: 'Lê Văn C', email: 'levanc@email.com', type: t.student, status: 'offline' },
+                        ].map((user, index) => (
+                            <tr key={index}>
+                                <td>{user.name}</td>
+                                <td>{user.email}</td>
+                                <td>{user.type}</td>
                                 <td>
-                                    <span className={`status ${
-                                        job.status === 'recruiting' ? 'active' : 
-                                        job.status === 'pending' ? 'pending' : 'inactive'
-                                    }`}>
-                                        {job.status === 'recruiting' ? t.recruiting :
-                                         job.status === 'pending' ? t.pending : t.closed}
+                                    <span className={`status ${user.status === 'active' ? 'active' : 'pending'}`}>
+                                        {user.status === 'active' ? t.active : t.offline}
                                     </span>
                                 </td>
                                 <td>
-                                    {(job.status === 'pending' ? [
-                                        { label: t.approve, className: 'btn-edit', onClick: () => handleApproveJob(job.id) },
-                                        { label: t.reject, className: 'btn-delete', onClick: () => handleRejectJob(job.id) }
-                                    ] : [
+                                    {[
                                         { label: t.edit, className: 'btn-edit', onClick: null },
-                                        { label: t.delete, className: 'btn-delete', onClick: () => handleDeleteJob(job.id) }
-                                    ]).map((btn, index) => (
-                                        <button key={index} className={btn.className} onClick={btn.onClick}>
+                                        { label: t.view, className: 'btn-view', onClick: null },
+                                        { label: t.delete, className: 'btn-delete', onClick: null },
+                                    ].map((btn, btnIndex) => (
+                                        <button key={btnIndex} className={btn.className} onClick={btn.onClick}>
                                             {btn.label}
                                         </button>
                                     ))}
@@ -78,4 +79,4 @@ const JobManagement = ({ t, showSection, jobs, searchTerm, setSearchTerm, filter
     );
 };
 
-export default JobManagement;
+export default UserManagement;

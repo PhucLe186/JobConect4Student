@@ -1,0 +1,150 @@
+.content-section {
+    &.active {
+        display: block;
+    }
+
+    h2 {
+        color: #2d3748;
+        margin-bottom: 25px;
+        font-size: 24px;
+    }
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    cursor: pointer;
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    transition: transform 0.3s ease;
+
+    &:hover {
+        transform: translateY(-5px);
+    }
+}
+
+.stat-icon {
+    font-size: 45px;
+    opacity: 0.8;
+}
+
+.stat-info {
+    h3 {
+        font-size: 32px;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 8px;
+    }
+
+    p {
+        color: #718096;
+        font-size: 15px;
+    }
+}
+
+.charts-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin-top: 30px;
+}
+
+.chart-card {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    text-align: center;
+
+    h3 {
+        color: #2d3748;
+        margin-bottom: 20px;
+        font-size: 16px;
+    }
+}
+
+#userChart,
+#jobChart {
+    max-width: 100%;
+    height: auto;
+}
+
+@media (max-width: 768px) {
+    .content-section {
+        h2 {
+            font-size: 20px;
+            text-align: center;
+        }
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .stat-card {
+        padding: 20px;
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+
+    .stat-icon {
+        font-size: 35px;
+    }
+
+    .stat-info {
+        h3 {
+            font-size: 28px;
+        }
+    }
+
+    .charts-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .chart-card {
+        padding: 20px 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .content-section {
+        h2 {
+            font-size: 18px;
+        }
+    }
+
+    .stat-card {
+        padding: 15px;
+    }
+
+    .stat-info {
+        h3 {
+            font-size: 24px;
+        }
+
+        p {
+            font-size: 14px;
+        }
+    }
+
+    .chart-card {
+        padding: 15px 10px;
+
+        h3 {
+            font-size: 15px;
+        }
+    }
+}

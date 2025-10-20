@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
+import classNames from "classnames/bind";
 import './AdminLogin.scss';
+import styles from "./AdminLogin.module.scss";
+const cx = classNames.bind(styles);
 
 const AdminLogin = ({ onLogin }) => {
     const [isLogin, setIsLogin] = useState(true);

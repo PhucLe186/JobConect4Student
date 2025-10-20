@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import classNames from 'classnames/bind';
 import './Admin_dashboard.scss';
-import Dashboard from '../component/Admin/Dashboard';
-import JobManagement from '../component/Admin/JobManagement';
-import UserManagement from '../component/Admin/UserManagement';
-import ForumManagement from '../component/Admin/ForumManagement';
+import Dashboard from '../Adminn/component/pages/Dashboard/Dashboard';
+import JobManagement from '../Adminn/component/pages/JobManagement/JobManagement';
+import UserManagement from '../Adminn/component/pages/UserManagement/UserManagement';
+import ForumManagement from '../Adminn/component/pages/ForumManagement/ForumManagement';
 import { useTranslations } from '../component/Admin/useTranslations';
+import Header from '../Adminn/component/mainlayout/Header';
+import Sidebar from '../Adminn/component/mainlayout/Sidebar';
+import styles from './Admin_dashboard.module.scss';
+const cx = classNames.bind(styles);
 
 const AdminDashboard = ({ onLogout }) => {
     const [activeSection, setActiveSection] = useState('dashboard');
@@ -202,56 +207,16 @@ const AdminDashboard = ({ onLogout }) => {
 
     return (
         <div className="admin-container">
-            <div className="admin-sidebar">
-                <div className="admin-logo">
-                    <h2>JobConnect Admin</h2>
-                </div>
-                <ul>
-                    <li
-                        className={activeSection === 'dashboard' ? 'active' : ''}
-                        onClick={() => showSection('dashboard')}
-                    >
-                        Dashboard
-                    </li>
-                    <li className={activeSection === 'jobs' ? 'active' : ''} onClick={() => showSection('jobs')}>
-                        {t.jobManagement}
-                    </li>
-                    <li className={activeSection === 'users' ? 'active' : ''} onClick={() => showSection('users')}>
-                        {t.userManagement}
-                    </li>
-                    <li
-                        className={activeSection === 'companies' ? 'active' : ''}
-                        onClick={() => showSection('companies')}
-                    >
-                        {t.forumManagement}
-                    </li>
-                </ul>
-            </div>
+            <Sidebar t={t} activeSection={activeSection} showSection={showSection} />
 
             <div className="admin-main">
-                <div className="admin-header">
-                    <h1>{t.adminTitle}</h1>
-                    <div
-                        className="admin-user"
-                        onMouseEnter={() => setShowUserMenu(true)}
-                        onMouseLeave={() => setShowUserMenu(false)}
-                    >
-                        <span className="user-name">Minh Trí ▼</span>
-                        {showUserMenu && (
-                            <div className="user-dropdown">
-                                <div className="dropdown-item" onClick={() => setShowLanguageModal(true)}>
-                                    {t.language}
-                                </div>
-                                <div className="dropdown-item" onClick={() => alert(t.forgotPasswordFunction)}>
-                                    {t.forgotPassword}
-                                </div>
-                                <div className="dropdown-item" onClick={() => setShowLogoutPopup(true)}>
-                                    {t.logout}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
+                <Header
+                    t={t}
+                    showUserMenu={showUserMenu}
+                    setShowUserMenu={setShowUserMenu}
+                    setShowLanguageModal={setShowLanguageModal}
+                    setShowLogoutPopup={setShowLogoutPopup}
+                />
 
                 <main className="admin-content">
                     {activeSection === 'dashboard' && <Dashboard t={t} showSection={showSection} />}

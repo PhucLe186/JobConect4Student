@@ -1,4 +1,7 @@
 import React from 'react';
+import classNames from 'classnames/bind';
+import styles from './ForumManagement.module.scss';
+const cx = classNames.bind(styles);
 
 const ForumManagement = ({
     t,
@@ -13,36 +16,36 @@ const ForumManagement = ({
     handleDeletePost,
 }) => {
     return (
-        <div className="content-section">
-            <button className="back-btn" onClick={() => showSection('dashboard')}>
+        <div className={cx('content-section')}>
+            <button className={cx('back-btn')} onClick={() => showSection('dashboard')}>
                 {t.backToDashboard}
             </button>
             <h2>{t.forumManagement}</h2>
-            <div className="forum-stats">
-                <div className="forum-stat-card">
+            <div className={cx('forum-stats')}>
+                <div className={cx('forum-stat-card')}>
                     <h4>{t.totalPostsCount}</h4>
                     <span>245</span>
                 </div>
-                <div className="forum-stat-card">
+                <div className={cx('forum-stat-card')}>
                     <h4>{t.comments}</h4>
                     <span>1,832</span>
                 </div>
-                <div className="forum-stat-card">
+                <div className={cx('forum-stat-card')}>
                     <h4>{t.activeMembers}</h4>
                     <span>156</span>
                 </div>
             </div>
-            <div className="section-controls">
-                <div className="search-filter-container">
+            <div className={cx('section-controls')}>
+                <div className={cx('search-filter-container')}>
                     <input
                         type="text"
-                        className="section-search"
+                        className={cx('section-search')}
                         placeholder={t.searchPosts}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                     <select
-                        className="filter-dropdown"
+                        className={cx('filter-dropdown')}
                         value={filterType}
                         onChange={(e) => setFilterType(e.target.value)}
                     >
@@ -51,8 +54,8 @@ const ForumManagement = ({
                     </select>
                 </div>
             </div>
-            <div className="table-container">
-                <table className="data-table">
+            <div className={cx('table-container')}>
+                <table className={cx('data-table')}>
                     <thead>
                         <tr>
                             {[
@@ -75,22 +78,36 @@ const ForumManagement = ({
                                 <td>{post.comments}</td>
                                 <td>{post.date}</td>
                                 <td>
-                                    <span className={`status ${post.status === 'active' ? 'active' : 'pending'}`}>
+                                    <span className={cx('status', post.status === 'active' ? 'active' : 'pending')}>
                                         {post.status === 'active' ? t.active : t.pending}
                                     </span>
                                 </td>
                                 <td>
                                     {[
                                         { label: t.view, className: 'btn-view', onClick: null },
-                                        ...(post.status === 'pending' ? [
-                                            { label: t.approve, className: 'btn-edit', onClick: () => handleApprovePost(post.id) },
-                                            { label: t.reject, className: 'btn-delete', onClick: () => handleRejectPost(post.id) }
-                                        ] : [
-                                            { label: t.edit, className: 'btn-edit', onClick: null },
-                                            { label: t.delete, className: 'btn-delete', onClick: () => handleDeletePost(post.id) }
-                                        ])
+                                        ...(post.status === 'pending'
+                                            ? [
+                                                  {
+                                                      label: t.approve,
+                                                      className: 'btn-edit',
+                                                      onClick: () => handleApprovePost(post.id),
+                                                  },
+                                                  {
+                                                      label: t.reject,
+                                                      className: 'btn-delete',
+                                                      onClick: () => handleRejectPost(post.id),
+                                                  },
+                                              ]
+                                            : [
+                                                  { label: t.edit, className: 'btn-edit', onClick: null },
+                                                  {
+                                                      label: t.delete,
+                                                      className: 'btn-delete',
+                                                      onClick: () => handleDeletePost(post.id),
+                                                  },
+                                              ]),
                                     ].map((btn, index) => (
-                                        <button key={index} className={btn.className} onClick={btn.onClick}>
+                                        <button key={index} className={cx(btn.className)} onClick={btn.onClick}>
                                             {btn.label}
                                         </button>
                                     ))}

@@ -1,4 +1,7 @@
 import React, { useEffect } from 'react';
+import classNames from 'classnames/bind';
+import styles from './Dashboard.module.scss';
+const cx = classNames.bind(styles);
 
 const Dashboard = ({ t, showSection }) => {
     useEffect(() => {
@@ -81,41 +84,41 @@ const Dashboard = ({ t, showSection }) => {
     };
 
     return (
-        <div className="content-section active">
+        <div className={cx('content-section')}>
             <h2>{t.dashboardOverview}</h2>
-            <div className="stats-grid">
-                <div className="stat-card" onClick={() => showSection('users')}>
-                    <div className="stat-info">
+            <div className={cx('stats-grid')}>
+                <div className={cx('stat-card')} onClick={() => showSection('users')}>
+                    <div className={cx('stat-info')}>
                         <h3>1,250</h3>
                         <p>{t.totalUsers}</p>
                     </div>
                 </div>
-                <div className="stat-card" onClick={() => showSection('jobs')}>
-                    <div className="stat-info">
+                <div className={cx('stat-card')} onClick={() => showSection('jobs')}>
+                    <div className={cx('stat-info')}>
                         <h3>340</h3>
                         <p>{t.totalJobs}</p>
                     </div>
                 </div>
-                <div className="stat-card" onClick={() => showSection('companies')}>
-                    <div className="stat-info">
+                <div className={cx('stat-card')} onClick={() => showSection('companies')}>
+                    <div className={cx('stat-info')}>
                         <h3>85</h3>
                         <p>{t.totalPosts}</p>
                     </div>
                 </div>
-                <div className="stat-card" onClick={() => showSection('jobs')}>
-                    <div className="stat-info">
+                <div className={cx('stat-card')} onClick={() => showSection('jobs')}>
+                    <div className={cx('stat-info')}>
                         <h3>156</h3>
                         <p>{t.pendingApplications}</p>
                     </div>
                 </div>
             </div>
 
-            <div className="charts-container">
-                <div className="chart-card">
+            <div className={cx('charts-container')}>
+                <div className={cx('chart-card')}>
                     <h3>{t.userRegistrationChart}</h3>
                     <canvas id="userChart" width="400" height="200"></canvas>
                 </div>
-                <div className="chart-card">
+                <div className={cx('chart-card')}>
                     <h3>{t.jobCategoryChart}</h3>
                     <canvas id="jobChart" width="300" height="300"></canvas>
                 </div>
