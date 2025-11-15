@@ -1,4 +1,5 @@
 import routesconfig from '~/config/routes';
+<<<<<<< HEAD
 import Home from '~/user/component/pages/Home';
 import Community from '~/user/component/pages/Community';
 import Login from '~/user/component/pages/Login';
@@ -14,4 +15,13 @@ const publicRoutes = [
     { path: routesconfig.jobs, component: Job },
 ];
 
+=======
+import Community from '~/user/component/pages/Community';
+import Home from '~/user/component/pages/Home';
+
+const publicRoutes = [
+    { path: routesconfig.Community, component: Community },
+    { path: routesconfig.Home, component: Home },
+];
+>>>>>>> 48553a4edcbeacb90fdc51c767579f2b7ef8f5c2
 export { publicRoutes };

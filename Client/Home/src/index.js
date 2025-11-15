@@ -3,8 +3,4 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
-<<<<<<< HEAD
 root.render(<App />);
-=======
-root.render(<App />);
->>>>>>> 48553a4edcbeacb90fdc51c767579f2b7ef8f5c2

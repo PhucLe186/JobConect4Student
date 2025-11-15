@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "name": "login-signup",
   "version": "0.1.0",
   "private": true,
@@ -24,6 +25,21 @@
       "react-app",
       "react-app/jest"
     ]
+=======
+  "name": "login-signup-react",
+  "version": "1.0.0",
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^7.9.3",
+    "react-scripts": "5.0.1",
+    "sass": "^1.77.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "start:3002": "set PORT=3002 && react-scripts start",
+    "build": "react-scripts build"
+>>>>>>> 48553a4edcbeacb90fdc51c767579f2b7ef8f5c2
   },
   "browserslist": {
     "production": [
@@ -37,4 +53,8 @@
       "last 1 safari version"
     ]
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 48553a4edcbeacb90fdc51c767579f2b7ef8f5c2
