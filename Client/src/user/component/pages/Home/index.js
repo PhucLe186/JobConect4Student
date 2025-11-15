@@ -1,4 +1,9 @@
 import React, { useState } from 'react';
+import classNames from 'classnames/bind';
+import style from './Home.module.scss';
+import LookJobsImg from '~/asset/img/LookJobs.png';
+
+const cx = classNames.bind(style);
 
 const Homepage = (props) => {
     const { companyFilter } = props;
@@ -7,7 +12,7 @@ const Homepage = (props) => {
     const [location, setLocation] = useState('');
     const [jobType, setJobType] = useState('');
     const [language, setLanguage] = useState('vi');
-    const currentPage = 1;
+    const [currentPage, setCurrentPage] = useState(1);
     const totalPages = 3;
 
     const translations = {
@@ -67,166 +72,161 @@ const Homepage = (props) => {
     const handleJobTypeChange = (e) => {
         setJobType(e.target.value);
     };
+
+    const handlePageChange = (page) => {
+        if (page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+        }
+    };
     const allJobData = [
-        { logo: 'LongThanh.png', title: 'Dev', company: 'Công ty TNHH Long Thành', companyKey: 'longthanh' },
-        { logo: 'Samsung.png', title: 'Junior', company: 'Công ty Samsung', companyKey: 'samsung' },
-        { logo: 'MB.png', title: 'Software Engineer', company: 'Ngân hàng MB', companyKey: 'mb' },
-        { logo: 'NEC.png', title: 'Senior AI Specialist', company: 'Công ty NEC', companyKey: 'nec' },
-        { logo: 'LG.png', title: 'Electronics Development', company: 'Công ty LG', companyKey: 'lg' },
-        { logo: 'Naver.png', title: 'Dev', company: 'Công ty Naver', companyKey: 'naver' },
         {
-            logo: 'Google.png',
+            logo: require('~/asset/img/LongThanh.png'),
+            title: 'Dev',
+            company: 'Công ty TNHH Long Thành',
+            companyKey: 'longthanh',
+        },
+        { logo: require('~/asset/img/Samsung.png'), title: 'Junior', company: 'Công ty Samsung', companyKey: 'samsung' },
+        { logo: require('~/asset/img/MB.png'), title: 'Software Engineer', company: 'Ngân hàng MB', companyKey: 'mb' },
+        { logo: require('~/asset/img/NEC.png'), title: 'Senior AI Specialist', company: 'Công ty NEC', companyKey: 'nec' },
+        { logo: require('~/asset/img/LG.png'), title: 'Electronics Development', company: 'Công ty LG', companyKey: 'lg' },
+        { logo: require('~/asset/img/Naver.png'), title: 'Dev', company: 'Công ty Naver', companyKey: 'naver' },
+        {
+            logo: require('~/asset/img/Google.png'),
             title: 'Software Engineer',
             company: 'Công ty Google',
             companyKey: 'google',
         },
         {
-            logo: 'Microsoft.png',
+            logo: require('~/asset/img/Microsoft.png'),
             title: 'Cloud Developer',
             company: 'Công ty Microsoft',
             companyKey: 'microsoft',
         },
-        { logo: 'Apple.png', title: 'iOS Developer', company: 'Công ty Apple', companyKey: 'apple' },
+        { logo: require('~/asset/img/Apple.png'), title: 'iOS Developer', company: 'Công ty Apple', companyKey: 'apple' },
     ];
 
     const jobData = companyFilter ? allJobData.filter((job) => job.companyKey === companyFilter) : allJobData;
 
     return (
-        <div>
-            {!companyFilter && (
-                <div className="container my-4 text-center">
-                    <div className="banner-container">
-                        <img src="LookJobs.png" className="shadow-sm" alt="banner" />
-                    </div>
-                </div>
-            )}
-
-            {companyFilter && (
-                <div className="container mt-4 text-center">
-                    <h2 style={{ color: '#007bff', marginBottom: '20px' }}>
-                        {language === 'vi' ? 'Việc làm tại Samsung' : 'Jobs at Samsung'}
-                    </h2>
-                </div>
-            )}
-
-            {/* Main Search Bar */}
-            <div className="container">
-                <div className="main-search text-center">
-                    <h4 className="mb-4">{t.findJob}</h4>
-                    <div className="row">
-                        <div className="col-12">
-                            <input type="text" className="form-control" placeholder={t.searchPlaceholder} />
+        <div className={cx('home-page')}>
+            {/* Hero Section */}
+            <div className={cx('hero-section')}>
+                <div className={cx('container')}>
+                    <div className={cx('hero-content')}>
+                        <div className={cx('hero-image')}>
+                            <img src={LookJobsImg} alt="Job Search" />
+                        </div>
+                        <h1 className={cx('hero-title')}>{t.findJob}</h1>
+                        <div className={cx('search-box')}>
+                            <input type="text" className={cx('search-input')} placeholder={t.searchPlaceholder} />
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Search Bar */}
-            <div className="container search-bar">
-                <div className="row">
-                    <div className="col-md-3">
-                        <div className="salary-range">
-                            <label className="form-label">{t.salaryRange}</label>
-                            <input
-                                type="range"
-                                className="salary-slider"
-                                min="0"
-                                max="100"
-                                value={salaryValue}
-                                onChange={(e) => updateSalary(e.target.value)}
-                            />
-                            <div className="salary-display">
-                                0 - {salaryValue} {language === 'vi' ? 'triệu VNĐ' : 'million VND'}
+            {/* Filter Section */}
+            <div className={cx('filter-section')}>
+                <div className={cx('container')}>
+                    <div className={cx('filter-row')}>
+                        <div className={cx('filter-item')}>
+                            <label>{t.salaryRange}</label>
+                            <div className={cx('salary-range')}>
+                                <input
+                                    type="range"
+                                    className={cx('salary-slider')}
+                                    min="0"
+                                    max="50"
+                                    value={salaryValue}
+                                    onChange={(e) => updateSalary(e.target.value)}
+                                />
+                                <div className={cx('salary-display')}>
+                                    0 - {salaryValue} {language === 'vi' ? 'triệu VNĐ' : 'million VND'}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div className="col-md-3">
-                        <label className="form-label">{t.experienceLevel}</label>
-                        <select className="form-select" value={experience} onChange={handleExperienceChange}>
-                            <option value="">{t.chooseExp}</option>
-                            <option>{t.noExp}</option>
-                            <option>1 - 2 {language === 'vi' ? 'năm' : 'years'}</option>
-                            <option>3 - 4 {language === 'vi' ? 'năm' : 'years'}</option>
-                            <option>4 - 5 {language === 'vi' ? 'năm' : 'years'}</option>
-                        </select>
-                    </div>
-                    <div className="col-md-3">
-                        <label className="form-label">{t.workLocation}</label>
-                        <select className="form-select" value={location} onChange={handleLocationChange}>
-                            <option value="">{t.chooseLocation}</option>
-                            <option>{language === 'vi' ? 'Hà Nội' : 'Hanoi'}</option>
-                            <option>{language === 'vi' ? 'Hồ Chí Minh' : 'Ho Chi Minh City'}</option>
-                            <option>{language === 'vi' ? 'Đà Nẵng' : 'Da Nang'}</option>
-                            <option>{language === 'vi' ? 'Cần Thơ' : 'Can Tho'}</option>
-                            <option>{language === 'vi' ? 'Hải Phòng' : 'Hai Phong'}</option>
-                        </select>
-                    </div>
-                    <div className="col-md-3">
-                        <label className="form-label">{t.jobType}</label>
-                        <select className="form-select" value={jobType} onChange={handleJobTypeChange}>
-                            <option value="">{t.chooseJobType}</option>
-                            <option>Full-time</option>
-                            <option>Part-time</option>
-                            <option>{language === 'vi' ? 'Thực tập' : 'Internship'}</option>
-                        </select>
+                        <div className={cx('filter-item')}>
+                            <label>{t.experienceLevel}</label>
+                            <select
+                                className={cx('filter-select')}
+                                value={experience}
+                                onChange={handleExperienceChange}
+                            >
+                                <option value="">{t.chooseExp}</option>
+                                <option>{t.noExp}</option>
+                                <option>1 - 2 {language === 'vi' ? 'năm' : 'years'}</option>
+                                <option>3 - 4 {language === 'vi' ? 'năm' : 'years'}</option>
+                                <option>4 - 5 {language === 'vi' ? 'năm' : 'years'}</option>
+                            </select>
+                        </div>
+                        <div className={cx('filter-item')}>
+                            <label>{t.workLocation}</label>
+                            <select className={cx('filter-select')} value={location} onChange={handleLocationChange}>
+                                <option value="">{t.chooseLocation}</option>
+                                <option>{language === 'vi' ? 'Hà Nội' : 'Hanoi'}</option>
+                                <option>{language === 'vi' ? 'Hồ Chí Minh' : 'Ho Chi Minh City'}</option>
+                                <option>{language === 'vi' ? 'Đà Nẵng' : 'Da Nang'}</option>
+                                <option>{language === 'vi' ? 'Cần Thơ' : 'Can Tho'}</option>
+                                <option>{language === 'vi' ? 'Hải Phòng' : 'Hai Phong'}</option>
+                            </select>
+                        </div>
+                        <div className={cx('filter-item')}>
+                            <label>{t.jobType}</label>
+                            <select className={cx('filter-select')} value={jobType} onChange={handleJobTypeChange}>
+                                <option value="">{t.chooseJobType}</option>
+                                <option>Full-time</option>
+                                <option>Part-time</option>
+                                <option>{language === 'vi' ? 'Thực tập' : 'Internship'}</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
-            {/* Job Listings */}
-            <div className="container mt-4">
-                {[0, 3, 6].map((startIndex) => (
-                    <div className="row" key={startIndex}>
-                        {jobData.slice(startIndex, startIndex + 3).map((job, index) => (
-                            <div className="col-md-4" key={index}>
-                                <div className="job-card d-flex align-items-center">
-                                    <img src={job.logo} alt="logo" />
-                                    <div className="job-info">
-                                        <h6>{job.title}</h6>
-                                        <p>{job.company}</p>
-                                        <button type="button" className="btn btn-sm btn-outline-primary">
-                                            {t.seeMore}
-                                        </button>
+
+            {/* Jobs Grid */}
+            <div className={cx('jobs-section')}>
+                <div className={cx('container')}>
+                    <div className={cx('jobs-grid')}>
+                        {jobData.map((job, index) => (
+                            <div className={cx('job-card')} key={index}>
+                                <div className={cx('job-header')}>
+                                    <img src={job.logo} alt={job.company} className={cx('company-logo')} />
+                                    <div className={cx('job-info')}>
+                                        <h3 className={cx('job-title')}>{job.title}</h3>
+                                        <p className={cx('company-name')}>{job.company}</p>
                                     </div>
                                 </div>
+                                <button className={cx('apply-btn')}>{t.seeMore}</button>
                             </div>
                         ))}
                     </div>
-                ))}
-                <nav aria-label="Page navigation" className="mt-4">
-                    <ul className="pagination justify-content-center">
-                        <li className="page-item">
+
+                    {/* Pagination */}
+                    <div className={cx('pagination-wrapper')}>
+                        <button
+                            className={cx('page-btn')}
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                        >
+                            {t.previous}
+                        </button>
+                        {[1, 2, 3].map((page) => (
                             <button
-                                className="page-link"
-                                onClick={() => props.onPageChange(currentPage - 1)}
-                                disabled={currentPage === 1}
+                                key={page}
+                                className={cx('page-btn', { active: currentPage === page })}
+                                onClick={() => handlePageChange(page)}
                             >
-                                {t.previous}
+                                {page}
                             </button>
-                        </li>
-                        <li className="page-item active">
-                            <span className="page-link">1</span>
-                        </li>
-                        <li className="page-item">
-                            <button className="page-link" onClick={() => props.onPageChange(2)}>
-                                2
-                            </button>
-                        </li>
-                        <li className="page-item">
-                            <button className="page-link" onClick={() => props.onPageChange(3)}>
-                                3
-                            </button>
-                        </li>
-                        <li className="page-item">
-                            <button
-                                className="page-link"
-                                onClick={() => props.onPageChange(currentPage + 1)}
-                                disabled={currentPage === totalPages}
-                            >
-                                {t.next}
-                            </button>
-                        </li>
-                    </ul>
-                </nav>
+                        ))}
+                        <button
+                            className={cx('page-btn')}
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                        >
+                            {t.next}
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     );

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import './stylee.scss';
+import classNames from 'classnames/bind';
+import style from './CVBuilder.module.scss';
+const cx = classNames.bind(style);
 
 const CVBuilder = ({ onPageChange }) => {
     const [language, setLanguage] = useState('vi');

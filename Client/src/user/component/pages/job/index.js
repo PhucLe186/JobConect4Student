@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-
+import classNames from 'classnames/bind';
+import style from './Job.module.scss';
+const cx = classNames.bind(style);
 const Job = ({ onPageChange }) => {
     const [language, setLanguage] = useState('vi');
     const [isApplied, setIsApplied] = useState(false);
@@ -146,69 +148,69 @@ const Job = ({ onPageChange }) => {
 
     return (
         <div>
-            <div className="container mt-4">
-                <button className="btn btn-secondary mb-3" onClick={() => onPageChange(1)}>
-                    <i className="fa-solid fa-arrow-left me-2"></i>
+            <div className={cx('container mt-4')}>
+                <button className={cx('btn btn-secondary mb-3')} onClick={() => onPageChange(1)}>
+                    <i className={cx('fa-solid fa-arrow-left me-2')}></i>
                     {t.back}
                 </button>
 
-                <div className="row">
-                    <div className="col-md-8">
-                        <div className="job-detail-card">
-                            <div className="job-header">
-                                <div className="d-flex align-items-center mb-3">
+                <div className={cx('row')}>
+                    <div className={cx('col-md-8')}>
+                        <div className={cx('job-detail-card')}>
+                            <div className={cx('job-header')}>
+                                <div className={cx('d-flex align-items-center mb-3')}>
                                     <img
                                         src={jobData.companyLogo}
                                         alt={jobData.company}
-                                        className="company-logo me-3"
+                                        className={cx('company-logo me-3')}
                                     />
                                     <div>
-                                        <h2 className="job-title">{jobData.title}</h2>
-                                        <h5 className="company-name">{jobData.company}</h5>
+                                        <h2 className={cx('job-title')}>{jobData.title}</h2>
+                                        <h5 className={cx('company-name')}>{jobData.company}</h5>
                                     </div>
                                 </div>
 
-                                <div className="job-meta">
-                                    <div className="meta-item">
-                                        <i className="fa-solid fa-location-dot"></i>
+                                <div className={cx('job-meta')}>
+                                    <div className={cx('meta-item')}>
+                                        <i className={cx('fa-solid fa-location-dot')}></i>
                                         <span>{jobData.location}</span>
                                     </div>
-                                    <div className="meta-item">
-                                        <i className="fa-solid fa-money-bill"></i>
+                                    <div className={cx('meta-item')}>
+                                        <i className={cx('fa-solid fa-money-bill')}></i>
                                         <span>{jobData.salary}</span>
                                     </div>
-                                    <div className="meta-item">
-                                        <i className="fa-solid fa-briefcase"></i>
+                                    <div className={cx('meta-item')}>
+                                        <i className={cx('fa-solid fa-briefcase')}></i>
                                         <span>{jobData.experience}</span>
                                     </div>
-                                    <div className="meta-item">
-                                        <i className="fa-solid fa-clock"></i>
+                                    <div className={cx('meta-item')}>
+                                        <i className={cx('fa-solid fa-clock')}></i>
                                         <span>{jobData.jobType}</span>
                                     </div>
                                 </div>
 
-                                <div className="job-actions">
+                                <div className={cx('job-actions')}>
                                     {!isApplied ? (
-                                        <button className="btn btn-primary btn-lg me-3" onClick={handleApply}>
-                                            <i className="fa-solid fa-paper-plane me-2"></i>
+                                        <button className={cx('btn btn-primary btn-lg me-3')} onClick={handleApply}>
+                                            <i className={cx('fa-solid fa-paper-plane me-2')}></i>
                                             {t.apply}
                                         </button>
                                     ) : (
-                                        <button className="btn btn-success btn-lg me-3" disabled>
-                                            <i className="fa-solid fa-check me-2"></i>
+                                        <button className={cx('btn btn-success btn-lg me-3')} disabled>
+                                            <i className={cx('fa-solid fa-check me-2')}></i>
                                             {t.applied}
                                         </button>
                                     )}
-                                    <button className="btn btn-outline-primary">
-                                        <i className="fa-solid fa-heart me-2"></i>Lưu việc
+                                    <button className={cx('btn btn-outline-primary')}>
+                                        <i className={cx('fa-solid fa-heart me-2')}></i>Lưu việc
                                     </button>
                                 </div>
                             </div>
 
-                            <div className="job-content">
-                                <div className="job-section">
+                            <div className={cx('job-content')}>
+                                <div className={cx('job-section')}>
                                     <h4>
-                                        <i className="fa-solid fa-file-text me-2"></i>
+                                        <i className={cx('fa-solid fa-file-text me-2')}></i>
                                         {t.description}
                                     </h4>
                                     <ul>
@@ -218,9 +220,9 @@ const Job = ({ onPageChange }) => {
                                     </ul>
                                 </div>
 
-                                <div className="job-section">
+                                <div className={cx('job-section')}>
                                     <h4>
-                                        <i className="fa-solid fa-list-check me-2"></i>
+                                        <i className={cx('fa-solid fa-list-check me-2')}></i>
                                         {t.requirements}
                                     </h4>
                                     <ul>
@@ -230,9 +232,9 @@ const Job = ({ onPageChange }) => {
                                     </ul>
                                 </div>
 
-                                <div className="job-section">
+                                <div className={cx('job-section')}>
                                     <h4>
-                                        <i className="fa-solid fa-gift me-2"></i>
+                                        <i className={cx('fa-solid fa-gift me-2')}></i>
                                         {t.benefits}
                                     </h4>
                                     <ul>
@@ -245,14 +247,14 @@ const Job = ({ onPageChange }) => {
                         </div>
                     </div>
 
-                    <div className="col-md-4">
-                        <div className="job-sidebar">
-                            <div className="company-info-card">
+                    <div className={cx('col-md-4')}>
+                        <div className={cx('job-sidebar')}>
+                            <div className={cx('company-info-card')}>
                                 <h5>
-                                    <i className="fa-solid fa-building me-2"></i>
+                                    <i className={cx('fa-solid fa-building me-2')}></i>
                                     {t.companyOverview}
                                 </h5>
-                                <div className="company-details">
+                                <div className={cx('company-details')}>
                                     <p>
                                         <strong>Quy mô:</strong> 10,000+ nhân viên
                                     </p>
@@ -263,7 +265,7 @@ const Job = ({ onPageChange }) => {
                                         <strong>Website:</strong> <a href="#">www.samsung.com</a>
                                     </p>
                                     <button
-                                        className="btn btn-outline-primary btn-sm w-100 mt-2"
+                                        className={cx('btn btn-outline-primary btn-sm w-100 mt-2')}
                                         onClick={() => onPageChange('companyDetail')}
                                     >
                                         Xem thêm về công ty
@@ -271,19 +273,19 @@ const Job = ({ onPageChange }) => {
                                 </div>
                             </div>
 
-                            <div className="similar-jobs-card">
+                            <div className={cx('similar-jobs-card')}>
                                 <h5>
-                                    <i className="fa-solid fa-briefcase me-2"></i>
+                                    <i className={cx('fa-solid fa-briefcase me-2')}></i>
                                     {t.similarJobs}
                                 </h5>
                                 {similarJobs.map((job, index) => (
-                                    <div key={index} className="similar-job-item">
+                                    <div key={index} className={cx('similar-job-item')}>
                                         <h6>{job.title}</h6>
                                         <p>{job.company}</p>
-                                        <span className="salary">{job.salary}</span>
+                                        <span className={cx('salary')}>{job.salary}</span>
                                     </div>
                                 ))}
-                                <button className="btn btn-link p-0 mt-2">{t.viewMore}</button>
+                                <button className={cx('btn btn-link p-0 mt-2')}>{t.viewMore}</button>
                             </div>
                         </div>
                     </div>
@@ -291,64 +293,64 @@ const Job = ({ onPageChange }) => {
             </div>
 
             {showApplicationForm && (
-                <div className="modal-overlay">
-                    <div className="application-modal">
-                        <div className="modal-header">
+                <div className={cx('modal-overlay')}>
+                    <div className={cx('application-modal')}>
+                        <div className={cx('modal-header')}>
                             <h4>{t.applicationForm}</h4>
-                            <button className="btn-close" onClick={() => setShowApplicationForm(false)}>
-                                <i className="fa-solid fa-times"></i>
+                            <button className={cx('btn-close')} onClick={() => setShowApplicationForm(false)}>
+                                <i className={cx('fa-solid fa-times')}></i>
                             </button>
                         </div>
 
                         <form onSubmit={handleSubmitApplication}>
-                            <div className="modal-body">
-                                <div className="mb-3">
-                                    <label className="form-label">{t.fullName}</label>
+                            <div className={cx('modal-body')}>
+                                <div className={cx('mb-3')}>
+                                    <label className={cx('form-label')}>{t.fullName}</label>
                                     <input
                                         type="text"
-                                        className="form-control"
+                                        className={cx('form-control')}
                                         required
                                         value={applicationData.fullName}
                                         onChange={(e) => handleInputChange('fullName', e.target.value)}
                                     />
                                 </div>
 
-                                <div className="mb-3">
-                                    <label className="form-label">{t.email}</label>
+                                <div className={cx('mb-3')}>
+                                    <label className={cx('form-label')}>{t.email}</label>
                                     <input
                                         type="email"
-                                        className="form-control"
+                                        className={cx('form-control')}
                                         required
                                         value={applicationData.email}
                                         onChange={(e) => handleInputChange('email', e.target.value)}
                                     />
                                 </div>
 
-                                <div className="mb-3">
-                                    <label className="form-label">{t.phone}</label>
+                                <div className={cx('mb-3')}>
+                                    <label className={cx('form-label')}>{t.phone}</label>
                                     <input
                                         type="tel"
-                                        className="form-control"
+                                        className={cx('form-control')}
                                         required
                                         value={applicationData.phone}
                                         onChange={(e) => handleInputChange('phone', e.target.value)}
                                     />
                                 </div>
 
-                                <div className="mb-3">
-                                    <label className="form-label">{t.resume}</label>
+                                <div className={cx('mb-3')}>
+                                    <label className={cx('form-label')}>{t.resume}</label>
                                     <input
                                         type="file"
-                                        className="form-control"
+                                        className={cx('form-control')}
                                         accept=".pdf,.doc,.docx"
                                         onChange={(e) => handleInputChange('resume', e.target.files[0])}
                                     />
                                 </div>
 
-                                <div className="mb-3">
-                                    <label className="form-label">{t.coverLetter}</label>
+                                <div className={cx('mb-3')}>
+                                    <label className={cx('form-label')}>{t.coverLetter}</label>
                                     <textarea
-                                        className="form-control"
+                                        className={cx('form-control')}
                                         rows="4"
                                         value={applicationData.coverLetter}
                                         onChange={(e) => handleInputChange('coverLetter', e.target.value)}
@@ -356,15 +358,15 @@ const Job = ({ onPageChange }) => {
                                 </div>
                             </div>
 
-                            <div className="modal-footer">
+                            <div className={cx('modal-footer')}>
                                 <button
                                     type="button"
-                                    className="btn btn-secondary"
+                                    className={cx('btn', 'btn-secondary')}
                                     onClick={() => setShowApplicationForm(false)}
                                 >
                                     {t.cancel}
                                 </button>
-                                <button type="submit" className="btn btn-primary">
+                                <button type="submit" className={cx('btn', 'btn-primary')}>
                                     {t.submit}
                                 </button>
                             </div>

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import './stylee.scss';
+import classNames from 'classnames/bind';
+import style from './Contact.module.scss';
+const cx = classNames.bind(style);
 
 const Contact = ({ onPageChange }) => {
     const [language, setLanguage] = useState('vi');
@@ -54,64 +56,64 @@ const Contact = ({ onPageChange }) => {
 
     return (
         <div>
-            <div className="container mt-4">
-                <div className="row justify-content-center">
-                    <div className="col-md-8">
-                        <div className="contact-card">
-                            <h2 className="text-center mb-4">{t.contactUs}</h2>
+            <div className={cx('container mt-4')}>
+                <div className={'row justify-content-center'}>
+                    <div className={cx('col-md-8')}>
+                        <div className={cx('contact-card')}>
+                            <h2 className={cx('text-center mb-4')}>{t.contactUs}</h2>
 
-                            <div className="row">
-                                <div className="col-md-8">
+                            <div className={cx('row')}>
+                                <div className={cx('col-md-8')}>
                                     <form onSubmit={handleSubmit}>
-                                        <div className="mb-3">
-                                            <label className="form-label">{t.name}</label>
-                                            <input type="text" className="form-control" required />
+                                        <div className={cx('mb-3')}>
+                                            <label className={cx('form-label')}>{t.name}</label>
+                                            <input type="text" className={cx('form-control')} required />
                                         </div>
 
-                                        <div className="mb-3">
-                                            <label className="form-label">{t.email}</label>
-                                            <input type="email" className="form-control" required />
+                                        <div className={cx('mb-3')}>
+                                            <label className={cx('form-label')}>{t.email}</label>
+                                            <input type="email" className={cx('form-control')} required />
                                         </div>
 
-                                        <div className="mb-3">
-                                            <label className="form-label">{t.message}</label>
-                                            <textarea className="form-control" rows="5" required></textarea>
+                                        <div className={cx('mb-3')}>
+                                            <label className={cx('form-label')}>{t.message}</label>
+                                            <textarea className={cx('form-control')} rows="5" required></textarea>
                                         </div>
 
-                                        <div className="text-center">
-                                            <button type="submit" className="btn btn-primary btn-lg">
+                                        <div className={cx('text-center')}>
+                                            <button type="submit" className={cx('btn', 'btn-primary', 'btn-lg')}>
                                                 {t.send}
                                             </button>
                                         </div>
                                     </form>
                                 </div>
 
-                                <div className="col-md-4">
-                                    <div className="contact-info">
+                                <div className={cx('col-md-4')}>
+                                    <div className={cx('contact-info')}>
                                         <h5>Thông tin liên hệ</h5>
-                                        <div className="info-item">
-                                            <i className="fa-solid fa-location-dot"></i>
+                                        <div className={cx('info-item')}>
+                                            <i className={cx('fa-solid fa-location-dot')}></i>
                                             <div>
                                                 <strong>Địa chỉ:</strong>
                                                 <p>497 Hoa Hao Street, Ward 7, District 10, Ho Chi Minh City</p>
                                             </div>
                                         </div>
-                                        <div className="info-item">
-                                            <i className="fa-solid fa-phone"></i>
+                                        <div className={cx('info-item')}>
+                                            <i className={cx('fa-solid fa-phone')}></i>
                                             <div>
                                                 <strong>Hotline:</strong>
                                                 <p>0943009243</p>
                                             </div>
                                         </div>
-                                        <div className="info-item">
-                                            <i className="fa-solid fa-envelope"></i>
+                                        <div className={cx('info-item')}>
+                                            <i className={cx('fa-solid fa-envelope')}></i>
                                             <div>
                                                 <strong>Email:</strong>
                                                 <p>contact@jobconnect4students.com</p>
                                             </div>
                                         </div>
-                                        <div className="info-item">
-                                            <i className="fa-solid fa-clock"></i>
+                                        <div className={cx('info-item')}>
+                                            <i className={cx('fa-solid fa-clock')}></i>
                                             <div>
                                                 <strong>Giờ làm việc:</strong>
                                                 <p>
@@ -123,29 +125,29 @@ const Contact = ({ onPageChange }) => {
                                         </div>
                                     </div>
 
-                                    <div className="social-links">
+                                    <div className={cx('social-links')}>
                                         <h6>Theo dõi chúng tôi</h6>
-                                        <div className="social-icons">
-                                            <a href="#" className="social-icon facebook">
-                                                <i className="fa-brands fa-facebook-f"></i>
+                                        <div className={cx('social-icons')}>
+                                            <a href="#" className={cx('social-icon', 'facebook')}>
+                                                <i className={cx('fa-brands fa-facebook-f')}></i>
                                             </a>
-                                            <a href="#" className="social-icon instagram">
-                                                <i className="fa-brands fa-instagram"></i>
+                                            <a href="#" className={cx('social-icon', 'instagram')}>
+                                                <i className={cx('fa-brands fa-instagram')}></i>
                                             </a>
-                                            <a href="#" className="social-icon youtube">
-                                                <i className="fa-brands fa-youtube"></i>
+                                            <a href="#" className={cx('social-icon', 'youtube')}>
+                                                <i className={cx('fa-brands fa-youtube')}></i>
                                             </a>
-                                            <a href="#" className="social-icon linkedin">
-                                                <i className="fa-brands fa-linkedin-in"></i>
+                                            <a href="#" className={cx('social-icon', 'linkedin')}>
+                                                <i className={cx('fa-brands fa-linkedin-in')}></i>
                                             </a>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="map-section mt-4">
+                            <div className={cx('map-section', 'mt-4')}>
                                 <h5>Vị trí của chúng tôi</h5>
-                                <div className="map-container">
+                                <div className={cx('map-container')}>
                                     <iframe
                                         src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.6306852350596!2d106.69385731533414!3d10.762622192330687!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752f1c06f4e1dd%3A0x43900f1d4539a3d!2s497%20Hoa%20Hao%2C%20Ph%C6%B0%E1%BB%9Dng%207%2C%20Qu%E1%BA%ADn%2010%2C%20Th%C3%A0nh%20ph%E1%BB%91%20H%E1%BB%93%20Ch%C3%AD%20Minh!5e0!3m2!1svi!2s!4v1234567890123!5m2!1svi!2s"
                                         width="100%"

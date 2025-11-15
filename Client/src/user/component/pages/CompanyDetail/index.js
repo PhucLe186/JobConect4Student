@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import './stylee.scss';
+import classNames from 'classnames/bind';
+import style from './CompanyDetail.module.scss';
+const cx = classNames.bind(style);
 
 const CompanyDetail = ({ onPageChange }) => {
     const [language, setLanguage] = useState('vi');
@@ -80,36 +82,36 @@ const CompanyDetail = ({ onPageChange }) => {
 
     return (
         <div>
-            <div className="container mt-4">
-                <button className="btn btn-secondary mb-3" onClick={() => onPageChange('company')}>
-                    <i className="fa-solid fa-arrow-left me-2"></i>
+            <div className={cx('container mt-4')}>
+                <button className={cx('btn btn-secondary mb-3')} onClick={() => onPageChange('company')}>
+                    <i className={cx('fa-solid fa-arrow-left me-2')}></i>
                     {t.back}
                 </button>
 
-                <div className="company-detail-card">
-                    <div className="company-header">
-                        <div className="d-flex align-items-center mb-4">
-                            <img src="Samsung.png" alt="Samsung" className="company-logo" />
-                            <div className="company-basic-info">
+                <div className={cx('company-detail-card')}>
+                    <div className={cx('company-header')}>
+                        <div className={cx('d-flex align-items-center mb-4')}>
+                            <img src="Samsung.png" alt="Samsung" className={cx('company-logo')} />
+                            <div className={cx('company-basic-info')}>
                                 <h1>Samsung Vietnam</h1>
-                                <p className="company-industry">Technology - Electronics</p>
-                                <div className="company-rating">
-                                    <span className="rating-stars">
-                                        <i className="fa-solid fa-star"></i>
-                                        <i className="fa-solid fa-star"></i>
-                                        <i className="fa-solid fa-star"></i>
-                                        <i className="fa-solid fa-star"></i>
-                                        <i className="fa-regular fa-star"></i>
+                                <p className={cx('company-industry')}>Technology - Electronics</p>
+                                <div className={cx('company-rating')}>
+                                    <span className={cx('rating-stars')}>
+                                        <i className={cx('fa-solid fa-star')}></i>
+                                        <i className={cx('fa-solid fa-star')}></i>
+                                        <i className={cx('fa-solid fa-star')}></i>
+                                        <i className={cx('fa-solid fa-star')}></i>
+                                        <i className={cx('fa-regular fa-star')}></i>
                                     </span>
-                                    <span className="rating-text">4.2/5 (1,234 reviews)</span>
+                                    <span className={cx('rating-text')}>4.2/5 (1,234 reviews)</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="row">
-                        <div className="col-md-8">
-                            <div className="company-description">
+                    <div className={cx('row')}>
+                        <div className={cx('col-md-8')}>
+                            <div className={cx('company-description')}>
                                 <h4>About Samsung Vietnam</h4>
                                 <p>
                                     Samsung Vietnam is a leading technology company specializing in consumer
@@ -123,27 +125,29 @@ const CompanyDetail = ({ onPageChange }) => {
                                 </p>
                             </div>
 
-                            <div className="job-openings">
+                            <div className={cx('job-openings')}>
                                 <h4>{t.jobOpenings}</h4>
-                                <div className="job-list">
+                                <div className={cx('job-list')}>
                                     {jobOpenings.map((job, index) => (
-                                        <div key={index} className="job-item">
-                                            <div className="job-header">
+                                        <div key={index} className={cx('job-item')}>
+                                            <div className={cx('job-header')}>
                                                 <h5>{job.title}</h5>
-                                                <span className="job-salary">{job.salary}</span>
+                                                <span className={cx('job-salary')}>{job.salary}</span>
                                             </div>
-                                            <p className="job-description">{job.description}</p>
-                                            <p className="job-requirements">
+                                            <p className={cx('job-description')}>{job.description}</p>
+                                            <p className={cx('job-requirements')}>
                                                 <strong>Requirements:</strong> {job.requirements}
                                             </p>
-                                            <div className="job-actions">
+                                            <div className={cx('job-actions')}>
                                                 <button
-                                                    className="btn btn-outline-primary btn-sm me-2"
+                                                    className={cx('btn', 'btn-outline-primary', 'btn-sm', 'me-2')}
                                                     onClick={() => onPageChange('job')}
                                                 >
                                                     {t.viewDetails}
                                                 </button>
-                                                <button className="btn btn-primary btn-sm">{t.apply}</button>
+                                                <button className={cx('btn', 'btn-primary', 'btn-sm')}>
+                                                    {t.apply}
+                                                </button>
                                             </div>
                                         </div>
                                     ))}
@@ -151,26 +155,26 @@ const CompanyDetail = ({ onPageChange }) => {
                             </div>
                         </div>
 
-                        <div className="col-md-4">
-                            <div className="company-sidebar">
-                                <div className="company-info">
+                        <div className={cx('col-md-4')}>
+                            <div className={cx('company-sidebar')}>
+                                <div className={cx('company-info')}>
                                     <h4>{t.companyInfo}</h4>
-                                    <div className="info-item">
-                                        <i className="fa-solid fa-location-dot"></i>
+                                    <div className={cx('info-item')}>
+                                        <i className={cx('fa-solid fa-location-dot')}></i>
                                         <div>
                                             <strong>{t.address}:</strong>
                                             <p>Samsung Tower, 28 Nguyen Hue Blvd, District 1, Ho Chi Minh City</p>
                                         </div>
                                     </div>
-                                    <div className="info-item">
-                                        <i className="fa-solid fa-users"></i>
+                                    <div className={cx('info-item')}>
+                                        <i className={cx('fa-solid fa-users')}></i>
                                         <div>
                                             <strong>{t.size}:</strong>
                                             <p>10,000+ employees</p>
                                         </div>
                                     </div>
-                                    <div className="info-item">
-                                        <i className="fa-solid fa-globe"></i>
+                                    <div className={cx('info-item')}>
+                                        <i className={cx('fa-solid fa-globe')}></i>
                                         <div>
                                             <strong>{t.website}:</strong>
                                             <p>
@@ -184,8 +188,8 @@ const CompanyDetail = ({ onPageChange }) => {
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="info-item">
-                                        <i className="fa-solid fa-calendar"></i>
+                                    <div className={cx('info-item')}>
+                                        <i className={cx('fa-solid fa-calendar')}></i>
                                         <div>
                                             <strong>Founded:</strong>
                                             <p>1969</p>
@@ -193,26 +197,26 @@ const CompanyDetail = ({ onPageChange }) => {
                                     </div>
                                 </div>
 
-                                <div className="company-benefits">
+                                <div className={cx('company-benefits')}>
                                     <h5>Benefits & Perks</h5>
                                     <ul>
                                         <li>
-                                            <i className="fa-solid fa-check"></i> Competitive salary
+                                            <i className={cx('fa-solid fa-check')}></i> Competitive salary
                                         </li>
                                         <li>
-                                            <i className="fa-solid fa-check"></i> Health insurance
+                                            <i className={cx('fa-solid fa-check')}></i> Health insurance
                                         </li>
                                         <li>
-                                            <i className="fa-solid fa-check"></i> Annual bonus
+                                            <i className={cx('fa-solid fa-check')}></i> Annual bonus
                                         </li>
                                         <li>
-                                            <i className="fa-solid fa-check"></i> Training programs
+                                            <i className={cx('fa-solid fa-check')}></i> Training programs
                                         </li>
                                         <li>
-                                            <i className="fa-solid fa-check"></i> Flexible working hours
+                                            <i className={cx('fa-solid fa-check')}></i> Flexible working hours
                                         </li>
                                         <li>
-                                            <i className="fa-solid fa-check"></i> Career development
+                                            <i className={cx('fa-solid fa-check')}></i> Career development
                                         </li>
                                     </ul>
                                 </div>

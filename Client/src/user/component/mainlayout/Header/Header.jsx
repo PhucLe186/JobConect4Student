@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import classNames from 'classnames/bind';
-import styles from './Header.module.scss';
+import style from './Header.module.scss';
 
-const cx = classNames.bind(styles);
+const cx = classNames.bind(style);
 
-function Header() {
+const Header = () => {
     const [language, setLanguage] = useState('vi');
 
     const translations = {
@@ -49,6 +49,6 @@ function Header() {
             </div>
         </nav>
     );
-}
+};
 
 export default Header;

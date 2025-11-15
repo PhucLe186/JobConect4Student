@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import classNames from 'classnames/bind';
+import style from './Community.module.scss';
+const cx = classNames.bind(style);
 
 const Community = ({ onPageChange }) => {
     const [language, setLanguage] = useState('vi');
@@ -135,62 +138,62 @@ const Community = ({ onPageChange }) => {
     };
 
     return (
-        <div className="community-page">
-            <div className="container mt-4">
-                <h2 className="forum-title">{t.forum}</h2>
+        <div className={cx('community-page')}>
+            <div className={cx('container mt-4')}>
+                <h2 className={cx('forum-title')}>{t.forum}</h2>
 
-                <div className="create-post-section">
+                <div className={cx('create-post-section')}>
                     <h4>{t.createPost}</h4>
-                    <div className="post-input">
+                    <div className={cx('post-input')}>
                         <textarea
                             value={newPost}
                             onChange={(e) => setNewPost(e.target.value)}
                             placeholder={t.postPlaceholder}
                             rows="3"
                         />
-                        <button onClick={handleCreatePost} className="btn btn-primary">
+                        <button onClick={handleCreatePost} className={cx('btn btn-primary')}>
                             {t.post}
                         </button>
                     </div>
                 </div>
 
-                <div className="posts-section">
+                <div className={cx('posts-section')}>
                     {posts.map((post) => (
-                        <div key={post.id} className="post-card">
-                            <div className="post-header">
-                                <img src={post.avatar} alt="avatar" className="avatar" />
-                                <div className="post-info">
+                        <div key={post.id} className={cx('post-card')}>
+                            <div className={cx('post-header')}>
+                                <img src={post.avatar} alt="avatar" className={cx('avatar')} />
+                                <div className={cx('post-info')}>
                                     <h5>{post.author}</h5>
-                                    <span className="post-time">{post.time}</span>
+                                    <span className={cx('post-time')}>{post.time}</span>
                                 </div>
                             </div>
 
-                            <div className="post-content">
+                            <div className={cx('post-content')}>
                                 <p>{post.content}</p>
                             </div>
 
-                            <div className="post-actions">
-                                <button onClick={() => handleLike(post.id)} className="action-btn">
-                                    <i className="fa-regular fa-heart"></i> {t.like} ({post.likes})
+                            <div className={cx('post-actions')}>
+                                <button onClick={() => handleLike(post.id)} className={cx('action-btn')}>
+                                    <i className={cx('fa-regular fa-heart')}></i> {t.like} ({post.likes})
                                 </button>
-                                <button className="action-btn">
-                                    <i className="fa-regular fa-comment"></i> {t.comment} ({post.comments.length})
+                                <button className={cx('action-btn')}>
+                                    <i className={cx('fa-regular fa-comment')}></i> {t.comment} ({post.comments.length})
                                 </button>
-                                <button className="action-btn">
-                                    <i className="fa-regular fa-share-from-square"></i> {t.share}
+                                <button className={cx('action-btn')}>
+                                    <i className={cx('fa-regular fa-share-from-square')}></i> {t.share}
                                 </button>
                             </div>
 
-                            <div className="comments-section">
+                            <div className={cx('comments-section')}>
                                 {post.comments.map((comment) => (
-                                    <div key={comment.id} className="comment">
+                                    <div key={comment.id} className={cx('comment')}>
                                         <strong>{comment.author}</strong>
                                         <p>{comment.content}</p>
-                                        <span className="comment-time">{comment.time}</span>
+                                        <span className={cx('comment-time')}>{comment.time}</span>
                                     </div>
                                 ))}
 
-                                <div className="add-comment">
+                                <div className={cx('add-comment')}>
                                     <input
                                         type="text"
                                         value={newComment[post.id] || ''}
@@ -199,7 +202,7 @@ const Community = ({ onPageChange }) => {
                                     />
                                     <button
                                         onClick={() => handleAddComment(post.id)}
-                                        className="btn btn-sm btn-primary"
+                                        className={cx('btn btn-sm btn-primary')}
                                     >
                                         {t.send}
                                     </button>

@@ -1,43 +1,46 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import classNames from 'classnames/bind';
+import style from './Login.module.scss';
+const cx = classNames.bind(style);
+const LoginForm = ({ handleSubmit, switchToRegister }) => {
+    return (
+        <div className={cx('form-box', 'Login')}>
+            <form onSubmit={(e) => handleSubmit(e, 'Login')}>
+                <h1>Login</h1>
+                <div className={cx('input-box')}>
+                    <input type="text" placeholder="Username" required />
+                    <i className={cx('fa-solid fa-user')}></i>
+                </div>
+                <div className={cx('input-box')}>
+                    <input type="password" placeholder="Password" required />
+                    <i className={cx('fa-solid fa-lock')}></i>
+                </div>
+                <div className={cx('forgot-link')}>
+                    <a href="#">Forgot Password?</a>
+                </div>
+                <button type="submit" className={cx('btn')}>
+                    Login
+                </button>
+                <p>or Login with social platforms</p>
+                <div className={cx('social-icons')}>
+                    <a href="#">
+                        <i className={cx('fa-brands fa-google')}></i>
+                    </a>
+                    <a href="#">
+                        <i className={cx('fa-brands fa-facebook')}></i>
+                    </a>
+                </div>
+            </form>
 
-const Login = () => {
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Login form submitted');
-  };
-
-  return (
-    <div className="container">
-      <div className="form-box Login active-form">
-        <form onSubmit={handleSubmit}>
-          <h1>Login</h1>
-          <div className="input-box">
-            <input type="text" placeholder="Username" required />
-            <i className="fa-solid fa-user"></i>
-          </div>
-          <div className="input-box">
-            <input type="password" placeholder="Password" required />
-            <i className="fa-solid fa-lock"></i>
-          </div>
-          <div className="forgot-link">
-            <a href="#">Forgot Password?</a>
-          </div>
-          <button type="submit" className="btn">Login</button>
-          <p>or Login with social platforms</p>
-          <div className="social-icons">
-            <a href=""><i className="fa-brands fa-google"></i></a>
-            <a href=""><i className="fa-brands fa-facebook"></i></a>
-            <a href=""><i className="fa-brands fa-github"></i></a>
-            <a href=""><i className="fa-brands fa-linkedin"></i></a>
-          </div>
-          <div className="switch-form">
-            <p>Don't have an account? <Link to="/register">Sign up here</Link></p>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
+            <div className={cx('Toggle-panel', 'Toggle-right')}>
+                <h1>Welcome Back!</h1>
+                <p>Already have an Account?</p>
+                <button className={cx('btn', 'Login-btn')} onClick={switchToRegister}>
+                    Register
+                </button>
+            </div>
+        </div>
+    );
 };
 
-export default Login;
+export default LoginForm;

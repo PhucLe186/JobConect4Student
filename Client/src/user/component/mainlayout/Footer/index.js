@@ -1,7 +1,7 @@
 function Footer() {
     return (
         <footer>
-            <div className="container text-center">
+            <div className="container text-center" style={{textAlign: 'center'}}>
                 <h5 className="fw-bold text-primary">
                     JobConnect <span className="text-success">4Students</span>
                 </h5>

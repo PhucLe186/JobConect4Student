@@ -1,44 +1,64 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import classNames from 'classnames/bind';
+import style from './Register.module.scss';
+const cx = classNames.bind(style);
+const RegisterForm = ({ handleSubmit, switchToLogin }) => {
+    const [genderSelected, setGenderSelected] = useState(false);
 
-const Register = () => {
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Register form submitted');
-  };
+    return (
+        <div className={cx('form-box', 'Register')}>
+            <form onSubmit={(e) => handleSubmit(e, 'Register')}>
+                <h1>Registration</h1>
+                <div className={cx('input-box')}>
+                    <input type="text" placeholder="Username" required />
+                    <i className={cx('fa-solid fa-user')}></i>
+                </div>
+                <div className={cx('input-box')}>
+                    <input type="email" placeholder="Email" required />
+                    <i className={cx('fa-solid fa-envelope')}></i>
+                </div>
+                <div className={cx('input-box')}>
+                    <input type="password" placeholder="Password" required />
+                    <i className={cx('fa-solid fa-lock')}></i>
+                </div>
+                <div className={cx('input-row')}>
+                    <div className={cx('input-box', 'half-width')}>
+                        <input type="date" required />
+                        <i className={cx('fa-solid fa-calendar')}></i>
+                    </div>
+                    <div className={cx('input-box', 'half-width')}>
+                        <select required onChange={(e) => setGenderSelected(e.target.value !== '')}>
+                            <option value="">Select Gender</option>
+                            <option value="male">♂️ Male</option>
+                            <option value="female">♀️ Female</option>
+                            <option value="other">⚧️ Other</option>
+                        </select>
+                        {!genderSelected && <i className={cx('fa-solid fa-venus-mars')}></i>}
+                    </div>
+                </div>
+                <button type="submit" className={cx('btn')}>
+                    Register
+                </button>
+                <p>or register with social platforms</p>
+                <div className={cx('social-icons')}>
+                    <a href="#">
+                        <i className={cx('fa-brands fa-google')}></i>
+                    </a>
+                    <a href="#">
+                        <i className={cx('fa-brands fa-facebook')}></i>
+                    </a>
+                </div>
+            </form>
 
-  return (
-    <div className="container">
-      <div className="form-box Register active-form">
-        <form onSubmit={handleSubmit}>
-          <h1>Registration</h1>
-          <div className="input-box">
-            <input type="text" placeholder="Username" required />
-            <i className="fa-solid fa-user"></i>
-          </div>
-          <div className="input-box">
-            <input type="email" placeholder="Email" required />
-            <i className="fa-solid fa-envelope"></i>
-          </div>
-          <div className="input-box">
-            <input type="password" placeholder="Password" required />
-            <i className="fa-solid fa-lock"></i>
-          </div>
-          <button type="submit" className="btn">Register</button>
-          <p>or register with social platforms</p>
-          <div className="social-icons">
-            <a href=""><i className="fa-brands fa-google"></i></a>
-            <a href=""><i className="fa-brands fa-facebook"></i></a>
-            <a href=""><i className="fa-brands fa-github"></i></a>
-            <a href=""><i className="fa-brands fa-linkedin"></i></a>
-          </div>
-          <div className="switch-form">
-            <p>Already have an account? <Link to="/login">Login here</Link></p>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
+            <div className={cx('Toggle-panel', 'Toggle-left')}>
+                <h1>Hello, Welcome!</h1>
+                <p>Don't have an account? Sign up now!</p>
+                <button className={cx('btn', 'register-btn')} onClick={switchToLogin}>
+                    Login
+                </button>
+            </div>
+        </div>
+    );
 };
 
-export default Register;
+export default RegisterForm;

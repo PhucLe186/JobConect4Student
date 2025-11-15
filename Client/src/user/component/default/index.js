@@ -7,11 +7,11 @@ const cx = classNames.bind(styles);
 
 function Default({ children }) {
     return (
-        <div className={cx('parent')}>
+        <>
             <Header></Header>
             <div>{children}</div>
             <Footer></Footer>
-        </div>
+        </>
     );
 }
 
