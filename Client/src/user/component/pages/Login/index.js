@@ -12,8 +12,24 @@ const Login = () => {
 
     const handleLogin = () => {
         console.log('Login submitted');
-        // Add login logic here
-        // After successful login, navigate to home
+        
+        // Get selected role from localStorage
+        const selectedRole = localStorage.getItem('selectedRole') || 'student';
+        const userName = selectedRole === 'employer' ? 'Nhà tuyển dụng' : 'Người dùng';
+        
+        // Save login status to localStorage
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('userData', JSON.stringify({ 
+            name: userName, 
+            role: selectedRole,
+            avatar: null 
+        }));
+        console.log('Login saved to localStorage, navigating to home...');
+        
+        // Dispatch custom event to notify Header
+        window.dispatchEvent(new Event('loginStatusChanged'));
+        
+        // Navigate to home after login
         navigate(routesconfig.home);
     };
 

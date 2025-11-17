@@ -10,6 +10,8 @@ const RoleSelection = ({ onRoleSelect }) => {
 
     const handleRoleSelect = (role) => {
         console.log('Selected role:', role);
+        // Save selected role to localStorage
+        localStorage.setItem('selectedRole', role);
         navigate(routesconfig.register);
     };
     return (
