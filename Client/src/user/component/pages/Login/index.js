@@ -1,39 +1,52 @@
 import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import classNames from 'classnames/bind';
 import style from './Login.module.scss';
+import routesconfig from '~/config/routes';
 
 const cx = classNames.bind(style);
 
 const Login = () => {
-    const handleSubmit = (e) => {
-        e.preventDefault();
+    const navigate = useNavigate();
+
+    const handleLogin = () => {
         console.log('Login submitted');
+        // Add login logic here
+        // After successful login, navigate to home
+        navigate(routesconfig.home);
     };
 
     return (
-        <div className={cx('Login')}>
+        <motion.div 
+            className={cx('Login')}
+            initial={{ opacity: 0, x: -100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 100 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+        >
             <div className={cx('form-wrapper')}>
                 <div className={cx('form-box')}>
                     <div className={cx('welcome-panel')}>
                 <h2>Hello, Welcome!</h2>
                 <p>Don't have an account? Sign up now!</p>
-                <button className={cx('register-btn')}>Register</button>
+                <Link to={routesconfig.register} className={cx('register-btn')}>REGISTER</Link>
             </div>
             <div className={cx('login-panel')}>
-                <form onSubmit={handleSubmit}>
+                <form>
                     <h1>Login</h1>
                     <div className={cx('input-box')}>
-                        <input type="text" placeholder="Username" required />
+                        <input type="text" placeholder="Username" />
                         <i className={cx('fa-solid fa-user')}></i>
                     </div>
                     <div className={cx('input-box')}>
-                        <input type="password" placeholder="Password" required />
+                        <input type="password" placeholder="Password" />
                         <i className={cx('fa-solid fa-lock')}></i>
                     </div>
                     <div className={cx('forgot-link')}>
                         <a href="#">Forgot Password?</a>
                     </div>
-                    <button type="submit" className={cx('btn')}>
+                    <button type="button" className={cx('btn')} onClick={handleLogin}>
                         Login
                     </button>
                     <div className={cx('social-text')}>or Login with social platforms</div>
@@ -49,7 +62,7 @@ const Login = () => {
                     </div>
                 </div>
             </div>
-        </div>
+        </motion.div>
     );
 };
 

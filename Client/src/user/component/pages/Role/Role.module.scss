@@ -1,0 +1,99 @@
+.role-selection-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: #f8f9fa;
+    padding: 20px;
+}
+
+.role-selection-box {
+    background: #fff;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    max-width: 600px;
+    width: 100%;
+    position: relative;
+
+    h1 {
+        color: #2c3e50;
+        margin-bottom: 10px;
+        font-size: 32px;
+        font-weight: 800;
+    }
+
+    p {
+        color: #6c757d;
+        margin-bottom: 40px;
+        font-size: 16px;
+    }
+}
+
+.back-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: transparent;
+    border: none;
+    font-size: 20px;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+
+    &:hover {
+        background: #f8f9fa;
+        color: #007bff;
+    }
+}
+
+.role-options {
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.role-card {
+    background: #f8f9fa;
+    padding: 40px 30px;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 200px;
+    border: 2px solid transparent;
+
+    &:hover {
+        background: #007bff;
+        color: #fff;
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 123, 255, 0.3);
+        border-color: #007bff;
+    }
+
+    i {
+        font-size: 48px;
+        margin-bottom: 20px;
+        color: #007bff;
+        display: block;
+    }
+
+    &:hover i {
+        color: #fff;
+    }
+
+    h3 {
+        margin: 15px 0 10px 0;
+        font-size: 24px;
+        font-weight: 700;
+    }
+
+    p {
+        font-size: 14px;
+        margin: 0;
+        opacity: 0.8;
+    }
+}

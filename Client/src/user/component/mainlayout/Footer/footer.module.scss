@@ -1,0 +1,41 @@
+footer {
+    background-color: #ffffff;
+    padding: 40px 0;
+    margin-top: 50px;
+    border-top: 1px solid #e9ecef;
+    
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+        text-align: center;
+    }
+    
+    h5 {
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+        font-weight: 700;
+        color: #333;
+    }
+    
+    p {
+        color: #666;
+        margin-bottom: 10px;
+        font-size: 14px;
+    }
+    
+    a {
+        color: #007bff;
+        text-decoration: none;
+        margin: 0 5px;
+        
+        &:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+    }
+    
+    .mt-2 {
+        margin-top: 20px;
+    }
+}

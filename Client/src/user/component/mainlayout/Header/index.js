@@ -49,7 +49,7 @@ function Header() {
                     </div>
                     <div className={cx('nav-actions')}>
                         <Link to={routesconfig.login} className={cx('btn-login')}>{t.signIn}</Link>
-                        <Link to={routesconfig.register} className={cx('btn-register')}>{t.signUp}</Link>
+                        <Link to={routesconfig.role} className={cx('btn-register')}>{t.signUp}</Link>
                     </div>
                 </div>
             </div>
