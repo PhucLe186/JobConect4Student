@@ -1,0 +1,36 @@
+const trans__applicationhistory = {
+    vi: {
+        pageTitle: 'Lịch Sử Ứng Tuyển',
+        tableCompany: 'Công ty',
+        tableJobTitle: 'Vị trí',
+        tableAppliedAt: 'Ngày ứng tuyển',
+        tableStatus: 'Trạng thái',
+        tableDetails: 'Chi tiết',
+        viewMore: 'Xem thêm',
+        noData: 'Bạn chưa ứng tuyển vào công việc nào.',
+        statusAccepted: 'Đã chấp nhận',
+        statusRejected: 'Đã từ chối',
+        statusViewed: 'Đã xem',
+        statusSent: 'Đã gửi',
+        statusUnknown: 'Không xác định',
+        alertDetail: (id) => `Xem thêm thông tin cho công việc có ID: ${id}`,
+    },
+    en: {
+        pageTitle: 'Application History',
+        tableCompany: 'Company',
+        tableJobTitle: 'Job Title',
+        tableAppliedAt: 'Applied Date',
+        tableStatus: 'Status',
+        tableDetails: 'Details',
+        viewMore: 'View Details',
+        noData: 'You have not applied for any jobs yet.',
+        statusAccepted: 'Accepted',
+        statusRejected: 'Rejected',
+        statusViewed: 'Viewed',
+        statusSent: 'Sent',
+        statusUnknown: 'Unknown',
+        alertDetail: (id) => `View more information for job ID: ${id}`,
+    },
+};
+
+export default trans__applicationhistory; // Dùng Default Export
