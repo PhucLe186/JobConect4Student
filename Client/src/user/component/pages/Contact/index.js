@@ -1,97 +1,148 @@
-import React from 'react';
+import React, { useState } from 'react';
+import styles from './Contact.module.scss';
 
 const Contact = () => {
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        subject: '',
+        message: '',
+    });
+
+    const handleInputChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value,
+        });
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        alert('Cảm ơn bạn đã liên hệ! Chúng tôi sẽ phản hồi sớm nhất có thể.');
+        setFormData({ name: '', email: '', subject: '', message: '' });
+    };
+
     return (
-        <div style={{ padding: '40px', minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
-            <div style={{ maxWidth: '800px', margin: '0 auto', backgroundColor: 'white', padding: '40px', borderRadius: '10px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
-                <h1 style={{ textAlign: 'center', color: '#333', marginBottom: '30px' }}>Liên hệ với chúng tôi</h1>
-                
-                <form style={{ marginBottom: '40px' }}>
-                    <div style={{ marginBottom: '20px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#555' }}>Họ và tên:</label>
-                        <input 
-                            type="text" 
-                            style={{ 
-                                width: '100%', 
-                                padding: '12px', 
-                                border: '2px solid #ddd', 
-                                borderRadius: '5px', 
-                                fontSize: '16px',
-                                boxSizing: 'border-box'
-                            }} 
-                            placeholder="Nhập họ và tên của bạn"
-                        />
+        <div className={styles.container}>
+            <div className={styles.header}>
+                <h1>Trung tâm Hỗ trợ</h1>
+                <p>Chúng tôi luôn sẵn sàng hỗ trợ bạn. Hãy gửi câu hỏi hoặc phản hồi của bạn.</p>
+            </div>
+
+            <div className={styles.content}>
+                <div className={styles.layout}>
+                    <div className={styles.leftColumn}>
+                        <div className={styles.formContainer}>
+                            <h2>Liên hệ với chúng tôi</h2>
+                            
+                            <form onSubmit={handleSubmit}>
+                                <div className={styles.formRow}>
+                                    <div className={styles.formGroup}>
+                                        <label>Họ và tên</label>
+                                        <input
+                                            type="text"
+                                            name="name"
+                                            value={formData.name}
+                                            onChange={handleInputChange}
+                                            required
+                                        />
+                                    </div>
+                                    <div className={styles.formGroup}>
+                                        <label>Email</label>
+                                        <input
+                                            type="email"
+                                            name="email"
+                                            value={formData.email}
+                                            onChange={handleInputChange}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className={styles.formGroup}>
+                                    <label>Chủ đề</label>
+                                    <input
+                                        type="text"
+                                        name="subject"
+                                        value={formData.subject}
+                                        onChange={handleInputChange}
+                                        required
+                                    />
+                                </div>
+
+                                <div className={styles.formGroup}>
+                                    <label>Tin nhắn</label>
+                                    <textarea
+                                        name="message"
+                                        value={formData.message}
+                                        onChange={handleInputChange}
+                                        rows="6"
+                                        required
+                                    />
+                                </div>
+
+                                <button type="submit" className={styles.submitButton}>
+                                    Gửi tin nhắn
+                                </button>
+                            </form>
+                        </div>
                     </div>
 
-                    <div style={{ marginBottom: '20px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#555' }}>Email:</label>
-                        <input 
-                            type="email" 
-                            style={{ 
-                                width: '100%', 
-                                padding: '12px', 
-                                border: '2px solid #ddd', 
-                                borderRadius: '5px', 
-                                fontSize: '16px',
-                                boxSizing: 'border-box'
-                            }} 
-                            placeholder="Nhập email của bạn"
-                        />
-                    </div>
+                    <div className={styles.rightColumn}>
+                        <div className={styles.infoCard}>
+                            <h3>Thông tin liên hệ</h3>
+                            
+                            <div className={styles.contactItem}>
+                                <div className={styles.itemHeader}>
+                                    <span className={styles.icon}>📍</span>
+                                    <strong>Địa chỉ:</strong>
+                                </div>
+                                <p>497 Hoa Hao Street, Ward 7, District 10, Ho Chi Minh City</p>
+                            </div>
 
-                    <div style={{ marginBottom: '30px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#555' }}>Tin nhắn:</label>
-                        <textarea 
-                            style={{ 
-                                width: '100%', 
-                                padding: '12px', 
-                                border: '2px solid #ddd', 
-                                borderRadius: '5px', 
-                                fontSize: '16px',
-                                minHeight: '120px',
-                                boxSizing: 'border-box',
-                                resize: 'vertical'
-                            }} 
-                            placeholder="Nhập tin nhắn của bạn"
-                        ></textarea>
-                    </div>
+                            <div className={styles.contactItem}>
+                                <div className={styles.itemHeader}>
+                                    <span className={styles.icon}>📞</span>
+                                    <strong>Điện thoại:</strong>
+                                </div>
+                                <p>0943009243</p>
+                            </div>
 
-                    <div style={{ textAlign: 'center' }}>
-                        <button 
-                            type="submit" 
-                            style={{ 
-                                backgroundColor: '#007bff', 
-                                color: 'white', 
-                                padding: '15px 40px', 
-                                border: 'none', 
-                                borderRadius: '5px', 
-                                fontSize: '18px', 
-                                fontWeight: 'bold',
-                                cursor: 'pointer'
-                            }}
-                            onClick={(e) => {
-                                e.preventDefault();
-                                alert('Cảm ơn bạn đã liên hệ!');
-                            }}
-                        >
-                            Gửi tin nhắn
-                        </button>
-                    </div>
-                </form>
+                            <div className={styles.contactItem}>
+                                <div className={styles.itemHeader}>
+                                    <span className={styles.icon}>✉️</span>
+                                    <strong>Email:</strong>
+                                </div>
+                                <p>support@jobconnect4students.com</p>
+                            </div>
 
-                <div style={{ backgroundColor: '#f8f9fa', padding: '30px', borderRadius: '8px' }}>
-                    <h3 style={{ color: '#333', marginBottom: '20px' }}>Thông tin liên hệ</h3>
-                    <div style={{ marginBottom: '15px' }}>
-                        <strong style={{ color: '#555' }}>📍 Địa chỉ:</strong>
-                        <p style={{ margin: '5px 0', color: '#666' }}>497 Hoa Hao Street, Ward 7, District 10, Ho Chi Minh City</p>
-                    </div>
-                    <div style={{ marginBottom: '15px' }}>
-                        <strong style={{ color: '#555' }}>📞 Hotline:</strong>
-                        <p style={{ margin: '5px 0', color: '#666' }}>0943009243</p>
-                    </div>
-                    <div style={{ marginBottom: '15px' }}>
-                        <strong style={{ color: '#555' }}>✉️ Email:</strong>
-                        <p style={{ margin: '5px 0', color: '#666' }}>contact@jobconnect4students.com</p>
+                            <div className={styles.contactItem}>
+                                <div className={styles.itemHeader}>
+                                    <span className={styles.icon}>🕒</span>
+                                    <strong>Giờ làm việc:</strong>
+                                </div>
+                                <p>Thứ 2 - Thứ 6: 8:00 - 17:30</p>
+                            </div>
+                        </div>
+
+                        <div className={styles.infoCard}>
+                            <h3>Câu hỏi thường gặp</h3>
+                            
+                            <div className={styles.faqItem}>
+                                <h4>Làm thế nào để ứng tuyển?</h4>
+                                <p>Bạn có thể ứng tuyển bằng cách bấm nút "Ứng tuyển ngay" trên trang chi tiết công việc.</p>
+                            </div>
+
+                            <div className={styles.faqItem}>
+                                <h4>Làm thế nào để tạo tài khoản?</h4>
+                                <p>Bấm nút "Đăng ký" ở góc trên bên phải và điền thông tin cần thiết.</p>
+                            </div>
+
+                            <div className={styles.faqItem}>
+                                <h4>Làm thế nào để tìm kiếm việc làm?</h4>
+                                <p>Sử dụng thanh tìm kiếm và các bộ lọc để tìm công việc phù hợp với bạn.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

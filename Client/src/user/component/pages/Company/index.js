@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import classNames from 'classnames/bind';
 import style from './Company.module.scss';
 import LookJobsImg from '~/asset/img/LookJobs.png';
@@ -30,6 +31,7 @@ import HPLLogo from '~/asset/img/HPL.png';
 const cx = classNames.bind(style);
 
 const Company = ({ onPageChange }) => {
+    const navigate = useNavigate();
     const [language, setLanguage] = useState('vi');
     const [currentPage, setCurrentPage] = useState(1);
     const totalPages = 3;
@@ -329,8 +331,8 @@ const Company = ({ onPageChange }) => {
                                 </div>
                                 <button className={cx('apply-btn')} 
                                         onClick={() => {
-                                            if (company.name.includes('Samsung') && onPageChange) {
-                                                onPageChange('companyDetail');
+                                            if (company.name.includes('Samsung')) {
+                                                navigate('/company-detail');
                                             }
                                         }}>
                                     {t.seeMore}

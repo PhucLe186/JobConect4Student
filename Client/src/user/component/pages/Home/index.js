@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import classNames from 'classnames/bind';
 import style from './Home.module.scss';
 import LookJobsImg from '~/asset/img/LookJobs.png';
@@ -29,6 +29,7 @@ const cx = classNames.bind(style);
 
 const Homepage = (props) => {
     const { companyFilter } = props;
+    const navigate = useNavigate();
     const [salaryValue, setSalaryValue] = useState(50);
     const [experience, setExperience] = useState('');
     const [location, setLocation] = useState('');
@@ -243,7 +244,16 @@ const Homepage = (props) => {
                                         <p className={cx('company-name')}>{job.company}</p>
                                     </div>
                                 </div>
-                                <button className={cx('apply-btn')}>{t.seeMore}</button>
+                                <button 
+                                    className={cx('apply-btn')} 
+                                    onClick={() => {
+                                        if (job.title === 'Electronics Development') {
+                                            navigate('/job-detail');
+                                        }
+                                    }}
+                                >
+                                    {t.seeMore}
+                                </button>
                             </div>
                         ))}
                     </div>

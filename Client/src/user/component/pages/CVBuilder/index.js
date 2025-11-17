@@ -1,244 +1,373 @@
-import React, { useState } from 'react';
-import classNames from 'classnames/bind';
-import style from './CVBuilder.module.scss';
-const cx = classNames.bind(style);
+import React, { useState, useRef, useEffect } from 'react';
+import styles from './CVBuilder.module.scss';
 
-const CVBuilder = ({ onPageChange }) => {
-    const [language, setLanguage] = useState('vi');
-    const [formData, setFormData] = useState({
-        fullName: '',
-        email: '',
-        phone: '',
-        address: '',
-        objective: '',
-        education: '',
-        experience: '',
-        skills: '',
+function App() {
+    const [brandColor, setBrandColor] = useState('#3b8e74');
+    const [cvData, setCvData] = useState({
+        fullname: 'Nguyen Van A',
+        title: 'Fullstack Developer',
+        birth: '01/01/2000',
+        phone: '+84 111111111',
+        email: 'email@example.com',
+        address: 'TP.HCM, Việt Nam',
+        summary:
+            'Hơn 2 năm kinh nghiệm lập trình web; giao tiếp tốt, học nhanh. Thành thạo HTML/CSS/JS, có kinh nghiệm với React và Node.js. Yêu thích sản phẩm sạch, dễ dùng.',
+        skills: ['HTML, CSS, JavaScript', 'React, Node.js', 'Giao tiếp & làm việc nhóm'],
+        experience: [
+            {
+                id: 1,
+                company: 'ABC Tech',
+                time: '2022 - nay',
+                role: 'Fullstack Developer',
+                tasks: ['Phát triển module quản trị, tối ưu hiệu năng.', 'Thiết kế API, tích hợp thanh toán.'],
+            },
+        ],
+        education: [
+            {
+                id: 1,
+                company: 'ĐH Công nghệ',
+                time: '2018 - 2022',
+                role: 'Kỹ sư CNTT',
+            },
+        ],
     });
+    const [avatar, setAvatar] = useState(null);
+    const avatarInputRef = useRef(null);
 
-    const translations = {
-        vi: {
-            company: 'Công ty',
-            jobs: 'Việc làm',
-            community: 'Cộng đồng',
-            contact: 'Liên hệ',
-            signIn: 'Đăng nhập',
-            signUp: 'Đăng ký',
-            cvBuilder: 'Tạo CV Online',
-            personalInfo: 'Thông tin cá nhân',
-            fullName: 'Họ và tên',
-            email: 'Email',
-            phone: 'Số điện thoại',
-            address: 'Địa chỉ',
-            objective: 'Mục tiêu nghề nghiệp',
-            education: 'Học vấn',
-            experience: 'Kinh nghiệm',
-            skills: 'Kỹ năng',
-            preview: 'Xem trước CV',
-            download: 'Tải xuống',
-            back: 'Quay lại',
-        },
-        en: {
-            company: 'Company',
-            jobs: 'Jobs',
-            community: 'Community',
-            contact: 'Contact',
-            signIn: 'Log In',
-            signUp: 'Sign Up',
-            cvBuilder: 'CV Builder',
-            personalInfo: 'Personal Information',
-            fullName: 'Full Name',
-            email: 'Email',
-            phone: 'Phone Number',
-            address: 'Address',
-            objective: 'Career Objective',
-            education: 'Education',
-            experience: 'Experience',
-            skills: 'Skills',
-            preview: 'CV Preview',
-            download: 'Download',
-            back: 'Back',
-        },
+    useEffect(() => {
+        document.documentElement.style.setProperty('--brand', brandColor);
+    }, [brandColor]);
+
+    const handleAvatarChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => setAvatar(e.target.result);
+            reader.readAsDataURL(file);
+        }
     };
 
-    const t = translations[language];
+    const updateField = (field, value) => {
+        setCvData((prev) => ({ ...prev, [field]: value }));
+    };
 
-    const handleInputChange = (field, value) => {
-        setFormData((prev) => ({
+    const addSkill = () => {
+        setCvData((prev) => ({
             ...prev,
-            [field]: value,
+            skills: [...prev.skills, 'Kỹ năng mới'],
         }));
     };
 
-    const handleLogin = () => {
-        window.location.href = 'http://localhost:3002?mode=login';
+    const updateSkill = (index, value) => {
+        setCvData((prev) => ({
+            ...prev,
+            skills: prev.skills.map((skill, i) => (i === index ? value : skill)),
+        }));
     };
 
-    const handleSignup = () => {
-        window.location.href = 'http://localhost:3002?mode=signup';
+    const addExperience = () => {
+        const newExp = {
+            id: Date.now(),
+            company: 'Công ty mới',
+            time: '2023 - 2024',
+            role: 'Vị trí',
+            tasks: ['Thành tựu / nhiệm vụ 1', 'Thành tựu / nhiệm vụ 2'],
+        };
+        setCvData((prev) => ({
+            ...prev,
+            experience: [...prev.experience, newExp],
+        }));
+    };
+
+    const updateExperience = (id, field, value) => {
+        setCvData((prev) => ({
+            ...prev,
+            experience: prev.experience.map((exp) => (exp.id === id ? { ...exp, [field]: value } : exp)),
+        }));
+    };
+
+    const removeExperience = (id) => {
+        setCvData((prev) => ({
+            ...prev,
+            experience: prev.experience.filter((exp) => exp.id !== id),
+        }));
+    };
+
+    const addEducation = () => {
+        const newEdu = {
+            id: Date.now(),
+            company: 'Trường mới',
+            time: 'YYYY - YYYY',
+            role: 'Ngành / Bằng cấp',
+        };
+        setCvData((prev) => ({
+            ...prev,
+            education: [...prev.education, newEdu],
+        }));
+    };
+
+    const updateEducation = (id, field, value) => {
+        setCvData((prev) => ({
+            ...prev,
+            education: prev.education.map((edu) => (edu.id === id ? { ...edu, [field]: value } : edu)),
+        }));
+    };
+
+    const removeEducation = (id) => {
+        setCvData((prev) => ({
+            ...prev,
+            education: prev.education.filter((edu) => edu.id !== id),
+        }));
+    };
+
+    const handlePrint = () => {
+        document.body.classList.add('exporting-pdf');
+        setTimeout(() => {
+            window.print();
+            document.body.classList.remove('exporting-pdf');
+        }, 100);
     };
 
     return (
-        <div className={cx('cv-builder-page')}>
-            <div className={cx('container')}>
-                <button className={cx('back-btn')} onClick={() => window.history.back()}>
-                    ← {t.back}
-                </button>
-
-                <div className={cx('cv-builder-container')}>
-                    <h1 className={cx('page-title')}>{t.cvBuilder}</h1>
-
-                    <div className={cx('cv-builder-content')}>
-                        <div className={cx('form-section')}>
-                            <div className={cx('form-card')}>
-                                <h3 className={cx('section-title')}>{t.personalInfo}</h3>
-
-                                <div className={cx('form-group')}>
-                                    <label className={cx('form-label')}>{t.fullName}</label>
-                                    <input
-                                        type="text"
-                                        className={cx('form-input')}
-                                        value={formData.fullName}
-                                        onChange={(e) => handleInputChange('fullName', e.target.value)}
-                                        placeholder="Nhập họ và tên"
-                                    />
-                                </div>
-
-                                <div className={cx('form-group')}>
-                                    <label className={cx('form-label')}>{t.email}</label>
-                                    <input
-                                        type="email"
-                                        className={cx('form-input')}
-                                        value={formData.email}
-                                        onChange={(e) => handleInputChange('email', e.target.value)}
-                                        placeholder="example@email.com"
-                                    />
-                                </div>
-
-                                <div className={cx('form-group')}>
-                                    <label className={cx('form-label')}>{t.phone}</label>
-                                    <input
-                                        type="tel"
-                                        className={cx('form-input')}
-                                        value={formData.phone}
-                                        onChange={(e) => handleInputChange('phone', e.target.value)}
-                                        placeholder="0123 456 789"
-                                    />
-                                </div>
-
-                                <div className={cx('form-group')}>
-                                    <label className={cx('form-label')}>{t.address}</label>
-                                    <input
-                                        type="text"
-                                        className={cx('form-input')}
-                                        value={formData.address}
-                                        onChange={(e) => handleInputChange('address', e.target.value)}
-                                        placeholder="Địa chỉ của bạn"
-                                    />
-                                </div>
-
-                                <div className={cx('form-group')}>
-                                    <label className={cx('form-label')}>{t.objective}</label>
-                                    <textarea
-                                        className={cx('form-textarea')}
-                                        rows="3"
-                                        value={formData.objective}
-                                        onChange={(e) => handleInputChange('objective', e.target.value)}
-                                        placeholder="Mô tả mục tiêu nghề nghiệp của bạn..."
-                                    ></textarea>
-                                </div>
-
-                                <div className={cx('form-group')}>
-                                    <label className={cx('form-label')}>{t.education}</label>
-                                    <textarea
-                                        className={cx('form-textarea')}
-                                        rows="3"
-                                        value={formData.education}
-                                        onChange={(e) => handleInputChange('education', e.target.value)}
-                                        placeholder="Trình độ học vấn, trường học, bằng cấp..."
-                                    ></textarea>
-                                </div>
-
-                                <div className={cx('form-group')}>
-                                    <label className={cx('form-label')}>{t.experience}</label>
-                                    <textarea
-                                        className={cx('form-textarea')}
-                                        rows="4"
-                                        value={formData.experience}
-                                        onChange={(e) => handleInputChange('experience', e.target.value)}
-                                        placeholder="Kinh nghiệm làm việc, dự án đã tham gia..."
-                                    ></textarea>
-                                </div>
-
-                                <div className={cx('form-group')}>
-                                    <label className={cx('form-label')}>{t.skills}</label>
-                                    <textarea
-                                        className={cx('form-textarea')}
-                                        rows="3"
-                                        value={formData.skills}
-                                        onChange={(e) => handleInputChange('skills', e.target.value)}
-                                        placeholder="Kỹ năng chuyên môn, ngôn ngữ lập trình..."
-                                    ></textarea>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className={cx('preview-section')}>
-                            <div className={cx('preview-card')}>
-                                <h3 className={cx('section-title')}>{t.preview}</h3>
-                                <div className={cx('cv-template')}>
-                                    <div className={cx('cv-header')}>
-                                        <h2 className={cx('cv-name')}>{formData.fullName || 'Họ và Tên'}</h2>
-                                        <div className={cx('contact-info')}>
-                                            <div className={cx('contact-item')}>
-                                                {formData.email || 'your.email@example.com'}
-                                            </div>
-                                            <div className={cx('contact-item')}>{formData.phone || '0123 456 789'}</div>
-                                            <div className={cx('contact-item')}>
-                                                {formData.address || 'Địa chỉ của bạn'}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {formData.objective && (
-                                        <div className={cx('cv-section')}>
-                                            <h4 className={cx('cv-section-title')}>Mục tiêu nghề nghiệp</h4>
-                                            <p className={cx('cv-content')}>{formData.objective}</p>
-                                        </div>
-                                    )}
-
-                                    {formData.education && (
-                                        <div className={cx('cv-section')}>
-                                            <h4 className={cx('cv-section-title')}>Học vấn</h4>
-                                            <p className={cx('cv-content')}>{formData.education}</p>
-                                        </div>
-                                    )}
-
-                                    {formData.experience && (
-                                        <div className={cx('cv-section')}>
-                                            <h4 className={cx('cv-section-title')}>Kinh nghiệm</h4>
-                                            <p className={cx('cv-content')}>{formData.experience}</p>
-                                        </div>
-                                    )}
-
-                                    {formData.skills && (
-                                        <div className={cx('cv-section')}>
-                                            <h4 className={cx('cv-section-title')}>Kỹ năng</h4>
-                                            <p className={cx('cv-content')}>{formData.skills}</p>
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className={cx('cv-actions')}>
-                                    <button className={cx('download-btn')}>{t.download}</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+        <div className={styles.App || 'App'}>
+            <header className={styles.topbar}>
+                <div className={styles.left}>
+                    <h1>CV BUILDER</h1>
                 </div>
-            </div>
+                <div className={styles.right}>
+                    <input
+                        type="color"
+                        value={brandColor}
+                        onChange={(e) => setBrandColor(e.target.value)}
+                        title="Màu chủ đạo"
+                    />
+                    <button onClick={addExperience}>+ Kinh nghiệm</button>
+                    <button onClick={addEducation}>+ Học vấn</button>
+                    <button id="printBtn" onClick={handlePrint}>
+                        Tải xuống PDF
+                    </button>
+                </div>
+            </header>
+
+            <main className={styles.workspace}>
+                <section className={`${styles.cvPaper} ${styles.A4}`}>
+                    <aside className={styles.cvLeft}>
+                        <div className={styles.avatarWrap}>
+                            <input
+                                type="file"
+                                ref={avatarInputRef}
+                                accept="image/*"
+                                hidden
+                                onChange={handleAvatarChange}
+                            />
+                            <div
+                                className={styles.avatar}
+                                onClick={() => avatarInputRef.current?.click()}
+                                style={avatar ? { backgroundImage: `url(${avatar})`, backgroundSize: 'cover' } : {}}
+                                title="Nhấn để đổi ảnh"
+                            />
+                        </div>
+
+                        <div className={styles.section}>
+                            <h3>Liên hệ</h3>
+                            <ul>
+                                <li>
+                                    <strong>Điện thoại:</strong>
+                                    <span
+                                        contentEditable
+                                        suppressContentEditableWarning
+                                        onBlur={(e) => updateField('phone', e.target.textContent)}
+                                    >
+                                        {cvData.phone}
+                                    </span>
+                                </li>
+                                <li>
+                                    <strong>Email:</strong>
+                                    <span
+                                        contentEditable
+                                        suppressContentEditableWarning
+                                        onBlur={(e) => updateField('email', e.target.textContent)}
+                                    >
+                                        {cvData.email}
+                                    </span>
+                                </li>
+                                <li>
+                                    <strong>Địa chỉ:</strong>
+                                    <span
+                                        contentEditable
+                                        suppressContentEditableWarning
+                                        onBlur={(e) => updateField('address', e.target.textContent)}
+                                    >
+                                        {cvData.address}
+                                    </span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div className={styles.section}>
+                            <h3>Kỹ năng</h3>
+                            <ul className={styles.editableList}>
+                                {cvData.skills.map((skill, index) => (
+                                    <li
+                                        key={index}
+                                        contentEditable
+                                        suppressContentEditableWarning
+                                        onBlur={(e) => updateSkill(index, e.target.textContent)}
+                                    >
+                                        {skill}
+                                    </li>
+                                ))}
+                            </ul>
+                            <button className={styles.small} onClick={addSkill}>
+                                + Thêm kỹ năng
+                            </button>
+                        </div>
+                    </aside>
+
+                    <section className={styles.cvRight}>
+                        <header className={styles.cvHeader}>
+                            <h2
+                                contentEditable
+                                suppressContentEditableWarning
+                                onBlur={(e) => updateField('fullname', e.target.textContent)}
+                            >
+                                {cvData.fullname}
+                            </h2>
+                            <div
+                                className={styles.subtitle}
+                                contentEditable
+                                suppressContentEditableWarning
+                                onBlur={(e) => updateField('title', e.target.textContent)}
+                            >
+                                {cvData.title}
+                            </div>
+                            <div className={styles.meta}>
+                                <span>
+                                    <strong>Ngày sinh:</strong>
+                                    <span
+                                        contentEditable
+                                        suppressContentEditableWarning
+                                        onBlur={(e) => updateField('birth', e.target.textContent)}
+                                    >
+                                        {cvData.birth}
+                                    </span>
+                                </span>
+                            </div>
+                        </header>
+
+                        <div className={styles.section}>
+                            <h3>Tổng quan</h3>
+                            <p
+                                contentEditable
+                                suppressContentEditableWarning
+                                onBlur={(e) => updateField('summary', e.target.textContent)}
+                            >
+                                {cvData.summary}
+                            </p>
+                        </div>
+
+                        <div className={styles.section}>
+                            <h3>Kinh nghiệm</h3>
+                            <div className={styles.stack}>
+                                {cvData.experience.map((exp) => (
+                                    <article key={exp.id} className={styles.item}>
+                                        <div className={styles.itemHead}>
+                                            <span
+                                                className={styles.company}
+                                                contentEditable
+                                                suppressContentEditableWarning
+                                                onBlur={(e) =>
+                                                    updateExperience(exp.id, 'company', e.target.textContent)
+                                                }
+                                            >
+                                                {exp.company}
+                                            </span>
+                                            <span
+                                                className={styles.time}
+                                                contentEditable
+                                                suppressContentEditableWarning
+                                                onBlur={(e) => updateExperience(exp.id, 'time', e.target.textContent)}
+                                            >
+                                                {exp.time}
+                                            </span>
+                                        </div>
+                                        <div
+                                            className={styles.role}
+                                            contentEditable
+                                            suppressContentEditableWarning
+                                            onBlur={(e) => updateExperience(exp.id, 'role', e.target.textContent)}
+                                        >
+                                            {exp.role}
+                                        </div>
+                                        <ul className={styles.editableList}>
+                                            {exp.tasks.map((task, index) => (
+                                                <li key={index} contentEditable suppressContentEditableWarning>
+                                                    {task}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                        <button
+                                            className={`${styles.small} ${styles.danger} ${styles.removeItem}`}
+                                            onClick={() => removeExperience(exp.id)}
+                                        >
+                                            Xóa mục
+                                        </button>
+                                    </article>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className={styles.section}>
+                            <h3>Học vấn</h3>
+                            <div className={styles.stack}>
+                                {cvData.education.map((edu) => (
+                                    <article key={edu.id} className={styles.item}>
+                                        <div className={styles.itemHead}>
+                                            <span
+                                                className={styles.company}
+                                                contentEditable
+                                                suppressContentEditableWarning
+                                                onBlur={(e) => updateEducation(edu.id, 'company', e.target.textContent)}
+                                            >
+                                                {edu.company}
+                                            </span>
+                                            <span
+                                                className={styles.time}
+                                                contentEditable
+                                                suppressContentEditableWarning
+                                                onBlur={(e) => updateEducation(edu.id, 'time', e.target.textContent)}
+                                            >
+                                                {edu.time}
+                                            </span>
+                                        </div>
+                                        <div
+                                            className={styles.role}
+                                            contentEditable
+                                            suppressContentEditableWarning
+                                            onBlur={(e) => updateEducation(edu.id, 'role', e.target.textContent)}
+                                        >
+                                            {edu.role}
+                                        </div>
+                                        <button
+                                            className={`${styles.small} ${styles.danger} ${styles.removeItem}`}
+                                            onClick={() => removeEducation(edu.id)}
+                                        >
+                                            Xóa mục
+                                        </button>
+                                    </article>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+                </section>
+            </main>
+
+            <footer className={styles.footer}>
+                Mẹo: Nhấp vào bất kỳ nội dung nào để chỉnh sửa trực tiếp. Nhấn Enter để xuống dòng; Shift+Enter để xuống
+                dòng mềm.
+            </footer>
         </div>
     );
-};
+}
 
-export default CVBuilder;
+export default App;

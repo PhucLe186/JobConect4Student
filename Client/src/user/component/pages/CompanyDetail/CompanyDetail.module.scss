@@ -1,0 +1,215 @@
+.banner {
+  background: #fff;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  .bannerContent {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .logoContainer {
+    width: 80px;
+    height: 80px;
+    background-color: #000;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    img {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+    }
+  }
+
+  .companyInfo {
+    flex: 1;
+
+    h1 {
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+      margin: 0 0 8px 0;
+    }
+
+    .industry {
+      color: #666;
+      margin: 0 0 12px 0;
+      font-size: 16px;
+    }
+
+    .details {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 16px;
+
+      p {
+        margin: 0;
+        color: #666;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        i {
+          color: #007bff;
+          width: 12px;
+        }
+      }
+    }
+
+    .viewJobsBtn {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+  }
+}
+
+.mainLayout {
+  display: flex;
+  gap: 30px;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.contentMain {
+  flex: 3;
+}
+
+.contentSection {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  h2 {
+    font-size: 20px;
+    color: #007bff;
+    margin-bottom: 15px;
+  }
+
+  p {
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 8px;
+  }
+}
+
+.generalInfoContent {
+  background: #f8fbff;
+  padding: 20px;
+  border-radius: 8px;
+
+  .infoItem {
+    margin-bottom: 15px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    span {
+      font-weight: bold;
+      color: #333;
+      font-size: 14px;
+    }
+
+    p {
+      margin: 5px 0 0;
+      color: #666;
+      font-size: 14px;
+
+      a {
+        color: #007bff;
+        text-decoration: none;
+      }
+    }
+  }
+}
+
+.sidebar {
+  flex: 1;
+  min-width: 350px;
+
+  .suggestionButton {
+    text-align: center;
+    margin-bottom: 20px;
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid #007bff;
+      color: #007bff;
+      padding: 8px 16px;
+      border-radius: 20px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+    }
+  }
+
+  .companiesList {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    .companyItem {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 15px 0;
+      border-bottom: 1px solid #eee;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .companyLogo {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+
+        img {
+          width: 24px;
+          height: 24px;
+          object-fit: contain;
+        }
+      }
+
+      .companyName {
+        flex: 1;
+        font-weight: 600;
+        color: #333;
+        font-size: 14px;
+      }
+
+      .heartIcon {
+        font-size: 16px;
+        color: #ddd;
+        cursor: pointer;
+      }
+    }
+  }
+}

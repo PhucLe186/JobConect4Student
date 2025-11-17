@@ -35,7 +35,10 @@ function Header() {
             <div className={cx('container')}>
                 <div className={cx('nav-content')}>
                     <div className={cx('nav-brand')}>
-                        <Link to={routesconfig.home} className={cx('brand-text')}>JobConnect4Students</Link>
+                        <Link to={routesconfig.home} className={cx('brand-text')}>
+                            <span style={{ color: '#007bff' }}>JobConnect</span>
+                            <span style={{ color: '#28a745' }}>4Students</span>
+                        </Link>
                     </div>
                     <div className={cx('nav-menu')}>
                         <Link to={routesconfig.company} className={cx('nav-link')}>{t.company}</Link>

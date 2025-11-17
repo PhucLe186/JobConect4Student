@@ -46,7 +46,8 @@ const Community = ({ onPageChange }) => {
             contact: 'Liên hệ',
             signIn: 'Đăng nhập',
             signUp: 'Đăng ký',
-            forum: 'Diễn đàn JobConnect4Students',
+            forum: 'Diễn đàn',
+            forumName: 'JobConnect4Students',
             createPost: 'Tạo bài viết mới',
             postPlaceholder: 'Chia sẻ suy nghĩ của bạn...',
             post: 'Đăng bài',
@@ -63,7 +64,8 @@ const Community = ({ onPageChange }) => {
             contact: 'Contact',
             signIn: 'Log In',
             signUp: 'Sign Up',
-            forum: 'JobConnect4Students Forum',
+            forum: 'Forum',
+            forumName: 'JobConnect4Students',
             createPost: 'Create New Post',
             postPlaceholder: 'Share your thoughts...',
             post: 'Post',
@@ -140,7 +142,9 @@ const Community = ({ onPageChange }) => {
     return (
         <div className={cx('community-page')}>
             <div className={cx('container mt-4')}>
-                <h2 className={cx('forum-title')}>{t.forum}</h2>
+                <h2 className={cx('forum-title')}>
+                    {t.forum} <span style={{ color: '#007bff' }}>JobConnect</span><span style={{ color: '#28a745' }}>4Students</span>
+                </h2>
 
                 <div className={cx('create-post-section')}>
                     <h4>{t.createPost}</h4>

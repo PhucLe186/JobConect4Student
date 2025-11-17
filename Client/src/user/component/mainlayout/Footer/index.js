@@ -6,8 +6,9 @@ function Footer() {
     return (
         <footer>
             <div className="container text-center" style={{textAlign: 'center'}}>
-                <h5 className="fw-bold text-primary">
-                    JobConnect <span className="text-success">4Students</span>
+                <h5 className="fw-bold">
+                    <span style={{ color: '#007bff' }}>JobConnect</span>
+                    <span style={{ color: '#28a745' }}>4Students</span>
                 </h5>
                 <p>497 Hoa Hao Street, Ward 7, District 10, Ho Chi Minh City</p>
                 <p>Hotline : 0943009243</p>
