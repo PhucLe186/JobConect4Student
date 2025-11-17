@@ -1,11 +1,18 @@
 import React from 'react';
 import classNames from 'classnames/bind';
 import style from './Login.module.scss';
+
 const cx = classNames.bind(style);
-const LoginForm = ({ handleSubmit, switchToRegister }) => {
+
+const Login = () => {
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        console.log('Login submitted');
+    };
+
     return (
         <div className={cx('form-box', 'Login')}>
-            <form onSubmit={(e) => handleSubmit(e, 'Login')}>
+            <form onSubmit={handleSubmit}>
                 <h1>Login</h1>
                 <div className={cx('input-box')}>
                     <input type="text" placeholder="Username" required />
@@ -31,16 +38,8 @@ const LoginForm = ({ handleSubmit, switchToRegister }) => {
                     </a>
                 </div>
             </form>
-
-            <div className={cx('Toggle-panel', 'Toggle-right')}>
-                <h1>Welcome Back!</h1>
-                <p>Already have an Account?</p>
-                <button className={cx('btn', 'Login-btn')} onClick={switchToRegister}>
-                    Register
-                </button>
-            </div>
         </div>
     );
 };
 
-export default LoginForm;
+export default Login;

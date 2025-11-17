@@ -1,165 +1,97 @@
-import React, { useState } from 'react';
-import classNames from 'classnames/bind';
-import style from './Contact.module.scss';
-const cx = classNames.bind(style);
+import React from 'react';
 
-const Contact = ({ onPageChange }) => {
-    const [language, setLanguage] = useState('vi');
-
-    const translations = {
-        vi: {
-            company: 'Công ty',
-            jobs: 'Việc làm',
-            community: 'Cộng đồng',
-            contact: 'Liên hệ',
-            signIn: 'Đăng nhập',
-            signUp: 'Đăng ký',
-            contactUs: 'Liên hệ với chúng tôi',
-            name: 'Họ và tên',
-            email: 'Email',
-            message: 'Tin nhắn',
-            send: 'Gửi',
-        },
-        en: {
-            company: 'Company',
-            jobs: 'Jobs',
-            community: 'Community',
-            contact: 'Contact',
-            signIn: 'Log In',
-            signUp: 'Sign Up',
-            contactUs: 'Contact Us',
-            name: 'Full Name',
-            email: 'Email',
-            message: 'Message',
-            send: 'Send',
-        },
-    };
-
-    const t = translations[language];
-
-    const handleLogin = () => {
-        window.location.href = 'http://localhost:3002?mode=login';
-    };
-
-    const handleSignup = () => {
-        window.location.href = 'http://localhost:3002?mode=signup';
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        alert(
-            language === 'vi'
-                ? 'Cảm ơn bạn đã liên hệ! Chúng tôi sẽ phản hồi sớm.'
-                : 'Thank you for contacting us! We will respond soon.',
-        );
-    };
-
+const Contact = () => {
     return (
-        <div>
-            <div className={cx('container mt-4')}>
-                <div className={'row justify-content-center'}>
-                    <div className={cx('col-md-8')}>
-                        <div className={cx('contact-card')}>
-                            <h2 className={cx('text-center mb-4')}>{t.contactUs}</h2>
+        <div style={{ padding: '40px', minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
+            <div style={{ maxWidth: '800px', margin: '0 auto', backgroundColor: 'white', padding: '40px', borderRadius: '10px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
+                <h1 style={{ textAlign: 'center', color: '#333', marginBottom: '30px' }}>Liên hệ với chúng tôi</h1>
+                
+                <form style={{ marginBottom: '40px' }}>
+                    <div style={{ marginBottom: '20px' }}>
+                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#555' }}>Họ và tên:</label>
+                        <input 
+                            type="text" 
+                            style={{ 
+                                width: '100%', 
+                                padding: '12px', 
+                                border: '2px solid #ddd', 
+                                borderRadius: '5px', 
+                                fontSize: '16px',
+                                boxSizing: 'border-box'
+                            }} 
+                            placeholder="Nhập họ và tên của bạn"
+                        />
+                    </div>
 
-                            <div className={cx('row')}>
-                                <div className={cx('col-md-8')}>
-                                    <form onSubmit={handleSubmit}>
-                                        <div className={cx('mb-3')}>
-                                            <label className={cx('form-label')}>{t.name}</label>
-                                            <input type="text" className={cx('form-control')} required />
-                                        </div>
+                    <div style={{ marginBottom: '20px' }}>
+                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#555' }}>Email:</label>
+                        <input 
+                            type="email" 
+                            style={{ 
+                                width: '100%', 
+                                padding: '12px', 
+                                border: '2px solid #ddd', 
+                                borderRadius: '5px', 
+                                fontSize: '16px',
+                                boxSizing: 'border-box'
+                            }} 
+                            placeholder="Nhập email của bạn"
+                        />
+                    </div>
 
-                                        <div className={cx('mb-3')}>
-                                            <label className={cx('form-label')}>{t.email}</label>
-                                            <input type="email" className={cx('form-control')} required />
-                                        </div>
+                    <div style={{ marginBottom: '30px' }}>
+                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#555' }}>Tin nhắn:</label>
+                        <textarea 
+                            style={{ 
+                                width: '100%', 
+                                padding: '12px', 
+                                border: '2px solid #ddd', 
+                                borderRadius: '5px', 
+                                fontSize: '16px',
+                                minHeight: '120px',
+                                boxSizing: 'border-box',
+                                resize: 'vertical'
+                            }} 
+                            placeholder="Nhập tin nhắn của bạn"
+                        ></textarea>
+                    </div>
 
-                                        <div className={cx('mb-3')}>
-                                            <label className={cx('form-label')}>{t.message}</label>
-                                            <textarea className={cx('form-control')} rows="5" required></textarea>
-                                        </div>
+                    <div style={{ textAlign: 'center' }}>
+                        <button 
+                            type="submit" 
+                            style={{ 
+                                backgroundColor: '#007bff', 
+                                color: 'white', 
+                                padding: '15px 40px', 
+                                border: 'none', 
+                                borderRadius: '5px', 
+                                fontSize: '18px', 
+                                fontWeight: 'bold',
+                                cursor: 'pointer'
+                            }}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                alert('Cảm ơn bạn đã liên hệ!');
+                            }}
+                        >
+                            Gửi tin nhắn
+                        </button>
+                    </div>
+                </form>
 
-                                        <div className={cx('text-center')}>
-                                            <button type="submit" className={cx('btn', 'btn-primary', 'btn-lg')}>
-                                                {t.send}
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-
-                                <div className={cx('col-md-4')}>
-                                    <div className={cx('contact-info')}>
-                                        <h5>Thông tin liên hệ</h5>
-                                        <div className={cx('info-item')}>
-                                            <i className={cx('fa-solid fa-location-dot')}></i>
-                                            <div>
-                                                <strong>Địa chỉ:</strong>
-                                                <p>497 Hoa Hao Street, Ward 7, District 10, Ho Chi Minh City</p>
-                                            </div>
-                                        </div>
-                                        <div className={cx('info-item')}>
-                                            <i className={cx('fa-solid fa-phone')}></i>
-                                            <div>
-                                                <strong>Hotline:</strong>
-                                                <p>0943009243</p>
-                                            </div>
-                                        </div>
-                                        <div className={cx('info-item')}>
-                                            <i className={cx('fa-solid fa-envelope')}></i>
-                                            <div>
-                                                <strong>Email:</strong>
-                                                <p>contact@jobconnect4students.com</p>
-                                            </div>
-                                        </div>
-                                        <div className={cx('info-item')}>
-                                            <i className={cx('fa-solid fa-clock')}></i>
-                                            <div>
-                                                <strong>Giờ làm việc:</strong>
-                                                <p>
-                                                    Thứ 2 - Thứ 6: 8:00 - 17:00
-                                                    <br />
-                                                    Thứ 7: 8:00 - 12:00
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className={cx('social-links')}>
-                                        <h6>Theo dõi chúng tôi</h6>
-                                        <div className={cx('social-icons')}>
-                                            <a href="#" className={cx('social-icon', 'facebook')}>
-                                                <i className={cx('fa-brands fa-facebook-f')}></i>
-                                            </a>
-                                            <a href="#" className={cx('social-icon', 'instagram')}>
-                                                <i className={cx('fa-brands fa-instagram')}></i>
-                                            </a>
-                                            <a href="#" className={cx('social-icon', 'youtube')}>
-                                                <i className={cx('fa-brands fa-youtube')}></i>
-                                            </a>
-                                            <a href="#" className={cx('social-icon', 'linkedin')}>
-                                                <i className={cx('fa-brands fa-linkedin-in')}></i>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className={cx('map-section', 'mt-4')}>
-                                <h5>Vị trí của chúng tôi</h5>
-                                <div className={cx('map-container')}>
-                                    <iframe
-                                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.6306852350596!2d106.69385731533414!3d10.762622192330687!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752f1c06f4e1dd%3A0x43900f1d4539a3d!2s497%20Hoa%20Hao%2C%20Ph%C6%B0%E1%BB%9Dng%207%2C%20Qu%E1%BA%ADn%2010%2C%20Th%C3%A0nh%20ph%E1%BB%91%20H%E1%BB%93%20Ch%C3%AD%20Minh!5e0!3m2!1svi!2s!4v1234567890123!5m2!1svi!2s"
-                                        width="100%"
-                                        height="300"
-                                        style={{ border: 0, borderRadius: '10px' }}
-                                        allowFullScreen=""
-                                        loading="lazy"
-                                        referrerPolicy="no-referrer-when-downgrade"
-                                    ></iframe>
-                                </div>
-                            </div>
-                        </div>
+                <div style={{ backgroundColor: '#f8f9fa', padding: '30px', borderRadius: '8px' }}>
+                    <h3 style={{ color: '#333', marginBottom: '20px' }}>Thông tin liên hệ</h3>
+                    <div style={{ marginBottom: '15px' }}>
+                        <strong style={{ color: '#555' }}>📍 Địa chỉ:</strong>
+                        <p style={{ margin: '5px 0', color: '#666' }}>497 Hoa Hao Street, Ward 7, District 10, Ho Chi Minh City</p>
+                    </div>
+                    <div style={{ marginBottom: '15px' }}>
+                        <strong style={{ color: '#555' }}>📞 Hotline:</strong>
+                        <p style={{ margin: '5px 0', color: '#666' }}>0943009243</p>
+                    </div>
+                    <div style={{ marginBottom: '15px' }}>
+                        <strong style={{ color: '#555' }}>✉️ Email:</strong>
+                        <p style={{ margin: '5px 0', color: '#666' }}>contact@jobconnect4students.com</p>
                     </div>
                 </div>
             </div>

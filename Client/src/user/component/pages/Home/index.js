@@ -1,7 +1,29 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import classNames from 'classnames/bind';
 import style from './Home.module.scss';
 import LookJobsImg from '~/asset/img/LookJobs.png';
+import routesconfig from '~/config/routes';
+
+// Import company logos
+import LongThanhLogo from '~/asset/img/LongThanh.png';
+import SamsungLogo from '~/asset/img/Samsung.png';
+import MBLogo from '~/asset/img/MB.png';
+import NECLogo from '~/asset/img/NEC.png';
+import LGLogo from '~/asset/img/LG.png';
+import NaverLogo from '~/asset/img/Naver.png';
+import GoogleLogo from '~/asset/img/Google.png';
+import MicrosoftLogo from '~/asset/img/Microsoft.png';
+import AppleLogo from '~/asset/img/Apple.png';
+import IBMLogo from '~/asset/img/IBM.png';
+import AWSLogo from '~/asset/img/AWS.png';
+import ShopeeLogo from '~/asset/img/Shopee.png';
+import OracleLogo from '~/asset/img/Oracle.png';
+import GrabLogo from '~/asset/img/Grab.png';
+import NetflixLogo from '~/asset/img/Netflix.png';
+import AdobeLogo from '~/asset/img/Adobe.png';
+import TikTokLogo from '~/asset/img/TikTok.png';
+import VisaLogo from '~/asset/img/Visa.png';
 
 const cx = classNames.bind(style);
 
@@ -78,34 +100,60 @@ const Homepage = (props) => {
             setCurrentPage(page);
         }
     };
-    const allJobData = [
-        {
-            logo: require('~/asset/img/LongThanh.png'),
-            title: 'Dev',
-            company: 'Công ty TNHH Long Thành',
-            companyKey: 'longthanh',
-        },
-        { logo: require('~/asset/img/Samsung.png'), title: 'Junior', company: 'Công ty Samsung', companyKey: 'samsung' },
-        { logo: require('~/asset/img/MB.png'), title: 'Software Engineer', company: 'Ngân hàng MB', companyKey: 'mb' },
-        { logo: require('~/asset/img/NEC.png'), title: 'Senior AI Specialist', company: 'Công ty NEC', companyKey: 'nec' },
-        { logo: require('~/asset/img/LG.png'), title: 'Electronics Development', company: 'Công ty LG', companyKey: 'lg' },
-        { logo: require('~/asset/img/Naver.png'), title: 'Dev', company: 'Công ty Naver', companyKey: 'naver' },
-        {
-            logo: require('~/asset/img/Google.png'),
-            title: 'Software Engineer',
-            company: 'Công ty Google',
-            companyKey: 'google',
-        },
-        {
-            logo: require('~/asset/img/Microsoft.png'),
-            title: 'Cloud Developer',
-            company: 'Công ty Microsoft',
-            companyKey: 'microsoft',
-        },
-        { logo: require('~/asset/img/Apple.png'), title: 'iOS Developer', company: 'Công ty Apple', companyKey: 'apple' },
-    ];
+    
+    const allJobData = {
+        1: [
+            {
+                logo: LongThanhLogo,
+                title: 'Dev',
+                company: 'Công ty TNHH Long Thành',
+                companyKey: 'longthanh',
+            },
+            { logo: SamsungLogo, title: 'Junior', company: 'Công ty Samsung', companyKey: 'samsung' },
+            { logo: MBLogo, title: 'Software Engineer', company: 'Ngân hàng MB', companyKey: 'mb' },
+            { logo: NECLogo, title: 'Senior AI Specialist', company: 'Công ty NEC', companyKey: 'nec' },
+            { logo: LGLogo, title: 'Electronics Development', company: 'Công ty LG', companyKey: 'lg' },
+            { logo: NaverLogo, title: 'Dev', company: 'Công ty Naver', companyKey: 'naver' },
+            {
+                logo: GoogleLogo,
+                title: 'Software Engineer',
+                company: 'Công ty Google',
+                companyKey: 'google',
+            },
+            {
+                logo: MicrosoftLogo,
+                title: 'Cloud Developer',
+                company: 'Công ty Microsoft',
+                companyKey: 'microsoft',
+            },
+            { logo: AppleLogo, title: 'iOS Developer', company: 'Công ty Apple', companyKey: 'apple' },
+        ],
+        2: [
+            { logo: IBMLogo, title: 'Backend Developer', company: 'Tập đoàn IBM', companyKey: 'ibm' },
+            { logo: AWSLogo, title: 'Cloud Engineer', company: 'Amazon Web Services', companyKey: 'aws' },
+            { logo: ShopeeLogo, title: 'Data Analyst', company: 'Shopee Việt Nam', companyKey: 'shopee' },
+            { logo: OracleLogo, title: 'Database Developer', company: 'Oracle Việt Nam', companyKey: 'oracle' },
+            { logo: GrabLogo, title: 'Mobile Developer', company: 'Grab Việt Nam', companyKey: 'grab' },
+            { logo: NetflixLogo, title: 'Frontend Developer', company: 'Netflix Technology', companyKey: 'netflix' },
+            { logo: AdobeLogo, title: 'Product Manager', company: 'Adobe Systems', companyKey: 'adobe' },
+            { logo: TikTokLogo, title: 'DevOps Engineer', company: 'TikTok Technology', companyKey: 'tiktok' },
+            { logo: VisaLogo, title: 'Security Engineer', company: 'Visa Inc.', companyKey: 'visa' },
+        ],
+        3: [
+            { logo: IBMLogo, title: 'AI Specialist', company: 'Tập đoàn IBM', companyKey: 'ibm' },
+            { logo: AWSLogo, title: 'Solutions Architect', company: 'Amazon Web Services', companyKey: 'aws' },
+            { logo: ShopeeLogo, title: 'Business Analyst', company: 'Shopee Việt Nam', companyKey: 'shopee' },
+            { logo: OracleLogo, title: 'System Administrator', company: 'Oracle Việt Nam', companyKey: 'oracle' },
+            { logo: GrabLogo, title: 'Product Designer', company: 'Grab Việt Nam', companyKey: 'grab' },
+            { logo: NetflixLogo, title: 'Content Engineer', company: 'Netflix Technology', companyKey: 'netflix' },
+            { logo: AdobeLogo, title: 'UX Designer', company: 'Adobe Systems', companyKey: 'adobe' },
+            { logo: TikTokLogo, title: 'Algorithm Engineer', company: 'TikTok Technology', companyKey: 'tiktok' },
+            { logo: VisaLogo, title: 'Payment Specialist', company: 'Visa Inc.', companyKey: 'visa' },
+        ],
+    };
 
-    const jobData = companyFilter ? allJobData.filter((job) => job.companyKey === companyFilter) : allJobData;
+    const currentJobData = allJobData[currentPage] || [];
+    const jobData = companyFilter ? currentJobData.filter((job) => job.companyKey === companyFilter) : currentJobData;
 
     return (
         <div className={cx('home-page')}>
@@ -204,7 +252,7 @@ const Homepage = (props) => {
                     <div className={cx('pagination-wrapper')}>
                         <button
                             className={cx('page-btn')}
-                            onClick={() => handlePageChange(currentPage - 1)}
+                            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                             disabled={currentPage === 1}
                         >
                             {t.previous}
@@ -213,14 +261,14 @@ const Homepage = (props) => {
                             <button
                                 key={page}
                                 className={cx('page-btn', { active: currentPage === page })}
-                                onClick={() => handlePageChange(page)}
+                                onClick={() => setCurrentPage(page)}
                             >
                                 {page}
                             </button>
                         ))}
                         <button
                             className={cx('page-btn')}
-                            onClick={() => handlePageChange(currentPage + 1)}
+                            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                             disabled={currentPage === totalPages}
                         >
                             {t.next}

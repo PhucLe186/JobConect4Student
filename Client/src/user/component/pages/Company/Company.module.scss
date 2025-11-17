@@ -1,224 +1,386 @@
+// Company Page Layout
+.home-page {
+  background-color: white;
+  min-height: 100vh;
+}
+
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
 }
 
+// Navigation Bar
 .navbar {
   background: white;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  padding: 15px 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
 .nav-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 15px 0;
 }
 
-.navbar-brand {
-  font-size: 24px;
-  font-weight: bold;
-  text-decoration: none;
+.nav-brand {
+  .brand-text {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #007bff;
+    text-decoration: none;
+  }
 }
 
-.navbar-nav {
+.nav-menu {
   display: flex;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  gap: 20px;
-  align-items: center;
+  gap: 30px;
+  
+  @media (max-width: 768px) {
+    display: none;
+  }
 }
 
 .nav-link {
-  text-decoration: none;
   color: #333;
-  padding: 8px 12px;
-}
-
-.btn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
   text-decoration: none;
-  display: inline-block;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: color 0.2s ease;
+  
+  &:hover {
+    color: #007bff;
+  }
 }
 
-.btn-primary {
+.nav-actions {
+  display: flex;
+  gap: 10px;
+  
+  @media (max-width: 768px) {
+    gap: 5px;
+  }
+}
+
+.btn-login {
+  background: transparent;
+  color: #007bff;
+  border: 2px solid #007bff;
+  padding: 8px 20px;
+  border-radius: 25px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: #007bff;
+    color: white;
+  }
+  
+  @media (max-width: 768px) {
+    padding: 6px 15px;
+    font-size: 0.9rem;
+  }
+}
+
+.btn-register {
   background: #007bff;
   color: white;
+  border: 2px solid #007bff;
+  padding: 8px 20px;
+  border-radius: 25px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: #0056b3;
+    border-color: #0056b3;
+  }
+  
+  @media (max-width: 768px) {
+    padding: 6px 15px;
+    font-size: 0.9rem;
+  }
 }
 
-.btn-outline-secondary {
-  background: transparent;
-  border: 1px solid #6c757d;
-  color: #6c757d;
-}
-
-.text-center {
-  text-align: center;
-}
-
-.my-4 {
-  margin: 2rem 0;
-}
-
-.mt-4 {
-  margin-top: 2rem;
-}
-
-.mb-4 {
-  margin-bottom: 2rem;
-}
-
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  margin: 0 -15px;
-}
-
-.col-12 {
-  width: 100%;
-  padding: 0 15px;
-}
-
-.col-md-3 {
-  width: 25%;
-  padding: 0 15px;
-}
-
-.col-md-4 {
-  width: 33.333%;
-  padding: 0 15px;
-}
-
-.form-control {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-}
-
-.form-select {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
+// Hero Section
+.hero-section {
   background: white;
+  padding: 60px 0;
+  text-align: center;
+  color: #333;
 }
 
-.form-label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: 500;
+.hero-content {
+  max-width: 800px;
+  margin: 0 auto;
 }
 
-.d-flex {
-  display: flex;
+.hero-image {
+  margin-bottom: 30px;
+  
+  img {
+    max-width: 600px;
+    width: 100%;
+    height: auto;
+  }
 }
 
-.align-items-center {
-  align-items: center;
+.hero-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 30px;
+  color: #333;
 }
 
-.justify-content-center {
-  justify-content: center;
+.search-box {
+  max-width: 600px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.search-input {
+  width: 100%;
+  padding: 20px 25px;
+  border: none;
+  border-radius: 50px;
+  font-size: 1.3rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  }
+}
+
+// Filter Section
+.filter-section {
+  background: white;
+  padding: 30px 0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.filter-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+  align-items: end;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+.filter-item {
+  label {
+    display: block;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+  }
+}
+
+.filter-select {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  background: white;
+  font-size: 0.9rem;
+  
+  &:focus {
+    outline: none;
+    border-color: #007bff;
+  }
+}
+
+.salary-range {
+  .salary-slider {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: #e9ecef;
+    outline: none;
+    margin-bottom: 8px;
+    
+    &::-webkit-slider-thumb {
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #007bff;
+      cursor: pointer;
+    }
+    
+    &::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #007bff;
+      cursor: pointer;
+      border: none;
+    }
+  }
+  
+  .salary-display {
+    font-weight: 600;
+    color: #007bff;
+    font-size: 0.85rem;
+    text-align: center;
+  }
+}
+
+// Jobs Section
+.jobs-section {
+  padding: 40px 0;
+}
+
+.jobs-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 25px;
+  margin-bottom: 40px;
+  
+  @media (max-width: 992px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  @media (max-width: 576px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .job-card {
   background: white;
   border-radius: 12px;
   padding: 20px;
-  margin-bottom: 20px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
   border: 1px solid #f0f0f0;
+  
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
 }
 
-.job-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+.job-header {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 15px;
 }
 
-.job-card img {
-  width: 60px;
-  height: 60px;
+.company-logo {
+  width: 50px;
+  height: 50px;
   object-fit: contain;
   margin-right: 15px;
   border-radius: 8px;
   border: 1px solid #f0f0f0;
 }
 
-.job-info h6 {
+.job-info {
+  flex: 1;
+}
+
+.job-title {
+  font-size: 1.1rem;
   font-weight: 600;
   color: #333;
-  margin-bottom: 5px;
+  margin: 0 0 5px 0;
+  line-height: 1.3;
 }
 
-.job-info p {
+.company-name {
   color: #666;
   font-size: 0.9rem;
-  margin-bottom: 10px;
-}
-
-.banner-container img {
-  max-width: 500px;
-  width: 100%;
-  height: auto;
-  border-radius: 12px;
-}
-
-.main-search {
-  margin: 40px 0;
-}
-
-.search-bar {
-  margin: 30px 0;
-}
-
-.pagination {
-  display: flex;
-  list-style: none;
-  padding: 0;
   margin: 0;
-  gap: 5px;
+  line-height: 1.4;
 }
 
-.page-item {
-  display: flex;
-}
-
-.page-link {
-  padding: 8px 12px;
-  border: 1px solid #dee2e6;
-  background: white;
-  color: #007bff;
-  text-decoration: none;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.page-item.active .page-link {
+.apply-btn {
   background: #007bff;
   color: white;
-  border-color: #007bff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: #0056b3;
+    transform: translateY(-1px);
+  }
 }
 
-.page-link:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+// Pagination
+.pagination-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 40px;
 }
 
-@media (max-width: 768px) {
-  .col-md-3, .col-md-4 {
-    width: 100%;
-    margin-bottom: 15px;
+.page-btn {
+  padding: 10px 15px;
+  border: 2px solid #e9ecef;
+  background: white;
+  color: #007bff;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  
+  &:hover {
+    background: #f8f9fa;
+    border-color: #007bff;
   }
   
-  .navbar-nav {
-    flex-direction: column;
-    gap: 10px;
+  &.active {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    
+    &:hover {
+      background: white;
+      border-color: #e9ecef;
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2rem;
+  }
+  
+  .hero-section {
+    padding: 40px 0;
+  }
+  
+  .filter-section {
+    padding: 20px 0;
+  }
+  
+  .jobs-section {
+    padding: 30px 0;
+  }
+  
+  .container {
+    padding: 0 15px;
   }
 }

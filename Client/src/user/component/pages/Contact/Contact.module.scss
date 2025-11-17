@@ -1,0 +1,106 @@
+.contact-card {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+}
+
+.contact-info {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.info-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    
+    i {
+        color: #007bff;
+        margin-right: 10px;
+        margin-top: 5px;
+        width: 20px;
+    }
+}
+
+.social-links {
+    text-align: center;
+}
+
+.social-icons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.social-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: white;
+    text-decoration: none;
+    transition: transform 0.3s ease;
+    
+    &:hover {
+        transform: scale(1.1);
+        text-decoration: none;
+    }
+    
+    &.facebook { background: #3b5998; }
+    &.instagram { background: #e4405f; }
+    &.youtube { background: #ff0000; }
+    &.linkedin { background: #0077b5; }
+}
+
+.map-section {
+    margin-top: 30px;
+}
+
+.map-container {
+    margin-top: 15px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.btn {
+    padding: 10px 30px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-block;
+    
+    &.btn-primary {
+        background: #007bff;
+        color: white;
+        
+        &:hover {
+            background: #0056b3;
+        }
+    }
+    
+    &.btn-lg {
+        padding: 12px 40px;
+        font-size: 1.1rem;
+    }
+}

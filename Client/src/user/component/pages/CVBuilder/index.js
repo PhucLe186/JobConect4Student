@@ -79,159 +79,158 @@ const CVBuilder = ({ onPageChange }) => {
     };
 
     return (
-        <div>
-            <div className="container mt-4">
-                <button className="btn btn-secondary mb-3" onClick={() => onPageChange(1)}>
-                    <i className="fa-solid fa-arrow-left me-2"></i>
-                    {t.back}
+        <div className={cx('cv-builder-page')}>
+            <div className={cx('container')}>
+                <button className={cx('back-btn')} onClick={() => window.history.back()}>
+                    ← {t.back}
                 </button>
 
-                <div className="cv-builder-container">
-                    <h2 className="text-center mb-4">{t.cvBuilder}</h2>
+                <div className={cx('cv-builder-container')}>
+                    <h1 className={cx('page-title')}>{t.cvBuilder}</h1>
 
-                    <div className="row">
-                        <div className="col-md-6">
-                            <div className="cv-form">
-                                <h4>{t.personalInfo}</h4>
+                    <div className={cx('cv-builder-content')}>
+                        <div className={cx('form-section')}>
+                            <div className={cx('form-card')}>
+                                <h3 className={cx('section-title')}>{t.personalInfo}</h3>
 
-                                <div className="mb-3">
-                                    <label className="form-label">{t.fullName}</label>
+                                <div className={cx('form-group')}>
+                                    <label className={cx('form-label')}>{t.fullName}</label>
                                     <input
                                         type="text"
-                                        className="form-control"
+                                        className={cx('form-input')}
                                         value={formData.fullName}
                                         onChange={(e) => handleInputChange('fullName', e.target.value)}
+                                        placeholder="Nhập họ và tên"
                                     />
                                 </div>
 
-                                <div className="mb-3">
-                                    <label className="form-label">{t.email}</label>
+                                <div className={cx('form-group')}>
+                                    <label className={cx('form-label')}>{t.email}</label>
                                     <input
                                         type="email"
-                                        className="form-control"
+                                        className={cx('form-input')}
                                         value={formData.email}
                                         onChange={(e) => handleInputChange('email', e.target.value)}
+                                        placeholder="example@email.com"
                                     />
                                 </div>
 
-                                <div className="mb-3">
-                                    <label className="form-label">{t.phone}</label>
+                                <div className={cx('form-group')}>
+                                    <label className={cx('form-label')}>{t.phone}</label>
                                     <input
                                         type="tel"
-                                        className="form-control"
+                                        className={cx('form-input')}
                                         value={formData.phone}
                                         onChange={(e) => handleInputChange('phone', e.target.value)}
+                                        placeholder="0123 456 789"
                                     />
                                 </div>
 
-                                <div className="mb-3">
-                                    <label className="form-label">{t.address}</label>
+                                <div className={cx('form-group')}>
+                                    <label className={cx('form-label')}>{t.address}</label>
                                     <input
                                         type="text"
-                                        className="form-control"
+                                        className={cx('form-input')}
                                         value={formData.address}
                                         onChange={(e) => handleInputChange('address', e.target.value)}
+                                        placeholder="Địa chỉ của bạn"
                                     />
                                 </div>
 
-                                <div className="mb-3">
-                                    <label className="form-label">{t.objective}</label>
+                                <div className={cx('form-group')}>
+                                    <label className={cx('form-label')}>{t.objective}</label>
                                     <textarea
-                                        className="form-control"
+                                        className={cx('form-textarea')}
                                         rows="3"
                                         value={formData.objective}
                                         onChange={(e) => handleInputChange('objective', e.target.value)}
+                                        placeholder="Mô tả mục tiêu nghề nghiệp của bạn..."
                                     ></textarea>
                                 </div>
 
-                                <div className="mb-3">
-                                    <label className="form-label">{t.education}</label>
+                                <div className={cx('form-group')}>
+                                    <label className={cx('form-label')}>{t.education}</label>
                                     <textarea
-                                        className="form-control"
+                                        className={cx('form-textarea')}
                                         rows="3"
                                         value={formData.education}
                                         onChange={(e) => handleInputChange('education', e.target.value)}
+                                        placeholder="Trình độ học vấn, trường học, bằng cấp..."
                                     ></textarea>
                                 </div>
 
-                                <div className="mb-3">
-                                    <label className="form-label">{t.experience}</label>
+                                <div className={cx('form-group')}>
+                                    <label className={cx('form-label')}>{t.experience}</label>
                                     <textarea
-                                        className="form-control"
+                                        className={cx('form-textarea')}
                                         rows="4"
                                         value={formData.experience}
                                         onChange={(e) => handleInputChange('experience', e.target.value)}
+                                        placeholder="Kinh nghiệm làm việc, dự án đã tham gia..."
                                     ></textarea>
                                 </div>
 
-                                <div className="mb-3">
-                                    <label className="form-label">{t.skills}</label>
+                                <div className={cx('form-group')}>
+                                    <label className={cx('form-label')}>{t.skills}</label>
                                     <textarea
-                                        className="form-control"
+                                        className={cx('form-textarea')}
                                         rows="3"
                                         value={formData.skills}
                                         onChange={(e) => handleInputChange('skills', e.target.value)}
+                                        placeholder="Kỹ năng chuyên môn, ngôn ngữ lập trình..."
                                     ></textarea>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="col-md-6">
-                            <div className="cv-preview">
-                                <h4>{t.preview}</h4>
-                                <div className="cv-template">
-                                    <div className="cv-header">
-                                        <h3>{formData.fullName || 'Your Name'}</h3>
-                                        <div className="contact-info">
-                                            <p>
-                                                <i className="fa-solid fa-envelope"></i>{' '}
+                        <div className={cx('preview-section')}>
+                            <div className={cx('preview-card')}>
+                                <h3 className={cx('section-title')}>{t.preview}</h3>
+                                <div className={cx('cv-template')}>
+                                    <div className={cx('cv-header')}>
+                                        <h2 className={cx('cv-name')}>{formData.fullName || 'Họ và Tên'}</h2>
+                                        <div className={cx('contact-info')}>
+                                            <div className={cx('contact-item')}>
                                                 {formData.email || 'your.email@example.com'}
-                                            </p>
-                                            <p>
-                                                <i className="fa-solid fa-phone"></i>{' '}
-                                                {formData.phone || '+84 xxx xxx xxx'}
-                                            </p>
-                                            <p>
-                                                <i className="fa-solid fa-location-dot"></i>{' '}
-                                                {formData.address || 'Your Address'}
-                                            </p>
+                                            </div>
+                                            <div className={cx('contact-item')}>{formData.phone || '0123 456 789'}</div>
+                                            <div className={cx('contact-item')}>
+                                                {formData.address || 'Địa chỉ của bạn'}
+                                            </div>
                                         </div>
                                     </div>
 
                                     {formData.objective && (
-                                        <div className="cv-section">
-                                            <h5>Career Objective</h5>
-                                            <p>{formData.objective}</p>
+                                        <div className={cx('cv-section')}>
+                                            <h4 className={cx('cv-section-title')}>Mục tiêu nghề nghiệp</h4>
+                                            <p className={cx('cv-content')}>{formData.objective}</p>
                                         </div>
                                     )}
 
                                     {formData.education && (
-                                        <div className="cv-section">
-                                            <h5>Education</h5>
-                                            <p>{formData.education}</p>
+                                        <div className={cx('cv-section')}>
+                                            <h4 className={cx('cv-section-title')}>Học vấn</h4>
+                                            <p className={cx('cv-content')}>{formData.education}</p>
                                         </div>
                                     )}
 
                                     {formData.experience && (
-                                        <div className="cv-section">
-                                            <h5>Experience</h5>
-                                            <p>{formData.experience}</p>
+                                        <div className={cx('cv-section')}>
+                                            <h4 className={cx('cv-section-title')}>Kinh nghiệm</h4>
+                                            <p className={cx('cv-content')}>{formData.experience}</p>
                                         </div>
                                     )}
 
                                     {formData.skills && (
-                                        <div className="cv-section">
-                                            <h5>Skills</h5>
-                                            <p>{formData.skills}</p>
+                                        <div className={cx('cv-section')}>
+                                            <h4 className={cx('cv-section-title')}>Kỹ năng</h4>
+                                            <p className={cx('cv-content')}>{formData.skills}</p>
                                         </div>
                                     )}
                                 </div>
 
-                                <div className="cv-actions mt-3">
-                                    <button className="btn btn-success btn-lg w-100">
-                                        <i className="fa-solid fa-download me-2"></i>
-                                        {t.download}
-                                    </button>
+                                <div className={cx('cv-actions')}>
+                                    <button className={cx('download-btn')}>{t.download}</button>
                                 </div>
                             </div>
                         </div>
