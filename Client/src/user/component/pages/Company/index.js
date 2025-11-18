@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import classNames from 'classnames/bind';
@@ -107,46 +108,55 @@ const Company = ({ onPageChange }) => {
     const allCompanyData = {
         1: [
             {
+                id: uuidv4(),
                 logo: logoMap['LongThanh.png'],
                 name: language === 'vi' ? 'Tập đoàn Long Thành' : 'Long Thanh Corp',
                 industry: language === 'vi' ? 'Xây dựng' : 'Construction',
             },
             {
+                id: uuidv4(),
                 logo: logoMap['Samsung.png'],
                 name: language === 'vi' ? 'Samsung Việt Nam' : 'Samsung Vietnam',
                 industry: language === 'vi' ? 'Công nghệ' : 'Technology',
             },
             {
+                id: uuidv4(),
                 logo: logoMap['MB.png'],
                 name: language === 'vi' ? 'Ngân hàng MB' : 'MB Bank',
                 industry: language === 'vi' ? 'Tài chính' : 'Finance',
             },
             {
+                id: uuidv4(),
                 logo: logoMap['NEC.png'],
                 name: language === 'vi' ? 'Công ty NEC' : 'NEC Corporation',
                 industry: language === 'vi' ? 'Công nghệ' : 'Technology',
             },
             {
+                id: uuidv4(),
                 logo: logoMap['LG.png'],
                 name: language === 'vi' ? 'Công ty LG' : 'LG Electronics',
                 industry: language === 'vi' ? 'Điện tử' : 'Electronics',
             },
             {
+                id: uuidv4(),
                 logo: logoMap['Naver.png'],
                 name: language === 'vi' ? 'Công ty Naver' : 'Naver Corporation',
                 industry: language === 'vi' ? 'Công nghệ' : 'Technology',
             },
             {
+                id: uuidv4(),
                 logo: logoMap['Google.png'],
                 name: language === 'vi' ? 'Công ty Google' : 'Google Inc',
                 industry: language === 'vi' ? 'Công nghệ' : 'Technology',
             },
             {
+                id: uuidv4(),
                 logo: logoMap['Microsoft.png'],
                 name: language === 'vi' ? 'Công ty Microsoft' : 'Microsoft Corp',
                 industry: language === 'vi' ? 'Công nghệ' : 'Technology',
             },
             {
+                id: uuidv4(),
                 logo: logoMap['Apple.png'],
                 name: language === 'vi' ? 'Công ty Apple' : 'Apple Inc',
                 industry: language === 'vi' ? 'Công nghệ' : 'Technology',
@@ -154,46 +164,55 @@ const Company = ({ onPageChange }) => {
         ],
         2: [
             {
+                id: uuidv4(),
                 logo: logoMap['IBM.png'],
                 name: language === 'vi' ? 'Tập đoàn IBM' : 'IBM Corporation',
                 industry: language === 'vi' ? 'Công nghệ' : 'Technology',
             },
             {
+                id: uuidv4(),
                 logo: logoMap['AWS.png'],
                 name: language === 'vi' ? 'Dịch vụ Web Amazon' : 'Amazon Web Services',
                 industry: language === 'vi' ? 'Đám mây' : 'Cloud',
             },
             {
+                id: uuidv4(),
                 logo: logoMap['Shopee.png'],
                 name: language === 'vi' ? 'Shopee Việt Nam' : 'Shopee Vietnam',
                 industry: language === 'vi' ? 'Thương mại điện tử' : 'E-commerce',
             },
             {
+                id: uuidv4(),
                 logo: logoMap['Oracle.png'],
                 name: language === 'vi' ? 'Oracle Việt Nam' : 'Oracle Vietnam',
                 industry: language === 'vi' ? 'Cơ sở dữ liệu' : 'Database',
             },
             {
+                id: uuidv4(),
                 logo: logoMap['Grab.png'],
                 name: language === 'vi' ? 'Grab Việt Nam' : 'Grab Vietnam',
                 industry: language === 'vi' ? 'Giao thông' : 'Transportation',
             },
             {
+                id: uuidv4(),
                 logo: logoMap['Netflix.png'],
                 name: language === 'vi' ? 'Công nghệ Netflix' : 'Netflix Technology',
                 industry: language === 'vi' ? 'Giải trí' : 'Entertainment',
             },
             {
+                id: uuidv4(),
                 logo: logoMap['Adobe.png'],
                 name: language === 'vi' ? 'Hệ thống Adobe' : 'Adobe Systems',
                 industry: language === 'vi' ? 'Phần mềm' : 'Software',
             },
             {
+                id: uuidv4(),
                 logo: logoMap['TikTok.png'],
                 name: language === 'vi' ? 'Công nghệ TikTok' : 'TikTok Technology',
                 industry: language === 'vi' ? 'Mạng xã hội' : 'Social Media',
             },
             {
+                id: uuidv4(),
                 logo: logoMap['Visa.png'],
                 name: 'Visa Inc.',
                 industry: language === 'vi' ? 'Thanh toán' : 'Payment',
@@ -201,46 +220,55 @@ const Company = ({ onPageChange }) => {
         ],
         3: [
             {
+                id: uuidv4(),
                 logo: logoMap['Dược.png'],
                 name: language === 'vi' ? 'Công Ty Cổ phần Tâm Dược' : 'Tam Duoc JSC',
                 industry: language === 'vi' ? 'Dược phẩm' : 'Pharmaceutical',
             },
             {
+                id: uuidv4(),
                 logo: logoMap['Longhai.png'],
                 name: language === 'vi' ? 'Công ty Bất động sản Long Hải' : 'Long Hai Real Estate',
                 industry: language === 'vi' ? 'Bất động sản' : 'Real Estate',
             },
             {
+                id: uuidv4(),
                 logo: logoMap['Chungphat.png'],
                 name: language === 'vi' ? 'Công Ty Chung Phát' : 'Chung Phat Company',
                 industry: language === 'vi' ? 'Dịch vụ' : 'Services',
             },
             {
+                id: uuidv4(),
                 logo: logoMap['Kaiyi.png'],
                 name: language === 'vi' ? 'Công Ty Đầu tư Quốc tế Kaiyi' : 'Kaiyi International Investment',
                 industry: language === 'vi' ? 'Đầu tư' : 'Investment',
             },
             {
+                id: uuidv4(),
                 logo: logoMap['Xaydung.png'],
                 name: language === 'vi' ? 'Công Ty Cổ phần Xây Dựng Số 5' : 'Construction Company No.5 JSC',
                 industry: language === 'vi' ? 'Xây dựng' : 'Construction',
             },
             {
+                id: uuidv4(),
                 logo: logoMap['HPL.png'],
                 name: language === 'vi' ? 'Công Ty Du lịch HPLS' : 'HPLS Tourism Company',
                 industry: language === 'vi' ? 'Du lịch' : 'Tourism',
             },
             {
+                id: uuidv4(),
                 logo: logoMap['LongThanh.png'],
                 name: language === 'vi' ? 'Tập đoàn Long Thành' : 'Long Thanh Corp',
                 industry: language === 'vi' ? 'Kế toán' : 'Accounting',
             },
             {
+                id: uuidv4(),
                 logo: logoMap['Samsung.png'],
                 name: language === 'vi' ? 'Samsung Display' : 'Samsung Display',
                 industry: language === 'vi' ? 'Màn hình' : 'Display',
             },
             {
+                id: uuidv4(),
                 logo: logoMap['MB.png'],
                 name: language === 'vi' ? 'MB Ageas Life' : 'MB Ageas Life',
                 industry: language === 'vi' ? 'Bảo hiểm' : 'Insurance',
@@ -320,21 +348,25 @@ const Company = ({ onPageChange }) => {
                         {companyData.map((company, index) => (
                             <div className={cx('job-card')} key={index}>
                                 <div className={cx('job-header')}>
-                                    <img src={company.logo} alt={company.name} className={cx('company-logo')} 
-                                         onError={(e) => {
-                                             e.target.src = 'https://via.placeholder.com/60x60?text=Logo';
-                                         }} />
+                                    <img
+                                        src={company.logo}
+                                        alt={company.name}
+                                        className={cx('company-logo')}
+                                        onError={(e) => {
+                                            e.target.src = 'https://via.placeholder.com/60x60?text=Logo';
+                                        }}
+                                    />
                                     <div className={cx('job-info')}>
                                         <h3 className={cx('job-title')}>{company.name}</h3>
                                         <p className={cx('company-name')}>{company.industry}</p>
                                     </div>
                                 </div>
-                                <button className={cx('apply-btn')} 
-                                        onClick={() => {
-                                            if (company.name.includes('Samsung')) {
-                                                navigate('/company-detail');
-                                            }
-                                        }}>
+                                <button
+                                    className={cx('apply-btn')}
+                                    onClick={() => {
+                                        navigate(`/company/${company.id}`);
+                                    }}
+                                >
                                     {t.seeMore}
                                 </button>
                             </div>

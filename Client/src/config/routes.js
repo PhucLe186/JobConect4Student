@@ -6,12 +6,12 @@ const routes = {
     company: '/company',
     contact: '/contact',
     jobs: '/jobs',
-    jobDetail: '/job-detail',
+    jobDetail: '/job/:id',
     role: '/role',
-    companyDetail: '/company-detail',
-    cvBuilder: '/cv-builder',
+    companyDetail: '/company/:id',
+    cvBuilder: '/cv_builder',
     studentprofile: '/studentprofile',
-    applicationhistory: '/applicationhistory'
+    applicationhistory: '/applicationhistory',
 };
 
 export default routes;

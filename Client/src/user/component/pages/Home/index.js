@@ -4,7 +4,7 @@ import classNames from 'classnames/bind';
 import style from './Home.module.scss';
 import LookJobsImg from '~/asset/img/LookJobs.png';
 import routesconfig from '~/config/routes';
-
+import { v4 as uuidv4 } from 'uuid';
 // Import company logos
 import LongThanhLogo from '~/asset/img/LongThanh.png';
 import SamsungLogo from '~/asset/img/Samsung.png';
@@ -101,55 +101,202 @@ const Homepage = (props) => {
             setCurrentPage(page);
         }
     };
-    
+
     const allJobData = {
         1: [
             {
+                id: uuidv4(),
                 logo: LongThanhLogo,
                 title: 'Dev',
                 company: 'Công ty TNHH Long Thành',
                 companyKey: 'longthanh',
             },
-            { logo: SamsungLogo, title: 'Junior', company: 'Công ty Samsung', companyKey: 'samsung' },
-            { logo: MBLogo, title: 'Software Engineer', company: 'Ngân hàng MB', companyKey: 'mb' },
-            { logo: NECLogo, title: 'Senior AI Specialist', company: 'Công ty NEC', companyKey: 'nec' },
-            { logo: LGLogo, title: 'Electronics Development', company: 'Công ty LG', companyKey: 'lg' },
-            { logo: NaverLogo, title: 'Dev', company: 'Công ty Naver', companyKey: 'naver' },
             {
+                id: uuidv4(),
+                logo: SamsungLogo,
+                title: 'Junior',
+                company: 'Công ty Samsung',
+                companyKey: 'samsung',
+            },
+            {
+                id: uuidv4(),
+                logo: MBLogo,
+                title: 'Software Engineer',
+                company: 'Ngân hàng MB',
+                companyKey: 'mb',
+            },
+            {
+                id: uuidv4(),
+                logo: NECLogo,
+                title: 'Senior AI Specialist',
+                company: 'Công ty NEC',
+                companyKey: 'nec',
+            },
+            {
+                id: uuidv4(),
+                logo: LGLogo,
+                title: 'Electronics Development',
+                company: 'Công ty LG',
+                companyKey: 'lg',
+            },
+            {
+                id: uuidv4(),
+                logo: NaverLogo,
+                title: 'Dev',
+                company: 'Công ty Naver',
+                companyKey: 'naver',
+            },
+            {
+                id: uuidv4(),
                 logo: GoogleLogo,
                 title: 'Software Engineer',
                 company: 'Công ty Google',
                 companyKey: 'google',
             },
             {
+                id: uuidv4(),
                 logo: MicrosoftLogo,
                 title: 'Cloud Developer',
                 company: 'Công ty Microsoft',
                 companyKey: 'microsoft',
             },
-            { logo: AppleLogo, title: 'iOS Developer', company: 'Công ty Apple', companyKey: 'apple' },
+            {
+                id: uuidv4(),
+                logo: AppleLogo,
+                title: 'iOS Developer',
+                company: 'Công ty Apple',
+                companyKey: 'apple',
+            },
         ],
         2: [
-            { logo: IBMLogo, title: 'Backend Developer', company: 'Tập đoàn IBM', companyKey: 'ibm' },
-            { logo: AWSLogo, title: 'Cloud Engineer', company: 'Amazon Web Services', companyKey: 'aws' },
-            { logo: ShopeeLogo, title: 'Data Analyst', company: 'Shopee Việt Nam', companyKey: 'shopee' },
-            { logo: OracleLogo, title: 'Database Developer', company: 'Oracle Việt Nam', companyKey: 'oracle' },
-            { logo: GrabLogo, title: 'Mobile Developer', company: 'Grab Việt Nam', companyKey: 'grab' },
-            { logo: NetflixLogo, title: 'Frontend Developer', company: 'Netflix Technology', companyKey: 'netflix' },
-            { logo: AdobeLogo, title: 'Product Manager', company: 'Adobe Systems', companyKey: 'adobe' },
-            { logo: TikTokLogo, title: 'DevOps Engineer', company: 'TikTok Technology', companyKey: 'tiktok' },
-            { logo: VisaLogo, title: 'Security Engineer', company: 'Visa Inc.', companyKey: 'visa' },
+            {
+                id: uuidv4(),
+                logo: IBMLogo,
+                title: 'Backend Developer',
+                company: 'Tập đoàn IBM',
+                companyKey: 'ibm',
+            },
+            {
+                id: uuidv4(),
+                logo: AWSLogo,
+                title: 'Cloud Engineer',
+                company: 'Amazon Web Services',
+                companyKey: 'aws',
+            },
+            {
+                id: uuidv4(),
+                logo: ShopeeLogo,
+                title: 'Data Analyst',
+                company: 'Shopee Việt Nam',
+                companyKey: 'shopee',
+            },
+            {
+                id: uuidv4(),
+                logo: OracleLogo,
+                title: 'Database Developer',
+                company: 'Oracle Việt Nam',
+                companyKey: 'oracle',
+            },
+            {
+                id: uuidv4(),
+                logo: GrabLogo,
+                title: 'Mobile Developer',
+                company: 'Grab Việt Nam',
+                companyKey: 'grab',
+            },
+            {
+                id: uuidv4(),
+                logo: NetflixLogo,
+                title: 'Frontend Developer',
+                company: 'Netflix Technology',
+                companyKey: 'netflix',
+            },
+            {
+                id: uuidv4(),
+                logo: AdobeLogo,
+                title: 'Product Manager',
+                company: 'Adobe Systems',
+                companyKey: 'adobe',
+            },
+            {
+                id: uuidv4(),
+                logo: TikTokLogo,
+                title: 'DevOps Engineer',
+                company: 'TikTok Technology',
+                companyKey: 'tiktok',
+            },
+            {
+                id: uuidv4(),
+                logo: VisaLogo,
+                title: 'Security Engineer',
+                company: 'Visa Inc.',
+                companyKey: 'visa',
+            },
         ],
         3: [
-            { logo: IBMLogo, title: 'AI Specialist', company: 'Tập đoàn IBM', companyKey: 'ibm' },
-            { logo: AWSLogo, title: 'Solutions Architect', company: 'Amazon Web Services', companyKey: 'aws' },
-            { logo: ShopeeLogo, title: 'Business Analyst', company: 'Shopee Việt Nam', companyKey: 'shopee' },
-            { logo: OracleLogo, title: 'System Administrator', company: 'Oracle Việt Nam', companyKey: 'oracle' },
-            { logo: GrabLogo, title: 'Product Designer', company: 'Grab Việt Nam', companyKey: 'grab' },
-            { logo: NetflixLogo, title: 'Content Engineer', company: 'Netflix Technology', companyKey: 'netflix' },
-            { logo: AdobeLogo, title: 'UX Designer', company: 'Adobe Systems', companyKey: 'adobe' },
-            { logo: TikTokLogo, title: 'Algorithm Engineer', company: 'TikTok Technology', companyKey: 'tiktok' },
-            { logo: VisaLogo, title: 'Payment Specialist', company: 'Visa Inc.', companyKey: 'visa' },
+            {
+                id: uuidv4(),
+                logo: IBMLogo,
+                title: 'AI Specialist',
+                company: 'Tập đoàn IBM',
+                companyKey: 'ibm',
+            },
+            {
+                id: uuidv4(),
+                logo: AWSLogo,
+                title: 'Solutions Architect',
+                company: 'Amazon Web Services',
+                companyKey: 'aws',
+            },
+            {
+                id: uuidv4(),
+                logo: ShopeeLogo,
+                title: 'Business Analyst',
+                company: 'Shopee Việt Nam',
+                companyKey: 'shopee',
+            },
+            {
+                id: uuidv4(),
+                logo: OracleLogo,
+                title: 'System Administrator',
+                company: 'Oracle Việt Nam',
+                companyKey: 'oracle',
+            },
+            {
+                id: uuidv4(),
+                logo: GrabLogo,
+                title: 'Product Designer',
+                company: 'Grab Việt Nam',
+                companyKey: 'grab',
+            },
+            {
+                id: uuidv4(),
+                logo: NetflixLogo,
+                title: 'Content Engineer',
+                company: 'Netflix Technology',
+                companyKey: 'netflix',
+            },
+            {
+                id: uuidv4(),
+                logo: AdobeLogo,
+                title: 'UX Designer',
+                company: 'Adobe Systems',
+                companyKey: 'adobe',
+            },
+            {
+                id: uuidv4(),
+                logo: TikTokLogo,
+                title: 'Algorithm Engineer',
+                company: 'TikTok Technology',
+                companyKey: 'tiktok',
+            },
+            {
+                id: uuidv4(),
+                logo: VisaLogo,
+                title: 'Payment Specialist',
+                company: 'Visa Inc.',
+                companyKey: 'visa',
+            },
         ],
     };
 
@@ -244,12 +391,10 @@ const Homepage = (props) => {
                                         <p className={cx('company-name')}>{job.company}</p>
                                     </div>
                                 </div>
-                                <button 
-                                    className={cx('apply-btn')} 
+                                <button
+                                    className={cx('apply-btn')}
                                     onClick={() => {
-                                        if (job.title === 'Electronics Development') {
-                                            navigate('/job-detail');
-                                        }
+                                        navigate(`/job/${job.id}`);
                                     }}
                                 >
                                     {t.seeMore}
