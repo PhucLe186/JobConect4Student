@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import classNames from 'classnames/bind';
 import style from './Home.module.scss';
 import LookJobsImg from '~/asset/img/LookJobs.png';
-import routesconfig from '~/config/routes';
+import routesconfig from '~/routes/routes';
 import { v4 as uuidv4 } from 'uuid';
 // Import company logos
 import LongThanhLogo from '~/asset/img/LongThanh.png';

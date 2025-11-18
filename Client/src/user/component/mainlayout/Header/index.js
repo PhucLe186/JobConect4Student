@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import classNames from 'classnames/bind';
 import styles from './header.module.scss';
-import routesconfig from '~/config/routes';
+import routesconfig from '~/routes/routes';
 
 const cx = classNames.bind(styles);
 

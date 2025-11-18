@@ -1,4 +1,4 @@
-import routesconfig from '~/config/routes';
+import routesconfig from '~/routes/routes';
 import Home from '~/user/component/pages/Home';
 import Community from '~/user/component/pages/Community';
 import Login from '~/user/component/pages/Login';
@@ -34,11 +34,13 @@ const publicRoutes = [
     { path: routesconfig.cvBuilder, component: CVBuilder },
     { path: routesconfig.applicationhistory, component: ApplicationHistory, layout: Default },
     { path: routesconfig.studentprofile, component: StudentProfile, layout: Default },
-
-    { path: routesconfig.adminlogin, component: AdminLogin, layout: AdminLayout },
+    /*****************************************Admin_Page**********************************************************/
+    { path: routesconfig.adminlogin, component: AdminLogin, layout: null },
+];
+const PrivateRoutes = [
     { path: routesconfig.dashboard, component: Dashboard, layout: AdminLayout },
     { path: routesconfig.ForumManagement, component: ForumManagement, layout: AdminLayout },
     { path: routesconfig.JobManagement, component: JobManagement, layout: AdminLayout },
     { path: routesconfig.UserManagement, component: UserManagement, layout: AdminLayout },
 ];
-export { publicRoutes };
+export { publicRoutes, PrivateRoutes };

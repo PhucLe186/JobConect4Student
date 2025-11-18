@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import classNames from 'classnames/bind';
 import style from './Register.module.scss';
-import routesconfig from '~/config/routes';
+import routesconfig from '~/routes/routes';
 
 const cx = classNames.bind(style);
 
@@ -20,12 +20,12 @@ const RegisterForm = () => {
     };
 
     return (
-        <motion.div 
+        <motion.div
             className={cx('Register')}
             initial={{ opacity: 0, x: 100 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -100 }}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
+            transition={{ duration: 0.5, ease: 'easeInOut' }}
         >
             <div className={cx('register-container')}>
                 <div className={cx('register-form')}>
@@ -79,7 +79,9 @@ const RegisterForm = () => {
                 <div className={cx('welcome-panel')}>
                     <h2>Welcome Back!</h2>
                     <p>Already have an Account?</p>
-                    <Link to={routesconfig.login} className={cx('login-btn')}>Login</Link>
+                    <Link to={routesconfig.login} className={cx('login-btn')}>
+                        Login
+                    </Link>
                 </div>
             </div>
         </motion.div>

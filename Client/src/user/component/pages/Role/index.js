@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import classNames from 'classnames/bind';
 import style from './Role.module.scss';
-import routesconfig from '~/config/routes';
+import routesconfig from '~/routes/routes';
 
 const cx = classNames.bind(style);
 const RoleSelection = ({ onRoleSelect }) => {
