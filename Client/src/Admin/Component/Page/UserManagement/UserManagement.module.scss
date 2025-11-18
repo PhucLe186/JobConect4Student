@@ -1,0 +1,240 @@
+.content-section {
+    margin-top: 90px;
+    h2 {
+        color: #2d3748;
+        margin-bottom: 25px;
+        font-size: 24px;
+    }
+}
+
+.back-btn {
+    background: #1f1f20;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+
+    &:hover {
+        background: #1c1c1d;
+        transform: translateY(-1px);
+    }
+}
+
+.section-controls {
+    margin-bottom: 20px;
+}
+
+.search-filter-container {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    max-width: 500px;
+}
+
+.section-search {
+    flex: 1;
+    padding: 10px 15px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.3s ease;
+
+    &:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+}
+
+.filter-dropdown {
+    padding: 10px 15px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+    cursor: pointer;
+    outline: none;
+    min-width: 120px;
+    transition: border-color 0.3s ease;
+
+    &:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+}
+
+.table-container {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th {
+        background: #f7fafc;
+        padding: 18px;
+        text-align: left;
+        font-weight: 600;
+        color: #4a5568;
+        font-size: 14px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    td {
+        padding: 18px;
+        border-bottom: 1px solid #e2e8f0;
+        color: #2d3748;
+        font-size: 14px;
+    }
+
+    tr:hover {
+        background: #f7fafc;
+    }
+}
+
+.status {
+    padding: 6px 35px;
+    border-radius: 25px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    min-width: 10px;
+
+    &.active {
+        background: #c6f6d5;
+        color: #22543d;
+    }
+
+    &.pending {
+        background: #fed7d7;
+        color: #742a2a;
+    }
+}
+
+.btn-edit,
+.btn-view,
+.btn-delete {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-right: 8px;
+    transition: all 0.3s ease;
+    min-width: 70px;
+    text-align: center;
+    display: inline-block;
+
+    &:hover {
+        transform: translateY(-1px);
+        opacity: 0.8;
+    }
+}
+
+.btn-edit {
+    background: #bee3f8;
+    color: #2b6cb0;
+}
+
+.btn-view {
+    background: #c6f6d5;
+    color: #22543d;
+}
+
+.btn-delete {
+    background: #fed7d7;
+    color: #c53030;
+}
+
+@media (max-width: 768px) {
+    .content-section {
+        h2 {
+            font-size: 20px;
+            text-align: center;
+        }
+    }
+
+    .table-container {
+        overflow-x: auto;
+    }
+
+    .data-table {
+        min-width: 600px;
+
+        th,
+        td {
+            padding: 12px 8px;
+            font-size: 13px;
+        }
+    }
+
+    .section-controls {
+        margin-bottom: 15px;
+    }
+
+    .search-filter-container {
+        flex-direction: column;
+        gap: 10px;
+        max-width: none;
+    }
+
+    .section-search,
+    .filter-dropdown {
+        width: 100%;
+    }
+
+    .btn-edit,
+    .btn-view,
+    .btn-delete {
+        padding: 6px 10px;
+        font-size: 11px;
+        margin-right: 4px;
+        min-width: 60px;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .content-section {
+        h2 {
+            font-size: 18px;
+        }
+    }
+
+    .data-table {
+        th,
+        td {
+            padding: 10px 6px;
+            font-size: 12px;
+        }
+    }
+
+    .btn-edit,
+    .btn-view,
+    .btn-delete {
+        padding: 5px 8px;
+        font-size: 10px;
+        margin-right: 3px;
+        min-width: 50px;
+        text-align: center;
+    }
+
+    .back-btn {
+        padding: 8px 15px;
+        font-size: 13px;
+    }
+
+    .section-search,
+    .filter-dropdown {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+}

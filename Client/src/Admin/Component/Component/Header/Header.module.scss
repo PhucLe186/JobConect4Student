@@ -1,0 +1,111 @@
+.admin-header {
+    background: white;
+    padding: 20px 30px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 250px;
+    right: 0;
+    h1 {
+        color: #2d3748;
+        font-size: 26px;
+        font-weight: 600;
+        flex: 1;
+    }
+}
+
+.admin-user {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.user-name {
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: background 0.3s ease;
+    color: #2d3748;
+
+    &:hover {
+        background: rgba(102, 126, 234, 0.1);
+    }
+}
+
+.user-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+    min-width: 180px;
+    z-index: 1000;
+    border: 1px solid #e2e8f0;
+}
+
+.dropdown-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    color: #2d3748;
+    font-size: 14px;
+    border-bottom: 1px solid #f7fafc;
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    &:hover {
+        background: #f7fafc;
+    }
+
+    &:first-child {
+        border-radius: 8px 8px 0 0;
+    }
+
+    &:last-child {
+        border-radius: 0 0 8px 8px;
+    }
+}
+
+@media (max-width: 768px) {
+    .admin-header {
+        padding: 15px 20px;
+        flex-direction: row;
+        gap: 15px;
+        align-items: center;
+        justify-content: space-between;
+
+        h1 {
+            font-size: 22px;
+            text-align: left;
+        }
+    }
+
+    .admin-user {
+        justify-content: flex-end;
+        display: flex !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-header {
+        padding: 12px 15px;
+        flex-direction: row;
+        justify-content: space-between;
+
+        h1 {
+            font-size: 18px;
+        }
+    }
+
+    .admin-user {
+        display: flex !important;
+        justify-content: flex-end;
+    }
+}

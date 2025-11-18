@@ -1,3 +1,5 @@
+import Dashboard from '~/Admin/Component/Page/Dashboard/Dashboard';
+
 const routes = {
     home: '/',
     login: '/login',
@@ -12,6 +14,14 @@ const routes = {
     cvBuilder: '/cv_builder',
     studentprofile: '/studentprofile',
     applicationhistory: '/applicationhistory',
+    ///////////////Admin PAge///////////////////////////////
+    adminlogin: '/adminlogin',
+    dashboard: '/dashboard',
+    ForumManagement: '/forumManagement',
+    JobManagement: '/jobManagement',
+    UserManagement: '/userManagement',
+    header: '/header',
+    sidebar: '/sidebar',
 };
 
 export default routes;

@@ -12,6 +12,13 @@ import CVBuilder from '~/user/component/pages/CVBuilder';
 import ApplicationHistory from '~/user/component/pages/ApplicationHistory';
 import Default from '~/user/component/default/detaillayout';
 import StudentProfile from '~/user/component/pages/StudentProfile';
+import AdminLogin from '~/Admin/Component/Page/Login/AdminLogin';
+import Dashboard from '~/Admin/Component/Page/Dashboard/Dashboard';
+import ForumManagement from '~/Admin/Component/Page/ForumManagement/ForumManagement';
+import JobManagement from '~/Admin/Component/Page/JobManagement/JobManagement';
+import UserManagement from '~/Admin/Component/Page/UserManagement/UserManagement';
+
+import AdminLayout from '~/Admin/Component/Layout/AdminLayout';
 
 const publicRoutes = [
     { path: routesconfig.home, component: Home },
@@ -27,5 +34,11 @@ const publicRoutes = [
     { path: routesconfig.cvBuilder, component: CVBuilder },
     { path: routesconfig.applicationhistory, component: ApplicationHistory, layout: Default },
     { path: routesconfig.studentprofile, component: StudentProfile, layout: Default },
+
+    { path: routesconfig.adminlogin, component: AdminLogin, layout: AdminLayout },
+    { path: routesconfig.dashboard, component: Dashboard, layout: AdminLayout },
+    { path: routesconfig.ForumManagement, component: ForumManagement, layout: AdminLayout },
+    { path: routesconfig.JobManagement, component: JobManagement, layout: AdminLayout },
+    { path: routesconfig.UserManagement, component: UserManagement, layout: AdminLayout },
 ];
 export { publicRoutes };
