@@ -118,6 +118,22 @@ function Header() {
                                 {showDropdown && (
                                     <div className={cx('dropdown-menu')}>
                                         <div className={cx('dropdown-item')}>{user?.name || 'User'}</div>
+                                        {user?.role === 'student' && user && (
+                                            <>
+                                                <button
+                                                    className={cx('dropdown-item')}
+                                                    onClick={() => navigate(routesconfig.studentprofile)}
+                                                >
+                                                    hồ sơ
+                                                </button>
+                                                <button
+                                                    className={cx('dropdown-item')}
+                                                    onClick={() => navigate(routesconfig.applicationhistory)}
+                                                >
+                                                    lịch sử ứng tuyển
+                                                </button>
+                                            </>
+                                        )}
                                         <div className={cx('dropdown-divider')}></div>
                                         <button
                                             className={cx('dropdown-item', 'logout-btn')}

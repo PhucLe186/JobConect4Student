@@ -29,7 +29,7 @@ function Sidebar({ isOpen, onClose, language = 'vi' }) {
 
             <div
                 className={cx('sidebar__menu-item', { 'sidebar__menu-item--active': activeIndex === 0 })}
-                onClick={() => handleClick(0, '/')}
+                onClick={() => handleClick(0, '/studentprofile')}
             >
                 {t.studentProfile}
             </div>

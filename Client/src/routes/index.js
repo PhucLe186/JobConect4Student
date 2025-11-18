@@ -9,6 +9,9 @@ import Company from '~/user/component/pages/Company';
 import CompanyDetail from '~/user/component/pages/CompanyDetail';
 import Role from '~/user/component/pages/Role';
 import CVBuilder from '~/user/component/pages/CVBuilder';
+import ApplicationHistory from '~/user/component/pages/ApplicationHistory';
+import Default from '~/user/component/default/detaillayout';
+import StudentProfile from '~/user/component/pages/StudentProfile';
 
 const publicRoutes = [
     { path: routesconfig.home, component: Home },
@@ -22,5 +25,7 @@ const publicRoutes = [
     { path: routesconfig.companyDetail, component: CompanyDetail },
     { path: routesconfig.role, component: Role, layout: null },
     { path: routesconfig.cvBuilder, component: CVBuilder },
+    { path: routesconfig.applicationhistory, component: ApplicationHistory, layout: Default },
+    { path: routesconfig.studentprofile, component: StudentProfile, layout: Default },
 ];
 export { publicRoutes };
