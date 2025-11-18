@@ -1,18 +1,17 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './sidebar.module.scss';
 import classNames from 'classnames/bind';
 
-import trans__footer from '../../../../component/Translation/footer'; 
+import trans__footer from '../../../../component/Translation/footer';
 
 const cx = classNames.bind(styles);
 
-function Sidebar({ isOpen, onClose, language = 'vi' }) { 
+function Sidebar({ isOpen, onClose, language = 'vi' }) {
     const [activeIndex, setActiveIndex] = useState(0);
     const navigate = useNavigate();
 
-
-    const t = trans__footer[language]; 
+    const t = trans__footer[language];
 
     const handleClick = (index, path) => {
         setActiveIndex(index);
@@ -23,7 +22,6 @@ function Sidebar({ isOpen, onClose, language = 'vi' }) {
     };
 
     return (
-
         <div className={cx('sidebar', { 'is-open': isOpen })}>
             <button className={cx('sidebar__close-btn')} onClick={onClose}>
                 &times;
@@ -33,16 +31,15 @@ function Sidebar({ isOpen, onClose, language = 'vi' }) {
                 className={cx('sidebar__menu-item', { 'sidebar__menu-item--active': activeIndex === 0 })}
                 onClick={() => handleClick(0, '/')}
             >
-                {t.studentProfile} 
+                {t.studentProfile}
             </div>
 
             <div
                 className={cx('sidebar__menu-item', { 'sidebar__menu-item--active': activeIndex === 1 })}
                 onClick={() => handleClick(1, '/applicationhistory')}
             >
-                {t.applicationHistory} 
+                {t.applicationHistory}
             </div>
-
         </div>
     );
 }
