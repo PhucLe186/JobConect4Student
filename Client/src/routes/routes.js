@@ -1,4 +1,5 @@
 import Dashboard from '~/Admin/Component/Page/Dashboard/Dashboard';
+import NewJob from '~/user/component/pages/NewJob/NewJob';
 
 const Routes = {
     home: '/',
@@ -22,6 +23,10 @@ const Routes = {
     UserManagement: '/userManagement',
     header: '/header',
     sidebar: '/sidebar',
+    CandidateManagement:"/CandidateManagement",
+    NTDJobManagement:'/NTDJobManagement',
+    NTDprofile:'/NTDprofile',
+    NewJob:'/newjob'
 };
 
 export default Routes;

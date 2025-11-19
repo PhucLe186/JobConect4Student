@@ -1,0 +1,185 @@
+:root {
+    /* Đồng bộ bảng màu với hệ thống */
+    --primary-color: #0d6efd;
+    --primary-hover: #0069d9;
+    --background-color: #f8f9fa;
+    --card-background: #ffffff;
+    --text-color: #212529;
+    --label-color: #495057; 
+    --border-color: #ced4da;
+    --box-shadow: 0 4px 13px rgba(0, 0, 0, 0.05);
+    --card-radius: 19.25px;
+    --input-radius: 9.5px;
+}
+
+.newjob {
+    max-width: 900px; 
+    margin: 0 auto;
+    padding: 2.2rem 1.375rem 4rem;
+    /* Đổi font sang Inter */
+    font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+.newjob__title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin: 0 0 1.65rem;
+    color: var(--primary-color); /* Tiêu đề màu xanh */
+    text-align: center; /* Căn giữa tiêu đề cho cân đối */
+}
+
+.newjob__form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.925rem;
+}
+
+.newjob__card {
+    background-color: var(--card-background);
+    border: 1px solid #e9ecef;
+    border-radius: var(--card-radius); /* Bo góc 19.25px */
+    padding: 2.2rem;
+    box-shadow: var(--box-shadow);
+}
+
+.newjob__card-title {
+    font-size: 1.5rem; /* Tăng size tiêu đề card (khoảng 24px) */
+    font-weight: 700;
+    margin: 0 0 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f1f3f5; /* Gạch chân dày hơn chút */
+    color: var(--text-color);
+}
+
+.newjob__field {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1.5rem;
+}
+
+.newjob__field:last-child {
+    margin-bottom: 0;
+}
+
+.newjob__label {
+    font-size: 1.1rem; /* Tăng size label (khoảng 17.6px) */
+    font-weight: 600;
+    color: var(--label-color);
+    margin-bottom: 0.55rem;
+}
+
+.newjob__req {
+    color: #dc3545;
+    margin-left: 4px;
+    font-weight: bold;
+}
+
+/* Style input, textarea */
+.newjob__input,
+.newjob__textarea {
+    width: 100%;
+    border: 1px solid var(--border-color);
+    background-color: #fff;
+    border-radius: var(--input-radius); /* Bo góc 9.5px */
+    padding: 0.85rem 1.1rem; /* Tăng padding để ô input cao và thoáng hơn */
+    font-size: 1.1rem; /* Chữ trong input to hơn (khoảng 17.6px) */
+    font-family: inherit;
+    transition: all 0.2s ease;
+    color: var(--text-color);
+}
+
+.newjob__input:focus,
+.newjob__textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15); /* Hiệu ứng focus xanh lan tỏa */
+}
+
+.newjob__input::placeholder,
+.newjob__textarea::placeholder {
+    color: #adb5bd;
+    font-weight: 400;
+}
+
+.newjob__textarea {
+    resize: vertical;
+    min-height: 160px; /* Tăng chiều cao mặc định textarea */
+}
+
+.newjob__grid {
+    display: grid;
+    gap: 1.5rem; 
+}
+
+.newjob__grid--2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.newjob__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.newjob__btn {
+    height: 54px; /* Button cao hơn, dễ bấm */
+    padding: 0 2rem;
+    border-radius: var(--input-radius);
+    border: 1px solid transparent;
+    font-weight: 600;
+    font-size: 1.1rem; /* Chữ trong button to hơn */
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s ease-in-out;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.newjob__btn--save {
+    background-color: var(--primary-color);
+    color: #fff;
+    box-shadow: 0 4px 6px rgba(13, 110, 253, 0.2);
+}
+
+.newjob__btn--save:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(13, 110, 253, 0.25);
+}
+
+.newjob__btn--back {
+    background-color: #e9ecef;
+    color: #495057;
+}
+
+.newjob__btn--back:hover {
+    background-color: #dee2e6;
+    color: #212529;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .newjob__grid--2 {
+        grid-template-columns: 1fr;
+    }
+  
+    .newjob {
+        padding: 1.5rem 1rem 3rem;
+    }
+
+    .newjob__title {
+        font-size: 2rem;
+    }
+
+    .newjob__actions {
+        flex-direction: column-reverse; /* Trên mobile nút Back xuống dưới */
+    }
+
+    .newjob__btn {
+        width: 100%; /* Full width button trên mobile */
+    }
+}

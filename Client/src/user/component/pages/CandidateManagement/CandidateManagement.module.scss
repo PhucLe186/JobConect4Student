@@ -1,0 +1,286 @@
+:root {
+    /* Đồng bộ bảng màu và kích thước với giao diện Profile */
+    --primary-color: #0d6efd;
+    --primary-hover: #0069d9;
+    --background-color: #f8f9fa;
+    --card-background: #ffffff;
+    --text-color: #212529;
+    --text-secondary-color: #6c757d;
+    --border-color: #e9ecef;
+    --box-shadow: 0 4px 13px rgba(0, 0, 0, 0.05);
+    --card-radius: 19.25px;
+    --input-radius: 9.5px;
+}
+
+.cands {
+    /* Đổi font sang Inter */
+    font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--background-color);
+    padding: 2.2rem 1.375rem;
+    color: var(--text-color);
+    min-height: 100vh;
+    
+    /* Căn giữa giống layout Profile */
+    max-width: 1210px; 
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+.cands__title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin: 0 0 1.65rem;
+    color: var(--primary-color); /* Tiêu đề màu xanh */
+}
+
+.cands__panel {
+    background-color: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: var(--card-radius); /* Bo góc lớn */
+    padding: 1.925rem 2.2rem;
+    margin-bottom: 1.925rem;
+    box-shadow: var(--box-shadow);
+}
+
+.cands__panel-title {
+    font-size: 1.375rem;
+    font-weight: 600;
+    margin: 0 0 1.375rem;
+    color: var(--text-color);
+}
+
+.cands__controls {
+    display: flex;
+    align-items: center;
+    gap: 1.1rem;
+}
+
+.cands__search {
+    position: relative;
+    flex-grow: 1;
+}
+
+.cands__search-icon {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 1rem;
+    font-size: 18px;
+    color: var(--text-secondary-color);
+}
+
+.cands__search-input,
+.cands__select-native {
+    width: 100%;
+    height: 48px; /* Tăng chiều cao cho giống form Profile */
+    border: 1px solid var(--border-color);
+    background-color: #fdfdfd;
+    border-radius: var(--input-radius); /* Bo góc input 9.5px */
+    padding: 0 1rem;
+    font-size: 1.1rem;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.cands__search-input:focus,
+.cands__select-native:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15); /* Hiệu ứng focus mới */
+}
+
+.cands__search-input {
+    padding-right: 44px;
+}
+
+.cands__filters {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.cands__select {
+    position: relative;
+    min-width: 220px;
+}
+
+.cands__select-native {
+    appearance: none;
+    padding-right: 36px;
+    cursor: pointer;
+}
+
+.cands__select-caret {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    font-size: 18px;
+    color: #8c8c8c;
+}
+
+.cands__filter-btn {
+    height: 48px; /* Đồng bộ chiều cao với input */
+    width: 48px;
+    border-radius: var(--input-radius);
+    border: 1px solid var(--border-color);
+    background-color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: var(--text-secondary-color);
+    transition: all 0.2s;
+}
+
+.cands__filter-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background-color: #f0f7ff;
+}
+
+.cands__list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+}
+
+/* CARD ỨNG VIÊN */
+.cand-card {
+    background-color: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: var(--card-radius); /* Bo góc lớn 19.25px */
+    padding: 1.925rem;
+    box-shadow: var(--box-shadow);
+    transition: all 0.3s ease;
+}
+
+.cand-card:hover {
+    transform: translateY(-3px); /* Thêm hiệu ứng bay nhẹ khi hover */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    border-color: #dbeafe;
+}
+
+.cand-card__header {
+    display: flex;
+    align-items: center;
+    gap: 1.375rem;
+    margin-bottom: 1.375rem;
+    padding-bottom: 1.375rem;
+    border-bottom: 1px dashed var(--border-color);
+}
+
+.cand-card__avatar {
+    width: 72px; /* Tăng kích thước avatar một chút */
+    height: 72px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.cand-card__headings {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.cand-card__name {
+    font-weight: 700;
+    font-size: 1.25rem;
+    margin: 0;
+    color: var(--primary-color);
+}
+
+.cand-card__role {
+    color: var(--text-secondary-color);
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.cand-card__info {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.375rem;
+    color: var(--text-secondary-color);
+    font-size: 1rem;
+}
+
+.cand-card__info-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cand-card__icon {
+    font-size: 18px;
+    min-width: 24px;
+    text-align: center;
+    color: var(--primary-color); /* Icon màu xanh */
+    opacity: 0.8;
+}
+
+/* Phần Goal */
+.cand-card__goal-section {
+    background-color: #f0f7ff; /* Nền xanh rất nhạt thay vì xám */
+    padding: 1.1rem;
+    border-radius: var(--input-radius); /* Bo góc 9.5px */
+    margin-top: 1rem;
+    border: 1px solid #e1effe;
+}
+
+.cand-card__goal-label {
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: var(--primary-color);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.cand-card__goal-text {
+    font-size: 1rem;
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .cands {
+        padding: 1.5rem 1rem;
+    }
+    
+    .cands__controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+
+    .cands__select, .cands__filter-btn {
+        width: 100%;
+    }
+    
+    .cands__filter-btn {
+        width: 100%; /* Button fill full row on mobile */
+    }
+
+    .cand-card__header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .cand-card__info {
+        grid-template-columns: 1fr;
+    }
+}

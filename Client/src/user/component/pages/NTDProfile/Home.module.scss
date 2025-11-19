@@ -1,0 +1,240 @@
+:root {
+    /* Đã cập nhật theo bảng màu của giao diện Profile trước đó */
+    --primary-color: #0d6efd; 
+    --primary-hover: #0069d9;
+    --background-color: #f8f9fa;
+    --card-background: #ffffff;
+    --text-color: #212529;
+    --label-color: #6c757d;
+    --border-color: #e9ecef;
+    --input-background: #fdfdfd;
+    --box-shadow: 0 4px 13px rgba(0, 0, 0, 0.05);
+    --card-radius: 19.25px;
+    --input-radius: 9.5px;
+}
+
+.company {
+    /* Đổi sang font Inter */
+    font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--background-color);
+    padding: 2.2rem 1.375rem;
+    color: var(--text-color);
+    max-width: 1210px; /* Căn giữa giống layout cũ */
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+.company *,
+.company *::before,
+.company *::after {
+    box-sizing: border-box;
+}
+
+.company input,
+.company textarea,
+.company button {
+    font-family: inherit;
+    font-size: 100%;
+    margin: 0;
+}
+
+.company__title {
+    font-size: 2.2rem; /* Tăng kích thước tiêu đề */
+    font-weight: 700;
+    margin-bottom: 1.65rem;
+    color: var(--primary-color); /* Tiêu đề màu xanh */
+}
+
+.company__section {
+    background-color: var(--card-background);
+    border-radius: var(--card-radius); /* Bo góc lớn 19.25px */
+    box-shadow: var(--box-shadow);
+    border: 1px solid var(--border-color);
+    padding: 1.925rem 2.2rem;
+    margin-bottom: 1.925rem;
+}
+
+.company__section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 1.375rem;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 1.375rem;
+}
+
+.company__section-icon {
+    font-size: 24px;
+    color: var(--primary-color);
+}
+
+.company__section-title {
+    font-size: 1.375rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--primary-color);
+}
+
+.company__row {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.375rem;
+}
+
+.company__row--gap-lg {
+    gap: 2rem;
+}
+
+.company__col {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+}
+
+.company__col--grow {
+    flex-grow: 1;
+}
+
+.company__grid {
+    display: grid;
+    gap: 1.1rem;
+}
+
+.company__grid--2 {
+    grid-template-columns: repeat(auto-fit, minmax(242px, 1fr)); /* Responsive grid tự động */
+}
+
+.company__avatar {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+}
+
+.company__avatar-img {
+    width: 132px; /* Kích thước lớn hơn theo mẫu cũ */
+    height: 132px;
+    border-radius: 50%;
+    object-fit: cover;
+    background-color: var(--background-color);
+    border: 2px dashed var(--border-color);
+    padding: 4px;
+}
+
+.company__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+}
+
+.company__label {
+    font-size: 1.05rem;
+    font-weight: 500;
+    margin-bottom: 0;
+    color: var(--label-color);
+}
+
+.company__input,
+.company__textarea {
+    width: 100%;
+    padding: 0.825rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--input-radius); /* Bo góc nhỏ 9.5px */
+    font-size: 1.1rem;
+    background-color: var(--input-background);
+    transition: all 0.2s ease;
+}
+
+.company__input::placeholder,
+.company__textarea::placeholder {
+    color: #adb5bd;
+}
+
+.company__input:focus,
+.company__textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+    background-color: #fff;
+}
+
+.company__textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.company__footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1rem;
+    gap: 0.825rem;
+}
+
+.company__btn {
+    border: 1px solid transparent;
+    padding: 0.77rem 1.32rem;
+    border-radius: var(--input-radius);
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.company__btn:hover {
+    transform: translateY(-2px);
+}
+
+.company__btn:active {
+    transform: scale(0.98);
+}
+
+.company__btn--primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.company__btn--primary:hover {
+    background-color: var(--primary-hover);
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.2);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .company {
+        padding: 1rem 0.75rem;
+    }
+
+    .company__title {
+        font-size: 1.8rem;
+        text-align: center;
+    }
+
+    .company__section {
+        padding: 1.5rem 1.2rem;
+    }
+
+    .company__row {
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+    }
+    
+    .company__col--grow {
+        width: 100%;
+    }
+
+    .company__grid--2 {
+        grid-template-columns: 1fr; 
+    }
+
+    .company__footer {
+        justify-content: stretch;
+        flex-direction: column;
+    }
+
+    .company__btn {
+        width: 100%;
+    }
+}

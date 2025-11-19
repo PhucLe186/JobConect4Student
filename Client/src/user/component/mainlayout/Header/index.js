@@ -119,7 +119,7 @@ function Header() {
                                 {showDropdown && (
                                     <div className={cx('dropdown-menu')}>
                                         <div className={cx('dropdown-item')}>{user?.name || 'User'}</div>
-                                        {user?.role === 'student' && user && (
+                                        {user?.role === 'student' && user ? (
                                             <>
                                                 <button
                                                     className={cx('dropdown-item')}
@@ -132,6 +132,27 @@ function Header() {
                                                     onClick={() => navigate(routesconfig.applicationhistory)}
                                                 >
                                                     lịch sử ứng tuyển
+                                                </button>
+                                            </>
+                                        ):(
+                                             <>
+                                                <button
+                                                    className={cx('dropdown-item')}
+                                                    onClick={() => navigate(routesconfig.CandidateManagement)}
+                                                >
+                                                    hồ sơ
+                                                </button>
+                                                <button
+                                                    className={cx('dropdown-item')}
+                                                    onClick={() => navigate(routesconfig.NTDJobManagement)}
+                                                >
+                                                    lịch sử ứng tuyển
+                                                </button>
+                                                <button
+                                                    className={cx('dropdown-item')}
+                                                    onClick={() => navigate(routesconfig.NTDprofile)}
+                                                >
+                                                    hồ sơ nhà tuyển dụng
                                                 </button>
                                             </>
                                         )}

@@ -18,6 +18,10 @@ import ForumManagement from '~/Admin/Component/Page/ForumManagement/ForumManagem
 import JobManagement from '~/Admin/Component/Page/JobManagement/JobManagement';
 import UserManagement from '~/Admin/Component/Page/UserManagement/UserManagement';
 import AdminLayout from '~/Admin/Component/Layout/AdminLayout';
+import CandidateManagement from '~/user/component/pages/CandidateManagement/CandidateManagement';
+import NTDJobManagement from '~/user/component/pages/JobManagement/JobManagement'
+import NTDProfile from '~/user/component/pages/NTDProfile';
+import NewJob from '~/user/component/pages/NewJob/NewJob';
 
 const publicRoutes = [
     { path: routesconfig.home, component: Home },
@@ -33,12 +37,17 @@ const publicRoutes = [
     { path: routesconfig.cvBuilder, component: CVBuilder },
     { path: routesconfig.applicationhistory, component: ApplicationHistory, layout: Default },
     { path: routesconfig.studentprofile, component: StudentProfile, layout: Default },
+    { path: routesconfig.CandidateManagement, component: CandidateManagement, layout: Default  },
+    { path: routesconfig.NTDJobManagement, component: NTDJobManagement, layout: Default  },
+    { path: routesconfig.NTDprofile, component: NTDProfile, layout: Default  },
+    { path: routesconfig.NewJob, component: NewJob, layout: Default  },
     /*****************************************Admin_Page**********************************************************/
     { path: routesconfig.adminlogin, component: AdminLogin, layout: null },
     { path: routesconfig.dashboard, component: Dashboard, layout: AdminLayout },
     { path: routesconfig.ForumManagement, component: ForumManagement, layout: AdminLayout },
     { path: routesconfig.JobManagement, component: JobManagement, layout: AdminLayout },
     { path: routesconfig.UserManagement, component: UserManagement, layout: AdminLayout },
+
 ];
 const PrivateRoutes = [
     { path: routesconfig.dashboard, component: Dashboard, layout: AdminLayout },
