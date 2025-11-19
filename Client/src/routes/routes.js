@@ -1,6 +1,6 @@
 import Dashboard from '~/Admin/Component/Page/Dashboard/Dashboard';
 
-const routes = {
+const Routes = {
     home: '/',
     login: '/login',
     register: '/register',
@@ -24,4 +24,4 @@ const routes = {
     sidebar: '/sidebar',
 };
 
-export default routes;
+export default Routes;

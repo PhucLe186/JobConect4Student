@@ -140,7 +140,7 @@ function StudentProfile({ language = 'vi' }) {
                 <section className={cx("profile-form__section", "card")}>
                     <h2 className={cx("card__title")}>{t.skillsTitle}</h2>
                     <div className={cx("skills")}>
-                        <form className={cx("skills__form")} onSubmit={handleAddSkill}>
+                        <div className={cx("skills__form")} onSubmit={handleAddSkill}>
                             <div className={cx("form-group")}>
                                 <label className={cx("form-group__label")} htmlFor="skill_id">{t.selectSkillLabel}</label>
                                 <select id="skill_id" name="skill_id" className={cx("form-group__input")} value={selectedSkillId} onChange={(e) => setSelectedSkillId(Number(e.target.value))}>
@@ -153,7 +153,7 @@ function StudentProfile({ language = 'vi' }) {
                                 <span className={cx("skills__level-indicator")}>{level}</span>
                             </div>
                             <button type="submit" className={cx("btn", "btn--primary", "skills__add-btn")}>{t.addSkillButton}</button>
-                        </form>
+                        </div>
                         <ul className={cx("skills__list")}>
                             {studentSkills.map(({ skill_id, level }) => (
                                 <li key={skill_id} className={cx("skills__item")}>

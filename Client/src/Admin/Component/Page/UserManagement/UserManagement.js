@@ -1,12 +1,17 @@
 import React from 'react';
 import classNames from 'classnames/bind';
 import styles from './UserManagement.module.scss';
+import { useNavigate } from 'react-router-dom';
 const cx = classNames.bind(styles);
 
 const UserManagement = () => {
+    const Navigate=useNavigate()
+    const handleBack=()=> {
+        Navigate('/dashboard')
+    }
     return (
         <div className={cx('content-section')}>
-            <button className={cx('back-btn')}>backToDashboard</button>
+            <button className={cx('back-btn')} onClick={handleBack}>backToDashboard</button>
             <h2>userManagement</h2>
             <div className={cx('section-controls')}>
                 <div className={cx('search-filter-container')}>

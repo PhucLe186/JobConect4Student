@@ -7,7 +7,7 @@ import { AuthProvider } from '~/context/AuthContext';
 function App() {
     return (
         <AuthProvider>
-            <div>
+           
                 <Router>
                     <div>
                         <Routes>
@@ -35,7 +35,7 @@ function App() {
                         </Routes>
                     </div>
                 </Router>
-            </div>
+            
         </AuthProvider>
     );
 }

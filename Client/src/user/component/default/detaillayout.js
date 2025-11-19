@@ -17,17 +17,15 @@ function Default({ children }) {
         setSidebarOpen(!isSidebarOpen);
     };
 
-    const childrenWithProps = React.isValidElement(children) ? cloneElement(children, { language }) : children;
-
     return (
         <div>
-            <Header onToggleSidebar={toggleSidebar} language={language} onLanguageChange={setLanguage} />
+            <Header />
 
             {isSidebarOpen && <div className={cx('overlay')} onClick={toggleSidebar}></div>}
 
             <div className={cx('container__sidebar')}>
-                <Sidebar isOpen={isSidebarOpen} onClose={toggleSidebar} language={language} />
-                <div className={cx('content__children')}>{childrenWithProps}</div>
+                <Sidebar language={language} />
+                <div className={cx('content__children')}>{children}</div>
             </div>
         </div>
     );

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import classNames from 'classnames/bind';
 import styles from './ForumManagement.module.scss';
+import { useNavigate } from 'react-router-dom';
 const cx = classNames.bind(styles);
 
 const ForumManagement = () => {
+    const Navigate=useNavigate()
     const [forumPosts, setForumPosts] = useState([
         {
             id: 1,
@@ -46,9 +48,12 @@ const ForumManagement = () => {
             status: 'active',
         },
     ]);
+    const handleBack=()=> {
+        Navigate('/dashboard')
+    }
     return (
         <div className={cx('content-section')}>
-            <button className={cx('back-btn')}>backToDashboard</button>
+            <button className={cx('back-btn')} onClick={handleBack}>backToDashboard</button>
             <h2>forumManagement</h2>
             <div className={cx('forum-stats')}>
                 <div className={cx('forum-stat-card')}>

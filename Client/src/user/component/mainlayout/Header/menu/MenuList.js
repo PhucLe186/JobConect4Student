@@ -5,7 +5,7 @@ import classNames from 'classnames/bind';
 const cx = classNames.bind(styles);
 function MenuItem({ to, title }) {
     return (
-        <NavLink className={(nav) => cx('list', { active: nav.isActive })} to={to}>
+        <NavLink className={(nav) => cx('sidebar__menu_item', { active: nav.isActive })} to={to}>
             {title}
         </NavLink>
     );

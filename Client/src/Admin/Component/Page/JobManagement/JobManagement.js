@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import classNames from 'classnames/bind';
 import styles from './JobManagement.module.scss';
+import { useNavigate } from 'react-router-dom';
 
 const cx = classNames.bind(styles);
 
 const JobManagement = () => {
+    const Navigate=useNavigate()
     const [jobs, setJobs] = useState([
         { id: 1, title: 'Frontend Developer', company: 'FPT Software', salary: '15-25 triệu', status: 'recruiting' },
         { id: 2, title: 'Backend Developer', company: 'Viettel Group', salary: '18-30 triệu', status: 'recruiting' },
@@ -18,10 +20,14 @@ const JobManagement = () => {
         { id: 10, title: 'Business Analyst', company: 'VNPAY', salary: '15-25 triệu', status: 'pending' },
         { id: 11, title: 'Fullstack Developer', company: 'Tech Corp', salary: '15-20 triệu', status: 'pending' },
     ]);
+     const handleBack=()=> {
+        Navigate('/dashboard')
+    }
 
     return (
+        
         <div className={cx('content-section')}>
-            <button className={cx('back-btn')}>backToDashboard</button>
+            <button className={cx('back-btn')} onClick={handleBack}>backToDashboard</button>
             <h2>jobManagement</h2>
             <div className={cx('section-controls')}>
                 <div className={cx('search-filter-container')}>
