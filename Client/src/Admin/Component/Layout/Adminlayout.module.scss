@@ -1,16 +1,20 @@
 .container {
+    display: flex;
     width: 100%;
+    min-height: 100vh;
 }
 
 .inner {
-    padding-left: 250px;
-    width: 100%;
-    box-sizing: border-box;
-    background: #f7f9fc;
-}
-
-.page {
     padding: 20px;
-    grid-template-columns: repeat(2, 1fr);
-    grid-gap: 20px;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    margin-left: 250px; 
+    width: calc(100% - 250px);
+}
+@media (max-width: 1024px) {
+    .inner {
+        width: 100% !important;
+        margin-left: 0 !important;
+    }
 }

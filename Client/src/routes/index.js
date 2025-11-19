@@ -17,7 +17,6 @@ import Dashboard from '~/Admin/Component/Page/Dashboard/Dashboard';
 import ForumManagement from '~/Admin/Component/Page/ForumManagement/ForumManagement';
 import JobManagement from '~/Admin/Component/Page/JobManagement/JobManagement';
 import UserManagement from '~/Admin/Component/Page/UserManagement/UserManagement';
-
 import AdminLayout from '~/Admin/Component/Layout/AdminLayout';
 
 const publicRoutes = [
@@ -36,6 +35,10 @@ const publicRoutes = [
     { path: routesconfig.studentprofile, component: StudentProfile, layout: Default },
     /*****************************************Admin_Page**********************************************************/
     { path: routesconfig.adminlogin, component: AdminLogin, layout: null },
+    { path: routesconfig.dashboard, component: Dashboard, layout: AdminLayout },
+    { path: routesconfig.ForumManagement, component: ForumManagement, layout: AdminLayout },
+    { path: routesconfig.JobManagement, component: JobManagement, layout: AdminLayout },
+    { path: routesconfig.UserManagement, component: UserManagement, layout: AdminLayout },
 ];
 const PrivateRoutes = [
     { path: routesconfig.dashboard, component: Dashboard, layout: AdminLayout },

@@ -11,7 +11,7 @@ function AdminLayout({ children }) {
             <Sidebar />
             <div className={cx('inner')}>
                 <Header />
-                <div className={cx('page')}>{children}</div>
+                <>{children}</>
             </div>
         </div>
     );
