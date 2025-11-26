@@ -1,8 +1,18 @@
-import { Body, Controller, Get, Post, Res, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Res,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import type { Response, Request } from 'express';
+import { JwtUser } from './interface/jwt-user.interface';
+import { JwtAuthGuard } from './jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -21,5 +31,18 @@ export class AuthController {
   @Get('logout')
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     return this.authService.Logout(req, res);
+  }
+  @Get('refreshtoken')
+  async refreshtoken(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.authService.RefreshToken(req, res);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('updatelang')
+  async UpdateLanguage(@Body('lang') lang: string, @Req() req: Request) {
+    return this.authService.ChangeLanguage(lang, req.user as JwtUser);
   }
 }

@@ -5,14 +5,11 @@ import style from './Role.module.scss';
 import routesconfig from '~/routes/routes';
 
 const cx = classNames.bind(style);
-const RoleSelection = ({ onRoleSelect }) => {
+const RoleSelection = () => {
     const navigate = useNavigate();
 
     const handleRoleSelect = (role) => {
-        console.log('Selected role:', role);
-        // Save selected role to localStorage
-        localStorage.setItem('selectedRole', role);
-        navigate(routesconfig.register);
+        navigate(`${routesconfig.register}?role=${role}`, {replace: true});
     };
     return (
         <div className={cx('role-selection-container')}>

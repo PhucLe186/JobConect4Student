@@ -1,78 +1,52 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useContext } from 'react';
+import { href, Link, useNavigate } from 'react-router-dom';
 import classNames from 'classnames/bind';
 import styles from './header.module.scss';
 import routesconfig from '~/routes/routes';
+import { AuthContext } from '~/context/AuthContext';
+import Menu from './menu/Menu';
+import MenuItem from './menu/MenuList';
+import translations from '~/component/Translation';
+import vietnamFlag from '../../../../asset/img/vietnam-flag.svg';
+import ukFlag from '../../../../asset/img/uk-flag.svg';
 
 
 const cx = classNames.bind(styles);
 
 function Header() {
-    const [language, setLanguage] = useState('vi');
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [user, setUser] = useState(null);
+    const {language, updateLang}= useContext(AuthContext);
+    const {user, logout} = useContext(AuthContext);
     const navigate = useNavigate();
     const [showDropdown, setShowDropdown] = useState(false);
 
-    // Check login status from localStorage
-    useEffect(() => {
-        const checkLoginStatus = () => {
-            const loginStatus = localStorage.getItem('isLoggedIn');
-            const userData = localStorage.getItem('userData');
-            console.log('Checking login status:', loginStatus, userData);
-            if (loginStatus === 'true') {
-                setIsLoggedIn(true);
-                setUser(userData ? JSON.parse(userData) : { name: 'User' });
-            } else {
-                setIsLoggedIn(false);
-                setUser(null);
-            }
-        };
-
-        checkLoginStatus();
-
-        // Listen for storage changes
-        window.addEventListener('storage', checkLoginStatus);
-
-        // Custom event listener for same-tab changes
-        window.addEventListener('loginStatusChanged', checkLoginStatus);
-
-        return () => {
-            window.removeEventListener('storage', checkLoginStatus);
-            window.removeEventListener('loginStatusChanged', checkLoginStatus);
-        };
-    }, []);
-
-    const logout = () => {
-        setIsLoggedIn(false);
-        setUser(null);
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('userData');
+    const handleLogout = async(e) => {
+            e.preventDefault();
+            await logout()
     };
+    const t = translations[language|| 'vi'];
 
-    console.log('Header - isLoggedIn:', isLoggedIn, 'user:', user);
+    const page=[
+        { href: routesconfig.company, title: t.company },
+        { href: routesconfig.jobs, title: t.jobs },
+        { href: routesconfig.community, title: t.community},
+        { href: routesconfig.contact, title: t.contact },
+        { href: routesconfig.cvBuilder, title: t.cvBuilder},
+    ]
+   
+    const userMenuItems = user
+    ? user.type === 'student'
+        ? [
+            { href: routesconfig.studentprofile, title: t.studentProfile },
+            { href: routesconfig.applicationhistory, title: t.applicationHistory }
+        ]
+        : [
+            { href: routesconfig.CandidateManagement, title: t.candidateManagement },
+            { href: routesconfig.NTDJobManagement, title: t.jobManagement },
+            { href: routesconfig.NTDprofile, title: t.companyProfile },
+        ]
+    : [];
 
-    const translations = {
-        vi: {
-            company: 'Công ty',
-            jobs: 'Việc làm',
-            community: 'Cộng đồng',
-            contact: 'Liên hệ',
-            signIn: 'Đăng nhập',
-            signUp: 'Đăng ký',
-        },
-        en: {
-            company: 'Company',
-            jobs: 'Jobs',
-            community: 'Community',
-            contact: 'Contact',
-            signIn: 'Log In',
-            signUp: 'Sign Up',
-        },
-    };
-
-    const t = translations[language];
-
+    
     return (
         <nav className={cx('navbar')}>
             <div className={cx('container')}>
@@ -83,32 +57,20 @@ function Header() {
                             <span style={{ color: '#28a745' }}>4Students</span>
                         </Link>
                     </div>
-                    <div className={cx('nav-menu')}>
-                        <Link to={routesconfig.company} className={cx('nav-link')}>
-                            {t.company}
-                        </Link>
-                        <Link to={routesconfig.jobs} className={cx('nav-link')}>
-                            {t.jobs}
-                        </Link>
-                        <Link to={routesconfig.community} className={cx('nav-link')}>
-                            {t.community}
-                        </Link>
-                        <Link to={routesconfig.cvBuilder} className={cx('nav-link')}>
-                            CV Builder
-                        </Link>
-                        <Link to={routesconfig.contact} className={cx('nav-link')}>
-                            {t.contact}
-                        </Link>
-                    </div>
+                    <Menu>
+                        {page.map((item, idx)=> (
+                            <MenuItem key={idx} to={item.href} title={item.title} />
+                        ))}
+                    </Menu>
                     <div className={cx('nav-actions')}>
-                        {isLoggedIn ? (
+                        {user ? (
                             <div className={cx('user-menu')}>
                                 <div className={cx('user-avatar')} onClick={() => setShowDropdown(!showDropdown)}>
                                     {user?.avatar ? (
                                         <img src={user.avatar} alt="User" className={cx('avatar-img')} />
                                     ) : (
                                         <div className={cx('avatar-placeholder')}>
-                                            {user?.role === 'employer' ? (
+                                            {user?.type === 'employer' ? (
                                                 <i className="fas fa-building"></i>
                                             ) : (
                                                 <i className="fas fa-graduation-cap"></i>
@@ -119,48 +81,22 @@ function Header() {
                                 {showDropdown && (
                                     <div className={cx('dropdown-menu')}>
                                         <div className={cx('dropdown-item')}>{user?.name || 'User'}</div>
-                                        {user?.role === 'student' && user ? (
-                                            <>
+                                        {user && (
+                                            userMenuItems?.map((item, idx)=> (
                                                 <button
+                                                key={idx}
                                                     className={cx('dropdown-item')}
-                                                    onClick={() => navigate(routesconfig.studentprofile)}
+                                                    onClick={() => navigate(item.href)}
                                                 >
-                                                    hồ sơ
+                                                    {item.title}
                                                 </button>
-                                                <button
-                                                    className={cx('dropdown-item')}
-                                                    onClick={() => navigate(routesconfig.applicationhistory)}
-                                                >
-                                                    lịch sử ứng tuyển
-                                                </button>
-                                            </>
-                                        ):(
-                                             <>
-                                                <button
-                                                    className={cx('dropdown-item')}
-                                                    onClick={() => navigate(routesconfig.CandidateManagement)}
-                                                >
-                                                    hồ sơ
-                                                </button>
-                                                <button
-                                                    className={cx('dropdown-item')}
-                                                    onClick={() => navigate(routesconfig.NTDJobManagement)}
-                                                >
-                                                    lịch sử ứng tuyển
-                                                </button>
-                                                <button
-                                                    className={cx('dropdown-item')}
-                                                    onClick={() => navigate(routesconfig.NTDprofile)}
-                                                >
-                                                    hồ sơ nhà tuyển dụng
-                                                </button>
-                                            </>
+                                            ))
                                         )}
                                         <div className={cx('dropdown-divider')}></div>
                                         <button
                                             className={cx('dropdown-item', 'logout-btn')}
-                                            onClick={() => {
-                                                logout();
+                                            onClick={(e) => {
+                                                handleLogout(e);
                                                 setShowDropdown(false);
                                                 navigate(routesconfig.home);
                                             }}
@@ -180,6 +116,17 @@ function Header() {
                                 </Link>
                             </>
                         )}
+                         <button
+                            className={cx('header__lang-btn')}
+                            onClick={()=> updateLang()}
+                           
+                        >
+                            <img
+                                src={language === 'vi' ? vietnamFlag : ukFlag}
+                                alt={language === 'vi' ? 'VI' : 'EN'}
+                                className={cx('header__flag')}
+                            />
+                        </button>
                     </div>
                 </div>
             </div>

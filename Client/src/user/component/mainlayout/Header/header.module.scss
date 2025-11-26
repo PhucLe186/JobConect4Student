@@ -135,6 +135,19 @@
     border-radius: 50%;
     object-fit: cover;
 }
+.header__lang-btn {
+    background: #fff;
+    border: 1px solid #6c757d;
+    border-radius: 8px;
+    padding: 6px 10px;
+    cursor: pointer;
+}
+
+.header__flag {
+    width: 20px;
+    height: 14px;
+    display: block;
+}
 
 .avatar-placeholder {
     width: 100%;

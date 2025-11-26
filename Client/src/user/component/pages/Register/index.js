@@ -1,22 +1,34 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import classNames from 'classnames/bind';
 import style from './Register.module.scss';
 import routesconfig from '~/routes/routes';
+import { AuthContext } from '~/context/AuthContext';
 
 const cx = classNames.bind(style);
 
 const RegisterForm = () => {
+    const params = new URLSearchParams(window.location.search);
+    const role = params.get("role");
+    const {register}= useContext(AuthContext)
+
     const [genderSelected, setGenderSelected] = useState(false);
     const navigate = useNavigate();
+    const [Data, setData]= useState({
+        name:'',
+        email:'',
+        password:'',
+        Confirm_Password:'',
+        gender:'',
+        dateOfbirth:'',
+    })
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log('Register submitted');
-        // Add registration logic here
-        // After successful registration, navigate to login
-        navigate(routesconfig.login);
+        Data['role']=role
+        Data['Confirm_Password']=undefined
+        register(Data)
     };
 
     return (
@@ -32,28 +44,54 @@ const RegisterForm = () => {
                     <h1>Registration</h1>
                     <form onSubmit={handleSubmit}>
                         <div className={cx('input-box')}>
-                            <input type="text" placeholder="Username" required />
+                            <input 
+                                type="text"
+                                placeholder="Name" 
+                                value={Data.name} 
+                                onChange={e=> setData({...Data, name: e.target.value} )} 
+                                required />
                             <i className={cx('fa-solid fa-user')}></i>
                         </div>
                         <div className={cx('input-box')}>
-                            <input type="email" placeholder="Email" required />
+                            <input 
+                            type="email" 
+                            placeholder="Email" 
+                            required
+                            value={Data.email} 
+                            onChange={e=>setData({...Data, email: e.target.value} )}
+                            />
                             <i className={cx('fa-solid fa-envelope')}></i>
                         </div>
                         <div className={cx('input-box')}>
-                            <input type="password" placeholder="Password" required />
+                            <input 
+                                type="password"
+                                placeholder="Password" 
+                                required
+                                value={Data.password} 
+                                onChange={e=> setData({...Data, password: e.target.value} )}  />
                             <i className={cx('fa-solid fa-lock')}></i>
                         </div>
                         <div className={cx('input-box')}>
-                            <input type="password" placeholder="Confirm Password" required />
+                            <input 
+                            type="password" 
+                            placeholder="Confirm Password"
+                            value={Data.Confirm_Password} 
+                            onChange={e=> setData({...Data, Confirm_Password: e.target.value} )} 
+                            required />
                             <i className={cx('fa-solid fa-lock')}></i>
                         </div>
                         <div className={cx('input-row')}>
                             <div className={cx('input-box', 'half-width')}>
-                                <input type="date" placeholder="mm/dd/yyyy" required />
+                                <input 
+                                type="date" 
+                                placeholder="mm/dd/yyyy" 
+                                 value={Data.dateOfbirth} 
+                                onChange={e=> setData({...Data, dateOfbirth: e.target.value} )} 
+                                required />
                                 <i className={cx('fa-solid fa-calendar')}></i>
                             </div>
                             <div className={cx('input-box', 'half-width')}>
-                                <select required onChange={(e) => setGenderSelected(e.target.value !== '')}>
+                                <select required value={Data.gender} onChange={(e) => setData({...Data, gender: e.target.value})}>
                                     <option value="">Gender</option>
                                     <option value="male">Male</option>
                                     <option value="female">Female</option>

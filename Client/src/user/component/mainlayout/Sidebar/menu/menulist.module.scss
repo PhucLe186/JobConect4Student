@@ -1,0 +1,54 @@
+.sidebar {
+    background-color: #0d6efd;
+    color: #e2e6ea;
+    width: 210px;
+    min-height: 100vh;
+    box-sizing: border-box;
+
+    /* --- THAY ĐỔI QUAN TRỌNG --- */
+    position: relative; /* Luôn cần để định vị nút con */
+    padding: 20px 15px; /* Padding mặc định cho desktop, đẩy menu lên cao */
+}
+
+.sidebar__menu_item {
+    display: block;
+    padding: 12px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    color: #e2e6ea;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+        background-color: #0b5ed7;
+        color: #ffffff;
+    }
+    &.active {
+        background-color: #0a58ca;
+    color: #ffffff;
+    font-weight: 600;
+    }
+}
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1010;
+        height: 100%;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-in-out;
+        
+        /* Chỉ đẩy menu xuống khi ở chế độ điện thoại */
+        padding-top: 50px; 
+
+        &.is-open {
+            transform: translateX(0);
+        }
+    }
+
+    .sidebar__close-btn {
+        display: block; // Chỉ hiện nút "X" trên mobile
+    }
+}

@@ -55,7 +55,6 @@ export class EmployerService {
       website,
       logo,
     });
-
     return { message: 'update thành công' };
   }
 }

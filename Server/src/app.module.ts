@@ -9,6 +9,10 @@ import { StudentModule } from './modules/student/student.module';
 import { JobsController } from './modules/jobs/jobs.controller';
 import { JobsService } from './modules/jobs/jobs.service';
 import { JobsModule } from './modules/jobs/jobs.module';
+import { ResumeModule } from './modules/resume/resume.module';
+import { SkillsModule } from './modules/skills/skills.module';
+import { ApplicationsService } from './modules/applications/applications.service';
+import { ApplicationsModule } from './modules/applications/applications.module';
 
 @Module({
   imports: [
@@ -19,8 +23,11 @@ import { JobsModule } from './modules/jobs/jobs.module';
     EmployerModule,
     StudentModule,
     JobsModule,
+    ResumeModule,
+    SkillsModule,
+    ApplicationsModule,
   ],
-  controllers: [AppController, JobsController],
-  providers: [AppService, JobsService],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}

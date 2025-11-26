@@ -1,64 +1,32 @@
 import { useContext, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import styles from './sidebar.module.scss';
 import classNames from 'classnames/bind';
 import Routesconfig  from  '~/routes/routes';
-import trans__footer from '../../../../component/Translation/footer';
-import Menu from '../Header/menu/Menu';
-import MenuItem from '../Header/menu/MenuList';
-
+import Menu from './menu/Menu';
+import MenuItem from './menu/MenuList';
+import { AuthContext } from '~/context/AuthContext';
+import translations from '~/component/Translation';
 
 
 const cx = classNames.bind(styles);
 
-function Sidebar({language}) {
+function Sidebar() {
+   const [language, setLanguage] = useState('vi');
     const [isOpen, setIsopen]= useState(true)
-    const [user, setUser] = useState(null);
-     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const navigate = useNavigate();
+    const {user} = useContext(AuthContext);
 
-    useEffect(() => {
-            const checkLoginStatus = () => {
-                const loginStatus = localStorage.getItem('isLoggedIn');
-                const userData = localStorage.getItem('userData');
-                console.log('Checking login status:', loginStatus, userData);
-                if (loginStatus === 'true') {
-                    setIsLoggedIn(true);
-                    setUser(userData ? JSON.parse(userData) : { name: 'User' });
-                } else {
-                    setIsLoggedIn(false);
-                    setUser(null);
-                }
-            };
-    
-            checkLoginStatus();
-    
-            // Listen for storage changes
-            window.addEventListener('storage', checkLoginStatus);
-    
-            // Custom event listener for same-tab changes
-            window.addEventListener('loginStatusChanged', checkLoginStatus);
-    
-            return () => {
-                window.removeEventListener('storage', checkLoginStatus);
-                window.removeEventListener('loginStatusChanged', checkLoginStatus);
-            };
-        }, []);
+    const t = translations[language];
 
-    const t = trans__footer[language];
-
-    const page=
-       user?.role === 'student' ?
-       [
-        {href: Routesconfig.studentprofile, title: t.studentProfile },
-        {href: Routesconfig.applicationhistory , title: t.applicationHistory }
+    const page= user?.type === 'student' ?
+        [
+            {href: Routesconfig.studentprofile, title: t.studentProfile },
+            {href: Routesconfig.applicationhistory , title: t.applicationHistory }
         ]:
         [
-        {href: Routesconfig.CandidateManagement, title: "CandidateManagement" },
-        {href: Routesconfig.NTDJobManagement, title: "NTDJobManagement" },
-        {href: Routesconfig.NTDprofile, title: "NTDprofile" }   
+            {href:Routesconfig.CandidateManagement,title:t.candidateManagement},
+            {href:Routesconfig.NTDJobManagement,title:t.jobManagement},
+            {href:Routesconfig.NTDprofile,title:t.companyProfile},
         ]
-        //....chỉ cần thêm router ở đây....//
     return (
         
         <Menu open={isOpen}>

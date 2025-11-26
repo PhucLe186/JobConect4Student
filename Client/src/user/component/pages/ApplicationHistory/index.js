@@ -1,8 +1,7 @@
 import React from 'react';
 import classNames from "classnames/bind";
 import styles from "./ApplicationHistory.module.scss";
-
-import trans__applicationhistory from "../../../../component/Translation/applicationhistory";
+import translations from '~/component/Translation';
 
 const cx = classNames.bind(styles);
 
@@ -39,7 +38,7 @@ const mockData = [
 
 function ApplicationHistory({ language = 'vi' }) {
 
-    const t = trans__applicationhistory[language];
+    const t = translations[language];
 
     return (
         <div className={cx("history-container")}>

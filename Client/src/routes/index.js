@@ -3,7 +3,7 @@ import Home from '~/user/component/pages/Home';
 import Community from '~/user/component/pages/Community';
 import Login from '~/user/component/pages/Login';
 import Register from '~/user/component/pages/Register';
-import Job from '~/user/component/pages/job';
+import Job from '~/user/component/pages/DetailJob';
 import Contact from '~/user/component/pages/Contact';
 import Company from '~/user/component/pages/Company';
 import CompanyDetail from '~/user/component/pages/CompanyDetail';

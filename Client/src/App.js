@@ -6,10 +6,9 @@ import { AuthProvider } from '~/context/AuthContext';
 
 function App() {
     return (
-        <AuthProvider>
-           
+        
                 <Router>
-                    <div>
+                    <AuthProvider>               
                         <Routes>
                             {publicRoutes.map((route, idx) => {
                                 let Layout = Default;
@@ -33,10 +32,9 @@ function App() {
                                 );
                             })}
                         </Routes>
-                    </div>
+                    </AuthProvider>
                 </Router>
-            
-        </AuthProvider>
+        
     );
 }
 

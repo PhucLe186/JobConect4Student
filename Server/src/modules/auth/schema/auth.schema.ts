@@ -29,6 +29,9 @@ export class User {
 
   @Prop({ default: false })
   email_verified: boolean;
+
+  @Prop({ default: 'vi' })
+  language: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

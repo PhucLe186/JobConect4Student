@@ -1,38 +1,121 @@
-import React, { createContext, useContext, useState } from 'react';
+import axios from 'axios';
+import { createContext, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-const AuthContext = createContext();
-
-export const useAuth = () => {
-    const context = useContext(AuthContext);
-    if (!context) {
-        throw new Error('useAuth must be used within an AuthProvider');
-    }
-    return context;
-};
+export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    // const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [user, setUser] = useState(null);
+    const [token, setToken] = useState(null);
+    const [language,setLanguege]= useState('vi')
+    const navigate= useNavigate()
     
-    console.log('AuthProvider rendered - isLoggedIn:', isLoggedIn);
+    const api = useMemo(() => {
+        const instance = axios.create({
+            baseURL: "http://localhost:5000/",
+            withCredentials: true,
+        });
 
-    const login = (userData) => {
-        console.log('AuthContext login called with:', userData);
-        setIsLoggedIn(true);
-        setUser(userData || { name: 'User', avatar: null });
-        console.log('AuthContext login completed - isLoggedIn should be true');
+        instance.interceptors.request.use((config) => {
+            if (token) {
+                config.headers.Authorization = `Bearer ${token}`;
+            }
+            return config;
+        });
+
+        return instance;
+    }, [token]);
+
+    useEffect(()=> {
+        const refreshToken= async()=> {
+            try{
+                const res=await api.get('auth/refreshtoken')
+                if(res.data){
+                    setUser(res.data)
+                    setToken(res.data.accesstoken)
+                    setLanguege(res.data.language)
+                 }
+            } catch(err) {
+                console.error('Refresh token failed:', err.response?.data || err.message);
+                setUser(null);
+                setToken(null);
+            }  
+        }
+        refreshToken()
+    },[token])
+
+    const login = async(userData) => {
+       try{
+            const res= await api.post("/auth/login", userData)
+            if(res.data) {
+                setUser(res.data)
+                setToken(res.data.accesstoken)
+                setLanguege(res.data.language)
+                navigate('/',  {replace: true})
+            }
+
+       }catch(error) {
+            if(error.response) {
+                alert(error.response?.data?.message)
+            }
+            else {
+                alert(' lỗi kết nối')
+            }
+       }
+    };
+    const register= async(userData)=> {
+        try{
+            const res= await api.post("/auth/register", userData)
+            if(res.data) {
+                alert('đăng ký thành công')
+                navigate('/login',  {replace: true})
+            }
+        }catch(error) {
+            if(error.response) {
+                alert(error.response?.data?.message)
+            }
+            console.log(error)
+       }
+    }
+
+    const logout = async() => {
+        const res= await api.get('auth/logout')
+        if(res.data.message) {
+            setUser(null)
+            setToken(null)
+        }
     };
 
-    const logout = () => {
-        setIsLoggedIn(false);
-        setUser(null);
-    };
+    const updateLang= async()=> {
+        try {
+            const lang = language==='vi'?'en': 'vi'; 
+            const res= await api.post('auth/updatelang', {lang: lang})
+            if (res.data.lang) {
+                setLanguege(res.data.lang)
+        }
+        }catch(error) {
+            if(error.response) {
+                alert(error.response?.data?.message)
+            }
+            else {
+                alert(' lỗi kết nối server')
+            }
+        }
+    }
 
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
     const value = {
-        isLoggedIn,
+        api,
         user,
+        language,
         login,
-        logout
+        logout,
+        register,
+        updateLang
+
     };
 
     return (
@@ -41,3 +124,4 @@ export const AuthProvider = ({ children }) => {
         </AuthContext.Provider>
     );
 };
+

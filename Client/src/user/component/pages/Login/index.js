@@ -1,40 +1,26 @@
-import React from 'react';
+import React, { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import classNames from 'classnames/bind';
 import style from './Login.module.scss';
 import routesconfig from '~/routes/routes';
+import { AuthContext } from '~/context/AuthContext';
 
 const cx = classNames.bind(style);
 
 const Login = () => {
     const navigate = useNavigate();
+    const {login}= useContext(AuthContext)
+    const [Data, setData]= useState({
+        email:'',
+        password:''
+    })
 
-    const handleLogin = () => {
-        console.log('Login submitted');
-
-        // Get selected role from localStorage
-        const selectedRole = localStorage.getItem('selectedRole') || 'student';
-        const userName = selectedRole === 'employer' ? 'Nhà tuyển dụng' : 'Người dùng';
-
-        // Save login status to localStorage
-        localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem(
-            'userData',
-            JSON.stringify({
-                name: userName,
-                role: selectedRole,
-                avatar: null,
-            }),
-        );
-        console.log('Login saved to localStorage, navigating to home...');
-
-        // Dispatch custom event to notify Header
-        window.dispatchEvent(new Event('loginStatusChanged'));
-
-        // Navigate to home after login
-        navigate(routesconfig.home);
+    const handleLogin = async(e) => {
+        e.preventDefault();
+        login(Data)
     };
+
 
     return (
         <motion.div
@@ -57,11 +43,19 @@ const Login = () => {
                         <form>
                             <h1>Login</h1>
                             <div className={cx('input-box')}>
-                                <input type="text" placeholder="Username" />
+                                <input 
+                                    type="email"
+                                    placeholder="Email" 
+                                    value={Data.email} 
+                                    onChange={e=> setData({...Data,email: e.target.value })} />
                                 <i className={cx('fa-solid fa-user')}></i>
                             </div>
                             <div className={cx('input-box')}>
-                                <input type="password" placeholder="Password" />
+                                <input 
+                                    type="password" 
+                                    placeholder="Password" 
+                                    value={Data.password} 
+                                    onChange={e=> setData({...Data,password: e.target.value })} />
                                 <i className={cx('fa-solid fa-lock')}></i>
                             </div>
                             <div className={cx('forgot-link')}>

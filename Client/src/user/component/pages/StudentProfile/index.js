@@ -1,8 +1,7 @@
 import React, { useMemo, useState } from "react";
 import classNames from "classnames/bind";
 import styles from "./StudentProfile.module.scss";
-
-import trans__studentprofile from "../../../../component/Translation/studentprofile"; 
+import translations from "~/component/Translation";
 
 const cx = classNames.bind(styles);
 
@@ -21,7 +20,7 @@ function StudentProfile({ language = 'vi' }) {
         { skill_id: 3, level: 3 },
     ]);
 
-    const t = trans__studentprofile[language];
+    const t = translations[language];
 
     const skillMap = useMemo(() => Object.fromEntries(skillsCatalog.map(s => [s.id, s.name])), []);
 
@@ -162,9 +161,9 @@ function StudentProfile({ language = 'vi' }) {
                                     <button 
                                         type="button" 
                                         className={cx("skills__remove-btn")} 
-                                        aria-label={t.removeSkillAria(skillMap[skill_id])}
-                                        onClick={() => handleRemoveSkill(skill_id)} 
-                                        title={t.removeSkillAria(skillMap[skill_id])}
+                                        // aria-label={t.removeSkillAria(skillMap[skill_id])}
+                                        // onClick={() => handleRemoveSkill(skill_id)} 
+                                        // title={t.removeSkillAria(skillMap[skill_id])}
                                     />
                                 </li>
                             ))}

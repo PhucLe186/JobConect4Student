@@ -6,7 +6,6 @@ export type JobsDocument = Jobs & Document;
 @Schema({
   collection: 'jobs',
   versionKey: false,
-  timestamps: true,
   toJSON: { virtuals: true },
   toObject: { virtuals: true },
 })
@@ -22,7 +21,7 @@ export class Jobs {
 
   @Prop({
     required: true,
-    enum: ['full-time', 'part-time', 'internship', 'contract'],
+    enum: ['full-time', 'part-time', 'internship'],
   })
   job_type: string;
 
@@ -38,12 +37,47 @@ export class Jobs {
   @Prop({ required: true, type: Date })
   deadline: Date;
 
+  @Prop({ default: Date.now(), type: Date })
+  created_at: Date;
+
   @Prop({ required: true })
-  created_at: string;
+  industry: string;
+
+  @Prop({
+    required: true,
+    enum: [
+      'không yêu cầu',
+      'dưới 1 năm',
+      '1 năm',
+      '2 năm',
+      '3 năm',
+      '4 năm',
+      '4 năm trở lên',
+    ],
+  })
+  experience: string;
+
+  @Prop({ default: '' })
+  requirements: string;
+
+  @Prop({
+    enum: [
+      'Nhân viên',
+      'Trưởng nhóm',
+      'Trưởng/Phó phòng',
+      'Quản lý / Giám sát',
+      'Trưởng chi nhánh',
+      'Phó giám đốc',
+      'Giám đốc',
+      'Thực tập sinh',
+    ],
+  })
+  level: string;
 
   @Prop({ enum: ['open', 'close', 'draft'], default: 'draft', required: true })
   status: string;
 }
+
 export const JobsSchema = SchemaFactory.createForClass(Jobs);
 JobsSchema.virtual('Employer', {
   ref: 'Employer',
