@@ -62,6 +62,7 @@ const RegisterForm = () => {
                             />
                             <i className={cx('fa-solid fa-envelope')}></i>
                         </div>
+                        
                         <div className={cx('input-box')}>
                             <input 
                                 type="password"

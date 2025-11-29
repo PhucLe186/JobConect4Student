@@ -1,10 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './JobManagement.module.scss';
 import classNames from 'classnames/bind';
-
-// 1. Import file dịch
-import trans__jobManagement from "../../../../component/Translation/JobManagement"
+import translations from '~/component/Translation';
+import { AuthContext } from '~/context/AuthContext';
 
 const cx = classNames.bind(styles);
 
@@ -80,16 +79,15 @@ function JobActionsMenu({ jobId, t }) {
 }
 
 // 3. Component chính nhận language
-function JobManagement({ language = 'vi' }) {
+function JobManagement() {
+    const {language}= useContext(AuthContext)
     const [query, setQuery] = useState('');
     const [status, setStatus] = useState('all');
     const [dept, setDept] = useState('all');
     const [openMenuId, setOpenMenuId] = useState(null);
     const menuRef = useRef(null);
     const navigate = useNavigate();
-
-    // 4. Lấy từ điển
-    const t = trans__jobManagement[language];
+    const t = translations[language];
 
     useEffect(() => {
         function handleClickOutside(event) {

@@ -13,6 +13,9 @@ import { ResumeModule } from './modules/resume/resume.module';
 import { SkillsModule } from './modules/skills/skills.module';
 import { ApplicationsService } from './modules/applications/applications.service';
 import { ApplicationsModule } from './modules/applications/applications.module';
+import { ForumModule } from './modules/forum/forum.module';
+import { CommentModule } from './modules/comment/comment.module';
+import { LikesModule } from './modules/likes/likes.module';
 
 @Module({
   imports: [
@@ -26,6 +29,9 @@ import { ApplicationsModule } from './modules/applications/applications.module';
     ResumeModule,
     SkillsModule,
     ApplicationsModule,
+    ForumModule,
+    CommentModule,
+    LikesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

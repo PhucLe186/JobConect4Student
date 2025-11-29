@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import classNames from "classnames/bind";
 import styles from "./ApplicationHistory.module.scss";
 import translations from '~/component/Translation';
+import { AuthContext } from '~/context/AuthContext';
 
 const cx = classNames.bind(styles);
 
@@ -36,13 +37,14 @@ const mockData = [
     },
 ];
 
-function ApplicationHistory({ language = 'vi' }) {
+function ApplicationHistory() {
+    const {language}= useContext(AuthContext)
 
     const t = translations[language];
 
     return (
         <div className={cx("history-container")}>
-            <h1 className={cx("history-title")}>{t.pageTitle}</h1>
+            <h1 className={cx("history-title")}>{t.applicationHistory}</h1>
 
             <div className={cx("history-table-wrapper")}>
                 <table className={cx("history-table")}>

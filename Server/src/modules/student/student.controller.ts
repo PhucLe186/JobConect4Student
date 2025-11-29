@@ -2,7 +2,7 @@ import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { StudentService } from './student.service';
 import type { Request } from 'express';
 import { JwtUser } from '../auth/interface/jwt-user.interface';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/Jwt/jwt-auth.guard';
 
 @Controller('student')
 export class StudentController {

@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import styles from './CandidateManagement.module.scss';
 import classNames from 'classnames/bind';
-
-// 1. Import file dịch
-import trans__candidateManagement from "../../../../component/Translation/CandidateManagement"
+import translations from '~/component/Translation';
+import { useContext } from 'react';
+import { AuthContext } from '~/context/AuthContext';
 
 const cx = classNames.bind(styles);
 
@@ -26,7 +26,7 @@ const MOCK_CANDIDATES = [
     name: 'Trần Thị B',
     avatar: 'https://placehold.co/56x56',
     phone: '0912345678',
-    address: 'Hà Nội', // Giữ nguyên không dịch
+    address: 'Hà Nội', 
     school: 'Đại học Công Nghệ',
     major: 'Khoa học máy tính',
     gpa: 3.8,
@@ -39,7 +39,7 @@ const MOCK_CANDIDATES = [
     name: 'Lê Văn C',
     avatar: 'https://placehold.co/56x56',
     phone: '0987654321',
-    address: 'Đà Nẵng', // Giữ nguyên không dịch
+    address: 'Đà Nẵng', 
     school: 'Đại học Bách Khoa Đà Nẵng',
     major: 'Hệ thống thông tin',
     gpa: 3.2,
@@ -50,12 +50,11 @@ const MOCK_CANDIDATES = [
 ];
 
 // 2. Thêm prop language
-function CandidateManagement({ language = 'vi' }) {
+function CandidateManagement() {
+  const {language}= useContext(AuthContext)
   const [query, setQuery] = useState('');
   const [selectedMajor, setSelectedMajor] = useState('all');
-
-  // 3. Lấy từ điển
-  const t = trans__candidateManagement[language];
+  const t = translations[language];
 
   // Lấy danh sách các chuyên ngành (Major) để làm bộ lọc
   const majors = useMemo(() => {

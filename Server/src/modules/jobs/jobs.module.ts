@@ -3,7 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Jobs, JobsSchema } from './schema/jobs.schema';
 import { JobsController } from './jobs.controller';
 import { JobsService } from './jobs.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/Jwt/jwt-auth.guard';
 import { User, UserSchema } from '../auth/schema/auth.schema';
 
 @Module({
