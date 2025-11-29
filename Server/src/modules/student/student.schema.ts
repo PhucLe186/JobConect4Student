@@ -28,8 +28,13 @@ export class Student {
   @Prop({ default: '', required: false })
   gpa: string;
 
-  @Prop({ default: '', required: false })
-  graduation_year: string;
+  @Prop({ 
+    type: Number,
+    required: false,
+    min: [1900, 'Năm tốt nghiệp không được nhỏ hơn 1900'],
+    max: [2050, 'Năm tốt nghiệp không được lớn hơn 2050']
+  })
+  graduation_year: number;
 
   @Prop({ default: '' })
   career_goal: string;
