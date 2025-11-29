@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import React, { useState, useEffect, useContext } from 'react';
+=======
+import React, { useContext } from 'react';
+>>>>>>> 165a7464 (new updat 29/11/2025)
 import classNames from "classnames/bind";
 import styles from "./ApplicationHistory.module.scss";
 import translations from '~/component/Translation';
@@ -6,12 +10,48 @@ import { AuthContext } from '~/context/AuthContext';
 
 const cx = classNames.bind(styles);
 
+<<<<<<< HEAD
 function ApplicationHistory({ language = 'vi' }) {
     const [applications, setApplications] = useState([]);
     const [personalInfo, setPersonalInfo] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const { api, user } = useContext(AuthContext);
+=======
+const mockData = [
+    {
+        id: 1,
+        jobTitle: 'Frontend Developer (ReactJS)',
+        companyName: 'Công Ty A',
+        status: 'accepted',
+        applied_at: '2025-10-15'
+    },
+    {
+        id: 2,
+        jobTitle: 'Backend Developer (NodeJS)',
+        companyName: 'Công Ty B',
+        status: 'rejected',
+        applied_at: '2025-10-12'
+    },
+    {
+        id: 3,
+        jobTitle: 'Fullstack Developer',
+        companyName: 'Công Ty C',
+        status: 'viewed',
+        applied_at: '2025-10-10'
+    },
+    {
+        id: 4,
+        jobTitle: 'UI/UX Designer',
+        companyName: 'Công Ty D',
+        status: 'sent',
+        applied_at: '2025-10-09'
+    },
+];
+
+function ApplicationHistory() {
+    const {language}= useContext(AuthContext)
+>>>>>>> 165a7464 (new updat 29/11/2025)
 
     const t = translations[language];
 
@@ -58,7 +98,7 @@ function ApplicationHistory({ language = 'vi' }) {
 
     return (
         <div className={cx("history-container")}>
-            <h1 className={cx("history-title")}>{t.pageTitle}</h1>
+            <h1 className={cx("history-title")}>{t.applicationHistory}</h1>
 
             <div className={cx("history-table-wrapper")}>
                 <table className={cx("history-table")}>

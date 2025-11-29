@@ -47,7 +47,6 @@ function Header() {
         ]
     : [];
 
-    
     return (
         <nav className={cx('navbar')}>
             <div className={cx('container')}>
@@ -102,7 +101,7 @@ function Header() {
                                                 navigate(routesconfig.home);
                                             }}
                                         >
-                                            Đăng xuất
+                                            t.Logout
                                         </button>
                                     </div>
                                 )}
@@ -117,7 +116,7 @@ function Header() {
                                 </Link>
                             </>
                         )}
-                         <button
+                        {user && <button
                             className={cx('header__lang-btn')}
                             onClick={()=> updateLang()}
                            
@@ -127,7 +126,7 @@ function Header() {
                                 alt={language === 'vi' ? 'VI' : 'EN'}
                                 className={cx('header__flag')}
                             />
-                        </button>
+                        </button>}
                     </div>
                 </div>
             </div>

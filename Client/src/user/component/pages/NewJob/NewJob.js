@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './NewJob.module.scss';
 import classNames from 'classnames/bind';
+<<<<<<< HEAD
 
 // 1. Translation object
 const trans__newJob = {
@@ -44,11 +45,18 @@ const trans__newJob = {
     alertSuccess: 'Form submitted successfully!'
   }
 };
+=======
+import translations from '~/component/Translation';
+import { AuthContext } from '~/context/AuthContext';
+>>>>>>> 4d5ff411 (new updat 29/11/2025)
 
 const cx = classNames.bind(styles);
 
-// 2. Nhận prop language
-function NewJob({ language = 'vi' }) {
+
+function NewJob() {
+  const navigate = useNavigate();
+  const{ language}=useContext(AuthContext)
+  const t = translations[language];
   const [form, setForm] = useState({
     title: '',
     description: '',
@@ -57,12 +65,15 @@ function NewJob({ language = 'vi' }) {
     location: '',
     deadline: '',
   });
+<<<<<<< HEAD
 
   const navigate = useNavigate();
 
   // 3. Lấy từ điển
   const t = trans__newJob[language] || trans__newJob.vi;
 
+=======
+>>>>>>> 4d5ff411 (new updat 29/11/2025)
   const onChange = (e) => {
     const { name, value } = e.target;
     setForm((s) => ({ ...s, [name]: value }));
@@ -83,7 +94,7 @@ function NewJob({ language = 'vi' }) {
 
   return (
     <div className={cx('newjob')}>
-      <h1 className={cx('newjob__title')}>{t.pageTitle}</h1>
+      <h1 className={cx('newjob__title')}>{t.postNewJob}</h1>
 
       <form className={cx('newjob__form')} onSubmit={onSubmit}>
         {/* SECTION 1: Thông tin chính */}
