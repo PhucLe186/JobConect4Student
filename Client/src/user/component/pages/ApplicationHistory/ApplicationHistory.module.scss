@@ -78,6 +78,36 @@
     color: #7f8c8d;
 }
 
+/* --- Thông tin công ty --- */
+.company-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.company-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    object-fit: cover;
+    border: 1px solid #e9ecef;
+}
+
+/* --- Loading và Error --- */
+.loading, .error {
+    text-align: center;
+    padding: 40px;
+    font-size: 1.1rem;
+}
+
+.loading {
+    color: #0d6efd;
+}
+
+.error {
+    color: #dc3545;
+}
+
 /* --- Các nút bấm --- */
 .history-btn {
     padding: 0.77rem 1.32rem;

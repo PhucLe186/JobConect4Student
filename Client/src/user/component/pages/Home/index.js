@@ -92,6 +92,7 @@ const Homepage = () => {
                             <select
                                 className={cx('filter-select')}
                                 value={experience}
+                                onChange={(e) => setExperience(e.target.value)}
                             >
                                 <option value="">{t.chooseExp}</option>
                                 <option>{t.noExp}</option>
@@ -102,7 +103,11 @@ const Homepage = () => {
                         </div>
                         <div className={cx('filter-item')}>
                             <label>{t.workLocation}</label>
-                            <select className={cx('filter-select')} value={location}>
+                            <select 
+                                className={cx('filter-select')} 
+                                value={location}
+                                onChange={(e) => setLocation(e.target.value)}
+                            >
                                 <option value="">{t.chooseLocation}</option>
                                 <option>{language === 'vi' ? 'Hà Nội' : 'Hanoi'}</option>
                                 <option>{language === 'vi' ? 'Hồ Chí Minh' : 'Ho Chi Minh City'}</option>
@@ -113,7 +118,11 @@ const Homepage = () => {
                         </div>
                         <div className={cx('filter-item')}>
                             <label>{t.jobType}</label>
-                            <select className={cx('filter-select')} value={jobType}>
+                            <select 
+                                className={cx('filter-select')} 
+                                value={jobType}
+                                onChange={(e) => setJobType(e.target.value)}
+                            >
                                 <option value="">{t.chooseJobType}</option>
                                 <option>Full-time</option>
                                 <option>Part-time</option>
