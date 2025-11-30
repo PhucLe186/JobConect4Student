@@ -11,9 +11,8 @@ import translations from '~/component/Translation';
 const cx = classNames.bind(styles);
 
 function Sidebar() {
-   const [language, setLanguage] = useState('vi');
     const [isOpen, setIsopen]= useState(true)
-    const {user} = useContext(AuthContext);
+    const {user, language} = useContext(AuthContext);
 
     const t = translations[language];
 

@@ -1,8 +1,8 @@
-import React, { useMemo, useState } from "react";
+import React, { useContext, useMemo, useState } from "react";
 import classNames from "classnames/bind";
 import styles from "./StudentProfile.module.scss";
 import translations from "~/component/Translation";
-
+import { AuthContext } from "~/context/AuthContext";
 const cx = classNames.bind(styles);
 
 const skillsCatalog = [
@@ -12,7 +12,8 @@ const skillsCatalog = [
     { id: 10, name: "Communication" }, { id: 11, name: "Teamwork" }, { id: 12, name: "Problem Solving" },
 ];
 
-function StudentProfile({ language = 'vi' }) {
+function StudentProfile() {
+    const {language}= useContext(AuthContext)
     const [selectedSkillId, setSelectedSkillId] = useState(skillsCatalog[0]?.id ?? 1);
     const [level, setLevel] = useState(3);
     const [studentSkills, setStudentSkills] = useState([
@@ -51,7 +52,7 @@ function StudentProfile({ language = 'vi' }) {
     return (
         <main className={cx("profile-page")}>
             <header className={cx("profile-page__header")}>
-                <h1 className={cx("profile-page__title")}>{t.pageTitle}</h1>
+                <h1 className={cx("profile-page__title")}>{t.studentProfile}</h1>
             </header>
 
             <form className={cx("profile-form")} onSubmit={handleFormSubmit}>

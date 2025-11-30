@@ -63,7 +63,7 @@ export class JobsService {
     };
     delete result.Employer;
     delete result.User;
-    return detailJob;
+    return result;
   }
 
   async CreateJob(

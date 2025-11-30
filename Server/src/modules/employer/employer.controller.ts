@@ -9,7 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { EmployerService } from './employer.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/Jwt/jwt-auth.guard';
 import type { Request } from 'express';
 import { CreateEmployerDto } from './tdo/employer.dto';
 import { JwtUser } from '../auth/interface/jwt-user.interface';
