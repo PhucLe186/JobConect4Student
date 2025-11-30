@@ -20,7 +20,13 @@ export class CSV {
   @Prop()
   public_link: string;
 
+  @Prop({ type: Object, default: {} })
+  cv_data: object; // Lưu toàn bộ dữ liệu CV (thông tin cá nhân, kinh nghiệm, kỹ năng, etc.)
+
   @Prop({ type: Date, default: Date.now })
   created_at: Date;
+
+  @Prop({ type: Date, default: Date.now })
+  updated_at: Date;
 }
 export const ResumeSchema = SchemaFactory.createForClass(CSV);
