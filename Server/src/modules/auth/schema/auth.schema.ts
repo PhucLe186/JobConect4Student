@@ -32,6 +32,12 @@ export class User {
 
   @Prop({ default: 'vi' })
   language: string;
+
+  @Prop({ enum: ['online', 'offline'], default: 'offline' })
+  status: string;
+
+  @Prop({ type: Date, default: Date.now })
+  last_active: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -4,25 +4,34 @@ import { Student, StudentDocument } from './student.schema';
 import { Model } from 'mongoose';
 import { User, UserDocument } from '../auth/schema/auth.schema';
 import { JwtUser } from '../auth/interface/jwt-user.interface';
+import { Skills, SkillDocument } from '../skills/schema/skills.schema';
 
 @Injectable()
 export class StudentService {
   constructor(
     @InjectModel(Student.name) private StudentModel: Model<StudentDocument>,
     @InjectModel(User.name) private UserModel: Model<UserDocument>,
+    @InjectModel(Skills.name) private SkillsModel: Model<SkillDocument>,
   ) { }
 
   async getStudentbyID(user: JwtUser): Promise<object | null> {
     const { userId } = user;
     const User = await this.UserModel.findById(userId)
       .select('name email dateOfbirth gender')
-      .populate('Student')
       .lean()
       .exec();
 
-    const result = { ...User, ...(User as any).Student };
-    delete result.Student;
+    const student = await this.StudentModel.findOne({ user_id: userId })
+      .lean()
+      .exec();
+
+    const skills = await this.SkillsModel.find()
+      .lean()
+      .exec();
+
+    const result = { ...User, ...student, skills };
     delete result._id;
+    delete result.user_id;
     return result;
   }
 

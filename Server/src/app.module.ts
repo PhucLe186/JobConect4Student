@@ -16,6 +16,7 @@ import { ApplicationsModule } from './modules/applications/applications.module';
 import { ForumModule } from './modules/forum/forum.module';
 import { CommentModule } from './modules/comment/comment.module';
 import { LikesModule } from './modules/likes/likes.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { LikesModule } from './modules/likes/likes.module';
     ForumModule,
     CommentModule,
     LikesModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],
