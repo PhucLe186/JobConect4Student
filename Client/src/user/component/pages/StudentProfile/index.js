@@ -1,8 +1,9 @@
-import React, { useContext, useMemo, useState } from "react";
+import React, { useContext, useMemo, useState, useEffect } from "react";
 import classNames from "classnames/bind";
 import styles from "./StudentProfile.module.scss";
 import translations from "~/component/Translation";
 import { AuthContext } from "~/context/AuthContext";
+
 const cx = classNames.bind(styles);
 
 const skillsCatalog = [
@@ -13,13 +14,66 @@ const skillsCatalog = [
 ];
 
 function StudentProfile() {
-    const {language}= useContext(AuthContext)
+    const {language, api}= useContext(AuthContext)
     const [selectedSkillId, setSelectedSkillId] = useState(skillsCatalog[0]?.id ?? 1);
     const [level, setLevel] = useState(3);
     const [studentSkills, setStudentSkills] = useState([
         { skill_id: 2, level: 4 },
         { skill_id: 3, level: 3 },
     ]);
+    const [profileData, setProfileData] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        address: '',
+        dateOfbirth: '',
+        gender: 'Male',
+        school: '',
+        major: '',
+        gpa: '',
+        graduation_year: '',
+        career_goal: '',
+        desired_salary: ''
+    });
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const fetchProfile = async () => {
+        try {
+            const response = await api.get('/student');
+            if (response.data) {
+                setProfileData({
+                    name: response.data.name || '',
+                    email: response.data.email || '',
+                    phone: response.data.phone || '',
+                    address: response.data.address || '',
+                    dateOfbirth: response.data.dateOfbirth ? response.data.dateOfbirth.split('T')[0] : '',
+                    gender: response.data.gender || 'Male',
+                    school: response.data.school || '',
+                    major: response.data.major || '',
+                    gpa: response.data.gpa || '',
+                    graduation_year: response.data.graduation_year || '',
+                    career_goal: response.data.career_goal || '',
+                    desired_salary: response.data.desired_salary || ''
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching profile:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleInputChange = (field, value) => {
+        setProfileData(prev => ({
+            ...prev,
+            [field]: value
+        }));
+    };
 
     const t = translations[language];
 
@@ -40,14 +94,24 @@ function StudentProfile() {
         });
     };
 
-    const handleRemoveSkill = (skillIdToRemove) => {
-        setStudentSkills((prevSkills) => prevSkills.filter(s => s.skill_id !== skillIdToRemove));
+    // const handleRemoveSkill = (skillIdToRemove) => {
+    //     setStudentSkills((prevSkills) => prevSkills.filter(s => s.skill_id !== skillIdToRemove));
+    // };
+
+    const handleFormSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            await api.put('/student', profileData);
+            alert('Cập nhật hồ sơ thành công!');
+        } catch (error) {
+            console.error('Error updating profile:', error);
+            alert('Lỗi khi cập nhật hồ sơ');
+        }
     };
 
-    const handleFormSubmit = (e) => {
-        e.preventDefault();
-        alert(t.saveAlert); 
-    };
+    if (loading) {
+        return <div className={cx('loading')}>Đang tải...</div>;
+    }
 
     return (
         <main className={cx("profile-page")}>
@@ -68,34 +132,87 @@ function StudentProfile() {
                         <div className={cx("card__fields")}>
                             <div className={cx("form-group")}>
                                 <label className={cx("form-group__label")} htmlFor="name">{t.fullNameLabel}</label>
-                                <input className={cx("form-group__input")} id="name" name="name" type="text" placeholder="Nguyễn Văn A" />
+                                <input 
+                                    className={cx("form-group__input")} 
+                                    id="name" 
+                                    name="name" 
+                                    type="text" 
+                                    placeholder="Nguyễn Văn A" 
+                                    value={profileData.name}
+                                    onChange={(e) => handleInputChange('name', e.target.value)}
+                                />
                             </div>
                             <div className={cx("form-group")}>
                                 <label className={cx("form-group__label")} htmlFor="dateOfBirth">{t.dateOfBirthLabel}</label>
-                                <input className={cx("form-group__input")} id="dateOfBirth" name="dateOfBirth" type="date" />
+                                <input 
+                                    className={cx("form-group__input")} 
+                                    id="dateOfBirth" 
+                                    name="dateOfBirth" 
+                                    type="date" 
+                                    value={profileData.dateOfbirth}
+                                    onChange={(e) => handleInputChange('dateOfbirth', e.target.value)}
+                                />
                             </div>
                             <div className={cx("form-group", "form-group--inline")}>
                                 <span className={cx("form-group__label")}>{t.genderLabel}</span>
                                 <label className={cx("radio")}>
-                                    <input className={cx("radio__input")} type="radio" name="gender" value="Male" defaultChecked />
+                                    <input 
+                                        className={cx("radio__input")} 
+                                        type="radio" 
+                                        name="gender" 
+                                        value="Male" 
+                                        checked={profileData.gender === 'Male'}
+                                        onChange={(e) => handleInputChange('gender', e.target.value)}
+                                    />
                                     <span className={cx("radio__label")}>{t.male}</span>
                                 </label>
                                 <label className={cx("radio")}>
-                                    <input className={cx("radio__input")} type="radio" name="gender" value="Female" />
+                                    <input 
+                                        className={cx("radio__input")} 
+                                        type="radio" 
+                                        name="gender" 
+                                        value="Female" 
+                                        checked={profileData.gender === 'Female'}
+                                        onChange={(e) => handleInputChange('gender', e.target.value)}
+                                    />
                                     <span className={cx("radio__label")}>{t.female}</span>
                                 </label>
                             </div>
                             <div className={cx("form-group")}>
                                 <label className={cx("form-group__label")} htmlFor="email">{t.emailLabel}</label>
-                                <input className={cx("form-group__input")} id="email" name="email" type="email" placeholder="email@sv.edu.vn" />
+                                <input 
+                                    className={cx("form-group__input")} 
+                                    id="email" 
+                                    name="email" 
+                                    type="email" 
+                                    placeholder="email@sv.edu.vn" 
+                                    value={profileData.email}
+                                    onChange={(e) => handleInputChange('email', e.target.value)}
+                                />
                             </div>
                             <div className={cx("form-group")}>
                                 <label className={cx("form-group__label")} htmlFor="phone">{t.phoneLabel}</label>
-                                <input className={cx("form-group__input")} id="phone" name="phone" type="tel" placeholder="0123 456 789" />
+                                <input 
+                                    className={cx("form-group__input")} 
+                                    id="phone" 
+                                    name="phone" 
+                                    type="tel" 
+                                    placeholder="0123 456 789" 
+                                    value={profileData.phone}
+                                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                                />
                             </div>
                             <div className={cx("form-group")}>
                                 <label className={cx("form-group__label")} htmlFor="address">{t.addressLabel}</label>
-                                <input className={cx("form-group__input")} id="address" name="address" type="text" placeholder="Quận/Huyện, Tỉnh/Thành" />
+                                <input 
+                                    className={cx("form-group__input")} 
+                                    id="address" 
+                                    name="address" 
+                                    type="text" 
+                                    placeholder="Quận/Huyện, Tỉnh/Thành" 
+                                    value={profileData.address}
+                                    onChange={(e) => handleInputChange('address', e.target.value)}
+                                />
                             </div>
                         </div>
                     </div>
@@ -106,19 +223,54 @@ function StudentProfile() {
                     <div className={cx("card__body")}>
                         <div className={cx("form-group")}>
                             <label className={cx("form-group__label")} htmlFor="school">{t.schoolLabel}</label>
-                            <input className={cx("form-group__input")} id="school" name="school" type="text" placeholder="ĐH Công nghệ..." />
+                            <input 
+                                className={cx("form-group__input")} 
+                                id="school" 
+                                name="school" 
+                                type="text" 
+                                placeholder="ĐH Công nghệ..." 
+                                value={profileData.school}
+                                onChange={(e) => handleInputChange('school', e.target.value)}
+                            />
                         </div>
                         <div className={cx("form-group")}>
                             <label className={cx("form-group__label")} htmlFor="major">{t.majorLabel}</label>
-                            <input className={cx("form-group__input")} id="major" name="major" type="text" placeholder="Khoa học Máy tính..." />
+                            <input 
+                                className={cx("form-group__input")} 
+                                id="major" 
+                                name="major" 
+                                type="text" 
+                                placeholder="Khoa học Máy tính..." 
+                                value={profileData.major}
+                                onChange={(e) => handleInputChange('major', e.target.value)}
+                            />
                         </div>
                         <div className={cx("form-group")}>
                             <label className={cx("form-group__label")} htmlFor="gpa">{t.gpaLabel}</label>
-                            <input className={cx("form-group__input")} id="gpa" name="gpa" type="number" step="0.01" min="0" max="4" placeholder="3.20" />
+                            <input 
+                                className={cx("form-group__input")} 
+                                id="gpa" 
+                                name="gpa" 
+                                type="number" 
+                                step="0.01" 
+                                min="0" 
+                                max="4" 
+                                placeholder="3.20" 
+                                value={profileData.gpa}
+                                onChange={(e) => handleInputChange('gpa', e.target.value)}
+                            />
                         </div>
                         <div className={cx("form-group")}>
                             <label className={cx("form-group__label")} htmlFor="graduation_year">{t.graduationYearLabel}</label>
-                            <input className={cx("form-group__input")} id="graduation_year" name="graduation_year" type="number" placeholder="2026" />
+                            <input 
+                                className={cx("form-group__input")} 
+                                id="graduation_year" 
+                                name="graduation_year" 
+                                type="number" 
+                                placeholder="2026" 
+                                value={profileData.graduation_year}
+                                onChange={(e) => handleInputChange('graduation_year', e.target.value)}
+                            />
                         </div>
                     </div>
                 </section>
@@ -128,11 +280,27 @@ function StudentProfile() {
                     <div className={cx("card__body")}>
                         <div className={cx("form-group")}>
                             <label className={cx("form-group__label")} htmlFor="desired_salary">{t.salaryLabel}</label>
-                            <input className={cx("form-group__input")} id="desired_salary" name="desired_salary" type="number" placeholder="15000000" />
+                            <input 
+                                className={cx("form-group__input")} 
+                                id="desired_salary" 
+                                name="desired_salary" 
+                                type="number" 
+                                placeholder="15000000" 
+                                value={profileData.desired_salary}
+                                onChange={(e) => handleInputChange('desired_salary', e.target.value)}
+                            />
                         </div>
                         <div className={cx("form-group", "form-group--full-col")}>
                             <label className={cx("form-group__label")} htmlFor="career_goal">{t.goalDescriptionLabel}</label>
-                            <textarea className={cx("form-group__textarea")} id="career_goal" name="career_goal" rows="3" placeholder="Mô tả mục tiêu ngắn hạn & dài hạn của bạn…"></textarea>
+                            <textarea 
+                                className={cx("form-group__textarea")} 
+                                id="career_goal" 
+                                name="career_goal" 
+                                rows="3" 
+                                placeholder="Mô tả mục tiêu ngắn hạn & dài hạn của bạn…"
+                                value={profileData.career_goal}
+                                onChange={(e) => handleInputChange('career_goal', e.target.value)}
+                            ></textarea>
                         </div>
                     </div>
                 </section>

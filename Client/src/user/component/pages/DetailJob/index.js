@@ -6,6 +6,7 @@ import MicrosoftLogo from '~/asset/img/Microsoft.png';
 import translations from '~/component/Translation';
 import { AuthContext } from '~/context/AuthContext';
 import { useParams } from 'react-router-dom';
+import { applicationAPI } from '~/services/api';
 import classNames from 'classnames/bind';
 
 const cx= classNames.bind(styles)
@@ -25,21 +26,17 @@ const Job = ({ onBack, onPageChange }) => {
     const t = translations[language];
     const {id}= useParams()
 
-    const HandleApplications=async(id)=> {
-        try{
-            const res= await api.post('applications', {id: id})
-            if(res.data.status) {
-                alert(res.data.status)
+    const HandleApplications = async (jobId) => {
+        try {
+            const result = await applicationAPI.applyJob(jobId);
+            if (result.status) {
+                alert(result.status);
             }
-        }catch(error) {
-            if(error.response) {
-                alert(error.response?.data?.message)
-            }
-            else {
-                alert('lỗi kết nối tới server')
-            }
+        } catch (error) {
+            console.error('Error applying for job:', error);
+            alert(error.message || 'Lỗi khi ứng tuyển việc làm');
         }
-    }
+    };
 
     useEffect(()=> {
         const fetchData=async()=> {

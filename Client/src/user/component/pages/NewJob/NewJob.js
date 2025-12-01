@@ -10,26 +10,38 @@ const cx = classNames.bind(styles);
 
 function NewJob() {
   const navigate = useNavigate();
-  const{ language}=useContext(AuthContext)
+  const{ language, api}=useContext(AuthContext)
   const t = translations[language];
   const [form, setForm] = useState({
     title: '',
     description: '',
-    job_type: '', 
-    salary_range: '',
+    job_type: 'full-time', 
+    min_salary: '',
+    max_salary: '',
     location: '',
     deadline: '',
+    industry: '',
+    experience: 'không yêu cầu',
+    level: 'Nhân viên',
+    requirements: ''
   });
   const onChange = (e) => {
     const { name, value } = e.target;
     setForm((s) => ({ ...s, [name]: value }));
   };
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
-    console.log('Payload to send to API:', form);
-    // 4. Dịch cả thông báo alert
-    alert(t.alertSuccess);
+    try {
+      const response = await api.post('/jobs', form);
+      if (response.data) {
+        alert('Tạo việc làm thành công! Chờ admin duyệt.');
+        navigate(-1);
+      }
+    } catch (error) {
+      console.error('Error creating job:', error);
+      alert('Lỗi khi tạo việc làm');
+    }
   };
 
   const onBack = () => {
@@ -83,29 +95,101 @@ function NewJob() {
             
             <div className={cx('newjob__field')}>
               <label className={cx('newjob__label')}>
-                {t.labelType} <span className={cx('newjob__req')}>*</span>
+                Loại hình <span className={cx('newjob__req')}>*</span>
               </label>
-              <input
+              <select
                 className={cx('newjob__input')}
                 name="job_type"
-                placeholder={t.ph_Type}
                 value={form.job_type}
                 onChange={onChange}
                 required
+              >
+                <option value="full-time">Toàn thời gian</option>
+                <option value="part-time">Bán thời gian</option>
+                <option value="internship">Thực tập</option>
+              </select>
+            </div>
+
+            <div className={cx('newjob__field')}>
+              <label className={cx('newjob__label')}>
+                Lương tối thiểu
+              </label>
+              <input
+                className={cx('newjob__input')}
+                name="min_salary"
+                type="number"
+                placeholder="10000000"
+                value={form.min_salary}
+                onChange={onChange}
               />
             </div>
 
             <div className={cx('newjob__field')}>
               <label className={cx('newjob__label')}>
-                {t.labelSalary}
+                Lương tối đa
               </label>
               <input
                 className={cx('newjob__input')}
-                name="salary_range"
-                placeholder={t.ph_Salary}
-                value={form.salary_range}
+                name="max_salary"
+                type="number"
+                placeholder="20000000"
+                value={form.max_salary}
                 onChange={onChange}
               />
+            </div>
+
+            <div className={cx('newjob__field')}>
+              <label className={cx('newjob__label')}>
+                Ngành nghề
+              </label>
+              <input
+                className={cx('newjob__input')}
+                name="industry"
+                placeholder="Công nghệ thông tin"
+                value={form.industry}
+                onChange={onChange}
+              />
+            </div>
+
+            <div className={cx('newjob__field')}>
+              <label className={cx('newjob__label')}>
+                Kinh nghiệm
+              </label>
+              <select
+                className={cx('newjob__input')}
+                name="experience"
+                value={form.experience}
+                onChange={onChange}
+              >
+                <option value="không yêu cầu">Không yêu cầu</option>
+                <option value="dưới 1 năm">Dưới 1 năm</option>
+                <option value="1 năm">1 năm</option>
+                <option value="2 năm">2 năm</option>
+                <option value="3 năm">3 năm</option>
+                <option value="4 năm">4 năm</option>
+                <option value="4 năm trở lên">4 năm trở lên</option>
+              </select>
+            </div>
+
+            <div className={cx('newjob__field')}>
+              <label className={cx('newjob__label')}>
+                Cấp bậc
+              </label>
+              <select
+                className={cx('newjob__input')}
+                name="level"
+                value={form.level}
+                onChange={onChange}
+              >
+                <option value="Nhân viên">Nhân viên</option>
+                <option value="Trưởng nhóm">Trưởng nhóm</option>
+                <option value="Trưởng/Phó phòng">Trưởng/Phó phòng</option>
+                <option value="Quản lý / Giám sát">Quản lý / Giám sát</option>
+                <option value="Trưởng chi nhánh">Trưởng chi nhánh</option>
+                <option value="Phó giám đốc">Phó giám đốc</option>
+                <option value="Giám đốc">Giám đốc</option>
+                <option value="Thực tập sinh">Thực tập sinh</option>
+              </select>
             </div>
 
             <div className={cx('newjob__field')}>
@@ -136,6 +220,25 @@ function NewJob() {
               />
             </div>
 
+          </div>
+        </section>
+
+        {/* SECTION 3: Yêu cầu */}
+        <section className={cx('newjob__card')}>
+          <h2 className={cx('newjob__card-title')}>Yêu cầu công việc</h2>
+          
+          <div className={cx('newjob__field')}>
+            <label className={cx('newjob__label')}>
+              Yêu cầu chi tiết
+            </label>
+            <textarea
+              className={cx('newjob__textarea')}
+              rows={6}
+              name="requirements"
+              placeholder="Mô tả các yêu cầu về kỹ năng, kinh nghiệm, bằng cấp..."
+              value={form.requirements}
+              onChange={onChange}
+            />
           </div>
         </section>
 

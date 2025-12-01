@@ -1,50 +1,99 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import classNames from 'classnames/bind';
 import styles from './JobManagement.module.scss';
 import { useNavigate } from 'react-router-dom';
+import { dashboardAPI } from '../../../../services/api';
 
 const cx = classNames.bind(styles);
 
 const JobManagement = () => {
-    const Navigate=useNavigate()
-    const [jobs, setJobs] = useState([
-        { id: 1, title: 'Frontend Developer', company: 'FPT Software', salary: '15-25 triệu', status: 'recruiting' },
-        { id: 2, title: 'Backend Developer', company: 'Viettel Group', salary: '18-30 triệu', status: 'recruiting' },
-        { id: 3, title: 'Marketing Manager', company: 'Shopee Vietnam', salary: '20-35 triệu', status: 'pending' },
-        { id: 4, title: 'Data Analyst', company: 'VinGroup', salary: '12-20 triệu', status: 'recruiting' },
-        { id: 5, title: 'UI/UX Designer', company: 'Grab Vietnam', salary: '14-22 triệu', status: 'recruiting' },
-        { id: 6, title: 'DevOps Engineer', company: 'TechComBank', salary: '25-40 triệu', status: 'pending' },
-        { id: 7, title: 'Product Manager', company: 'Tiki Corporation', salary: '30-50 triệu', status: 'recruiting' },
-        { id: 8, title: 'Mobile Developer', company: 'VNG Corporation', salary: '16-28 triệu', status: 'recruiting' },
-        { id: 9, title: 'QA Engineer', company: 'Momo', salary: '13-18 triệu', status: 'closed' },
-        { id: 10, title: 'Business Analyst', company: 'VNPAY', salary: '15-25 triệu', status: 'pending' },
-        { id: 11, title: 'Fullstack Developer', company: 'Tech Corp', salary: '15-20 triệu', status: 'pending' },
-    ]);
-     const handleBack=()=> {
-        Navigate('/dashboard')
-    }
+    const Navigate = useNavigate();
+    const [jobs, setJobs] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterType, setFilterType] = useState('all');
+
+    useEffect(() => {
+        fetchJobs();
+    }, []);
+
+    const fetchJobs = async () => {
+        try {
+            setLoading(true);
+            const data = await dashboardAPI.getAllJobs();
+            setJobs(data);
+        } catch (error) {
+            console.error('Error fetching jobs:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleBack = () => {
+        Navigate('/dashboard');
+    };
+
+    const handleApprove = async (jobId) => {
+        try {
+            await dashboardAPI.approveJob(jobId);
+            fetchJobs();
+            alert('Duyệt việc làm thành công!');
+        } catch (error) {
+            alert('Lỗi khi duyệt việc làm');
+        }
+    };
+
+    const handleReject = async (jobId) => {
+        try {
+            await dashboardAPI.rejectJob(jobId);
+            fetchJobs();
+            alert('Từ chối việc làm thành công!');
+        } catch (error) {
+            alert('Lỗi khi từ chối việc làm');
+        }
+    };
+
+    const handleDelete = async (jobId) => {
+        if (window.confirm('Bạn có chắc chắn muốn xóa việc làm này?')) {
+            try {
+                await dashboardAPI.deleteJob(jobId);
+                fetchJobs();
+                alert('Xóa thành công!');
+            } catch (error) {
+                alert('Lỗi khi xóa việc làm');
+            }
+        }
+    };
+
+    const filteredJobs = jobs.filter(job => {
+        const matchesSearch = job.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            job.company_name?.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesFilter = filterType === 'all' || 
+                            (filterType === 'pending' && job.status === 'draft');
+        return matchesSearch && matchesFilter;
+    });
 
     return (
         
         <div className={cx('content-section')}>
-            <button className={cx('back-btn')} onClick={handleBack}>backToDashboard</button>
-            <h2>jobManagement</h2>
+            <button className={cx('back-btn')} onClick={handleBack}>Quay lại Dashboard</button>
+            <h2>Quản lý việc làm</h2>
             <div className={cx('section-controls')}>
                 <div className={cx('search-filter-container')}>
                     <input
                         type="text"
                         className={cx('section-search')}
-                        // placeholder={t.searchJobs}
-                        // value={searchTerm}
-                        // onChange={(e) => setSearchTerm(e.target.value)}
+                        placeholder="Tìm kiếm việc làm..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                     />
                     <select
                         className={cx('filter-dropdown')}
-                        // value={filterType}
-                        // onChange={(e) => setFilterType(e.target.value)}
+                        value={filterType}
+                        onChange={(e) => setFilterType(e.target.value)}
                     >
-                        <option value="all">all</option>
-                        <option value="recent">recent</option>
+                        <option value="all">Tất cả</option>
+                        <option value="pending">Chờ duyệt</option>
                     </select>
                 </div>
             </div>
@@ -64,58 +113,48 @@ const JobManagement = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {jobs.map((job) => (
-                            <tr key={job.id}>
-                                <td>{job.title}</td>
-                                <td>{job.company}</td>
-                                <td>{job.salary}</td>
-                                <td>
-                                    <span
-                                        className={`status ${
-                                            job.status === 'recruiting'
-                                                ? 'active'
-                                                : job.status === 'pending'
-                                                ? 'pending'
-                                                : 'inactive'
-                                        }`}
-                                    >
-                                        {job.status === 'recruiting'
-                                            ? 'recruiting'
-                                            : job.status === 'pending'
-                                            ? 'pending'
-                                            : 'closed'}
-                                    </span>
-                                </td>
-                                <td>
-                                    {(job.status === 'pending'
-                                        ? [
-                                              {
-                                                  label: 'approve',
-                                                  className: 'btn-edit',
-                                                  //   onClick: () => handleApproveJob(job.id),
-                                              },
-                                              {
-                                                  label: 'reject',
-                                                  className: 'btn-delete',
-                                                  //   onClick: () => handleRejectJob(job.id),
-                                              },
-                                          ]
-                                        : [
-                                              { label: 'edit', className: 'btn-edit', onClick: null },
-                                              {
-                                                  label: 'delete',
-                                                  className: 'btn-delete',
-                                                  //   onClick: () => handleDeleteJob(job.id),
-                                              },
-                                          ]
-                                    ).map((btn, index) => (
-                                        <button key={index} className={cx(btn.className)} onClick={btn.onClick}>
-                                            {btn.label}
-                                        </button>
-                                    ))}
-                                </td>
+                        {loading ? (
+                            <tr>
+                                <td colSpan="5" style={{textAlign: 'center'}}>Đang tải...</td>
                             </tr>
-                        ))}
+                        ) : filteredJobs.length === 0 ? (
+                            <tr>
+                                <td colSpan="5" style={{textAlign: 'center'}}>Không có dữ liệu</td>
+                            </tr>
+                        ) : (
+                            filteredJobs.map((job) => (
+                                <tr key={job._id}>
+                                    <td>{job.title}</td>
+                                    <td>{job.company_name}</td>
+                                    <td>{job.min_salary} - {job.max_salary} VNĐ</td>
+                                    <td>
+                                        <span className={cx('status', 
+                                            job.status === 'open' ? 'active' :
+                                            job.status === 'draft' ? 'pending' : 'inactive'
+                                        )}>
+                                            {job.status === 'open' ? 'Đang tuyển' :
+                                             job.status === 'draft' ? 'Chờ duyệt' : 'Đã đóng'}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {job.status === 'draft' ? (
+                                            <>
+                                                <button className={cx('btn-edit')} onClick={() => handleApprove(job._id)}>
+                                                    Duyệt
+                                                </button>
+                                                <button className={cx('btn-delete')} onClick={() => handleReject(job._id)}>
+                                                    Từ chối
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <button className={cx('btn-delete')} onClick={() => handleDelete(job._id)}>
+                                                Xóa
+                                            </button>
+                                        )}
+                                    </td>
+                                </tr>
+                            ))
+                        )}
                     </tbody>
                 </table>
             </div>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import classNames from 'classnames/bind';
-// import './AdminLogin.scss';
 import styles from './AdminLogin.module.scss';
+import { authAPI } from '../../../../services/api';
 const cx = classNames.bind(styles);
 
 const AdminLogin = ({ onLogin }) => {
@@ -17,11 +17,17 @@ const AdminLogin = ({ onLogin }) => {
         });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        if (formData.email === 'admin@jobconnect.com' && formData.password === 'admin123') {
-            onLogin();
-        } else {
+        try {
+            const response = await authAPI.login(formData);
+            if (response.token) {
+                localStorage.setItem('token', response.token);
+                localStorage.setItem('user', JSON.stringify(response.user));
+                onLogin();
+            }
+        } catch (error) {
+            console.error('Login error:', error);
             alert('Email hoặc mật khẩu không đúng!');
         }
     };

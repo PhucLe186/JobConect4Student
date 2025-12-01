@@ -19,12 +19,15 @@ export class ApplicationsService {
     const cv = await this.CVModel.findOne({
       student_id: new Types.ObjectId(userId),
     });
-    console.log(cv);
+    
+    if (!cv) {
+      throw new Error('Không tìm thấy CV. Vui lòng tạo CV trước khi ứng tuyển.');
+    }
 
     await this.jobApplyModel.create({
       job_id: jobid,
       student_id: userId,
-      cv_id: (cv as any)._id,
+      cv_id: cv._id,
       applied_at: new Date(),
     });
     return { status: 'apply thành công' };

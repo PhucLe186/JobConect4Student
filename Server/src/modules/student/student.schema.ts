@@ -41,5 +41,8 @@ export class Student {
 
   @Prop({ default: '' })
   desired_salary: string;
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Skills' }], default: [] })
+  skills: Types.ObjectId[];
 }
 export const StudentSchema = SchemaFactory.createForClass(Student);

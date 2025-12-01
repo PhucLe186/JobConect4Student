@@ -7,68 +7,17 @@ import { AuthContext } from '~/context/AuthContext';
 
 const cx = classNames.bind(styles);
 
-const MOCK_JOBS = [
-    {
-        id: 1,
-        title: 'Frontend Developer Reactjs',
-        location: 'TP.HCM',
-        salaryMin: 15000000,
-        salaryMax: 20000000,
-        applicants: 50,
-        views: 100,
-        tags: ['ReactJS', 'TypeScript', 'JavaScript'],
-        status: 'approved',
-        department: 'Engineering',
-    },
-    {
-        id: 2,
-        title: 'Backend Developer Nodejs',
-        location: 'TP.HCM',
-        salaryMin: 15000000,
-        salaryMax: 25000000,
-        applicants: 20,
-        views: 50,
-        tags: ['NodeJS', 'Express', 'MongoDB'],
-        status: 'pending',
-        department: 'Engineering',
-    },
-    {
-        id: 3,
-        title: 'UI/UX Designer',
-        location: 'Đà Nẵng',
-        salaryMin: 12000000,
-        salaryMax: 18000000,
-        applicants: 35,
-        views: 80,
-        tags: ['Figma', 'Sketch', 'Adobe XD'],
-        status: 'approved',
-        department: 'Design',
-    },
-    {
-        id: 4,
-        title: 'Product Manager',
-        location: 'Hà Nội',
-        salaryMin: 25000000,
-        salaryMax: 40000000,
-        applicants: 15,
-        views: 120,
-        tags: ['Agile', 'Scrum', 'JIRA'],
-        status: 'approved',
-        department: 'Product',
-    },
-];
 
-// Helper format tiền tệ (Có thể tùy chỉnh locale theo language nếu muốn)
-const currency = (v) =>
-    v.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+
+
 
 // 2. Nhận prop `t` từ component cha để dịch menu này
-function JobActionsMenu({ jobId, t }) {
+function JobActionsMenu({ jobId, t, onDelete }) {
     const handleEdit = () => {
         console.log(`Edit job ${jobId}`);
     };
     const handleDelete = () => {
-        console.log(`Delete job ${jobId}`);
+        onDelete(jobId);
     };
     return (
         <div className={cx('job-card__dropdown')}>
@@ -80,14 +29,56 @@ function JobActionsMenu({ jobId, t }) {
 
 // 3. Component chính nhận language
 function JobManagement() {
-    const {language}= useContext(AuthContext)
+    const {language, api}= useContext(AuthContext)
     const [query, setQuery] = useState('');
     const [status, setStatus] = useState('all');
     const [dept, setDept] = useState('all');
     const [openMenuId, setOpenMenuId] = useState(null);
+    const [jobs, setJobs] = useState([]);
+    const [loading, setLoading] = useState(true);
     const menuRef = useRef(null);
     const navigate = useNavigate();
     const t = translations[language];
+
+    useEffect(() => {
+        fetchJobs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const fetchJobs = async () => {
+        try {
+            setLoading(true);
+            const response = await api.get('/jobs');
+            if (response.data) {
+                setJobs(response.data);
+            }
+        } catch (error) {
+            console.error('Error fetching jobs:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDelete = async (jobId) => {
+        if (window.confirm('Bạn có chắc chắn muốn xóa việc làm này?')) {
+            try {
+                await api.delete(`/jobs/${jobId}`);
+                fetchJobs(); // Reload danh sách
+                alert('Xóa việc làm thành công!');
+            } catch (error) {
+                console.error('Error deleting job:', error);
+                alert('Lỗi khi xóa việc làm');
+            }
+        }
+    };
+
+    const filteredJobs = jobs.filter(job => {
+        const matchesQuery = job.title?.toLowerCase().includes(query.toLowerCase());
+        const matchesStatus = status === 'all' || 
+                            (status === 'pending' && job.status === 'draft') ||
+                            (status === 'approved' && job.status === 'open');
+        return matchesQuery && matchesStatus;
+    });
 
     useEffect(() => {
         function handleClickOutside(event) {
@@ -98,6 +89,16 @@ function JobManagement() {
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
+
+    const stats = {
+        total: jobs.length,
+        pending: jobs.filter(j => j.status === 'draft').length,
+        approved: jobs.filter(j => j.status === 'open').length
+    };
+
+    if (loading) {
+        return <div className={cx('loading')}>Đang tải...</div>;
+    }
 
     return (
         <div className={cx('jobs')}>
@@ -111,16 +112,16 @@ function JobManagement() {
 
             <div className={cx('jobs__stats')}>
                 <div className={cx('jobs__stat')}>
-                    <div className={cx('jobs__stat-number')}>{MOCK_JOBS.length}</div>
-                    <div className={cx('jobs__stat-label')}>{t.statTotal}</div>
+                    <div className={cx('jobs__stat-number')}>{stats.total}</div>
+                    <div className={cx('jobs__stat-label')}>Tổng việc làm</div>
                 </div>
                 <div className={cx('jobs__stat')}>
-                    <div className={cx('jobs__stat-number')}>0</div>
-                    <div className={cx('jobs__stat-label')}>{t.statPending}</div>
+                    <div className={cx('jobs__stat-number')}>{stats.pending}</div>
+                    <div className={cx('jobs__stat-label')}>Chờ duyệt</div>
                 </div>
                 <div className={cx('jobs__stat')}>
-                    <div className={cx('jobs__stat-number')}>0</div>
-                    <div className={cx('jobs__stat-label')}>{t.statApproved}</div>
+                    <div className={cx('jobs__stat-number')}>{stats.approved}</div>
+                    <div className={cx('jobs__stat-label')}>Đã duyệt</div>
                 </div>
             </div>
 
@@ -167,45 +168,58 @@ function JobManagement() {
             </div>
 
             <div className={cx('jobs__list')}>
-                {MOCK_JOBS.map((job) => (
-                    <article key={job.id} className={cx('job-card')}>
-                        <header className={cx('job-card__header')}>
-                            <h3 className={cx('job-card__title')}>{job.title}</h3>
-                            <div
-                                className={cx('job-card__more-wrapper')}
-                                ref={openMenuId === job.id ? menuRef : null}
-                            >
-                                <button
-                                    className={cx('job-card__more-btn')}
-                                    aria-label="More options"
-                                    onClick={() =>
-                                        setOpenMenuId(openMenuId === job.id ? null : job.id)
-                                    }>⋮</button>
-                                {/* 5. Truyền t vào menu con */}
-                                {openMenuId === job.id && <JobActionsMenu jobId={job.id} t={t} />}
-                            </div>
-                        </header>
-                        <ul className={cx('job-card__meta')}>
-                            <li className={cx('job-card__meta-item')}>📍 {job.location}</li>
-                            <li className={cx('job-card__meta-item')}>
-                                💲 {currency(job.salaryMin)} - {currency(job.salaryMax)}
-                            </li>
-                            <li className={cx('job-card__meta-item')}>
-                                👥 {job.applicants} {t.applicants}
-                            </li>
-                            <li className={cx('job-card__meta-item')}>
-                                👁️ {job.views} {t.views}
-                            </li>
-                        </ul>
-                        <div className={cx('job-card__tags')}>
-                            {job.tags.map((tag) => (
-                                <span key={tag} className={cx('job-card__tag')}>
-                                    {tag}
-                                </span>
-                            ))}
-                        </div>
-                    </article>
-                ))}
+                {filteredJobs.length === 0 ? (
+                    <div style={{textAlign: 'center', padding: '40px', color: '#666'}}>
+                        {loading ? 'Đang tải...' : 'Không có việc làm nào'}
+                    </div>
+                ) : (
+                    filteredJobs.map((job) => (
+                        <article key={job._id} className={cx('job-card')}>
+                            <header className={cx('job-card__header')}>
+                                <h3 className={cx('job-card__title')}>{job.title}</h3>
+                                <div className={cx('job-status', job.status)}>
+                                    {job.status === 'draft' ? 'Chờ duyệt' : 
+                                     job.status === 'open' ? 'Đang tuyển' : 'Đã đóng'}
+                                </div>
+                                <div
+                                    className={cx('job-card__more-wrapper')}
+                                    ref={openMenuId === job._id ? menuRef : null}
+                                >
+                                    <button
+                                        className={cx('job-card__more-btn')}
+                                        aria-label="More options"
+                                        onClick={() =>
+                                            setOpenMenuId(openMenuId === job._id ? null : job._id)
+                                        }>⋮</button>
+                                    {openMenuId === job._id && <JobActionsMenu jobId={job._id} t={t} onDelete={handleDelete} />}
+                                </div>
+                            </header>
+                            <ul className={cx('job-card__meta')}>
+                                <li className={cx('job-card__meta-item')}>📍 {job.location}</li>
+                                <li className={cx('job-card__meta-item')}>
+                                    💲 {job.min_salary?.toLocaleString()} - {job.max_salary?.toLocaleString()} VNĐ
+                                </li>
+                                <li className={cx('job-card__meta-item')}>
+                                    📅 Hạn: {new Date(job.deadline).toLocaleDateString('vi-VN')}
+                                </li>
+                                <li className={cx('job-card__meta-item')}>
+                                    🏢 {job.job_type === 'full-time' ? 'Toàn thời gian' : 
+                                         job.job_type === 'part-time' ? 'Bán thời gian' : 'Thực tập'}
+                                </li>
+                            </ul>
+                            {job.industry && (
+                                <div className={cx('job-card__tags')}>
+                                    <span className={cx('job-card__tag')}>
+                                        {job.industry}
+                                    </span>
+                                    <span className={cx('job-card__tag')}>
+                                        {job.level}
+                                    </span>
+                                </div>
+                            )}
+                        </article>
+                    ))
+                )}
             </div>
         </div>
     );

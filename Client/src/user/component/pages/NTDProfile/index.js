@@ -3,19 +3,81 @@ import styles from './Home.module.scss';
 import classNames from 'classnames/bind';
 import translations from '~/component/Translation';
 import { AuthContext } from '~/context/AuthContext';
+
 import axios from 'axios';
 
 const cx = classNames.bind(styles);
 
 function NTDProfile() {
-  const {language}= useContext(AuthContext)
+  const {language, api}= useContext(AuthContext)
   const t = translations[language];
   const [provinceOptions, setProvinceOptions]=useState([])
   const [districtOptions, setDistrictOptions]=useState([])
   const [district, setDistrict]= useState('')
-  const [province, setProvince]=useState([])
+  const [province, setProvince]=useState('')
   const [industry, setIndustry]= useState('')
   const [detail, setDetail]=useState('')
+  const [loading, setLoading] = useState(true);
+  const [companyData, setCompanyData] = useState({
+    company_name: '',
+    size: '',
+    industry: '',
+    description: '',
+    address: '',
+    website: ''
+  });
+
+  useEffect(() => {
+    fetchCompanyProfile();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const fetchCompanyProfile = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get('/employer/me');
+      if (response.data) {
+        setCompanyData({
+          company_name: response.data.company_name || '',
+          size: response.data.size || '',
+          industry: response.data.industry || '',
+          description: response.data.description || '',
+          address: response.data.address || '',
+          website: response.data.website || ''
+        });
+        setIndustry(response.data.industry || '');
+      }
+    } catch (error) {
+      console.error('Error fetching company profile:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (field, value) => {
+    setCompanyData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSave = async () => {
+    try {
+      const fullAddress = `${detail}, ${district}, ${province}`.replace(/^,\s*|,\s*$/g, '');
+      const dataToSave = {
+        ...companyData,
+        address: fullAddress,
+        industry: industry
+      };
+      
+      await api.post('/employer', dataToSave);
+      alert('Cập nhật thông tin công ty thành công!');
+    } catch (error) {
+      console.error('Error saving company profile:', error);
+      alert('Lỗi khi cập nhật thông tin công ty');
+    }
+  };
+
   const industryOptions = 
   [
     { id: 1, name: 'Công nghệ thông tin & Phần mềm' },
@@ -33,6 +95,7 @@ function NTDProfile() {
     { id: 13, name: 'Bất động sản' },
     { id: 14, name: 'Nông nghiệp / Food Production' },
   ];
+
   useEffect(()=> {
     const fetchdata=async()=> {
       const res= await axios.get('https://provinces.open-api.vn/api/v1/?depth=2')
@@ -47,7 +110,12 @@ function NTDProfile() {
       }
     }
     fetchdata()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   },[])
+
+  if (loading) {
+    return <div className={cx('loading')}>Đang tải...</div>;
+  }
 
   return (
     <div className={cx('company')}>
@@ -76,6 +144,8 @@ function NTDProfile() {
                 <input 
                     className={cx('company__input')} 
                     placeholder={t.ph_companyName} 
+                    value={companyData.company_name}
+                    onChange={(e) => handleInputChange('company_name', e.target.value)}
                 />
               </div>
 
@@ -84,7 +154,10 @@ function NTDProfile() {
                   <label className={cx('company__label')}>{t.companySize}</label>
                   <input 
                     className={cx('company__input')} 
+                    type="number"
                     placeholder={t.ph_companySize} 
+                    value={companyData.size}
+                    onChange={(e) => handleInputChange('size', e.target.value)}
                   />
                 </div>
                 <div className={cx('company__field')}>
@@ -109,6 +182,8 @@ function NTDProfile() {
                   className={cx('company__textarea')}
                   placeholder={t.ph_description}
                   rows={6}
+                  value={companyData.description}
+                  onChange={(e) => handleInputChange('description', e.target.value)}
                 />
               </div>
             </div>
@@ -165,18 +240,12 @@ function NTDProfile() {
             </div>
 
             <div className={cx('company__field')}>
-              <label className={cx('company__label')}>{t.phone}</label>
+              <label className={cx('company__label')}>Website</label>
               <input 
                   className={cx('company__input')} 
-                  placeholder={t.ph_email} 
-              />
-            </div>
-
-            <div className={cx('company__field')}>
-              <label className={cx('company__label')}>{t.website}</label>
-              <input 
-                  className={cx('company__input')} 
-                  placeholder={t.ph_website} 
+                  placeholder="https://company.com" 
+                  value={companyData.website}
+                  onChange={(e) => handleInputChange('website', e.target.value)}
               />
             </div>
           </div>
@@ -184,8 +253,11 @@ function NTDProfile() {
       </section>
 
       <div className={cx('company__footer')}>
-        <button className={cx('company__btn', 'company__btn--primary')}>
-          {t.saveBtn}
+        <button 
+          className={cx('company__btn', 'company__btn--primary')}
+          onClick={handleSave}
+        >
+          {t.saveBtn || 'Lưu thông tin'}
         </button>
       </div>
     </div>

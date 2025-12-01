@@ -26,9 +26,16 @@ const RegisterForm = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        Data['role']=role
-        Data['Confirm_Password']=undefined
-        register(Data)
+        if (!role) {
+            alert('Vui lòng chọn vai trò trước khi đăng ký');
+            return;
+        }
+        const submitData = {
+            ...Data,
+            role: role
+        };
+        delete submitData.Confirm_Password;
+        register(submitData);
     };
 
     return (

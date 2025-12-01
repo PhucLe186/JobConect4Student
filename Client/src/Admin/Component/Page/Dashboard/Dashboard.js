@@ -1,12 +1,42 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import classNames from 'classnames/bind';
 import styles from './Dashboard.module.scss';
+import { dashboardAPI } from '../../../../services/api';
 const cx = classNames.bind(styles);
 
 const Dashboard = ({ showSection }) => {
+    const [stats, setStats] = useState({
+        totalUsers: 0,
+        totalJobs: 0,
+        totalApplications: 0,
+        pendingApplications: 0
+    });
+    const [forumStats, setForumStats] = useState({
+        totalPosts: 0,
+        totalComments: 0
+    });
+    const [loading, setLoading] = useState(true);
+
     useEffect(() => {
+        fetchDashboardData();
         drawCharts();
     }, []);
+
+    const fetchDashboardData = async () => {
+        try {
+            setLoading(true);
+            const [generalStats, forumData] = await Promise.all([
+                dashboardAPI.getStats(),
+                dashboardAPI.getForumStats()
+            ]);
+            setStats(generalStats);
+            setForumStats(forumData);
+        } catch (error) {
+            console.error('Error fetching dashboard data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const drawCharts = () => {
         // Vẽ biểu đồ cột người dùng
@@ -89,26 +119,26 @@ const Dashboard = ({ showSection }) => {
             <div className={cx('stats-grid')}>
                 <div className={cx('stat-card')}>
                     <div className={cx('stat-info')}>
-                        <h3>1,250</h3>
-                        <p>totalUsers</p>
+                        <h3>{loading ? '...' : stats.totalUsers}</h3>
+                        <p>Tổng người dùng</p>
                     </div>
                 </div>
                 <div className={cx('stat-card')}>
                     <div className={cx('stat-info')}>
-                        <h3>340</h3>
-                        <p>totalJobs</p>
+                        <h3>{loading ? '...' : stats.totalJobs}</h3>
+                        <p>Tổng việc làm</p>
                     </div>
                 </div>
                 <div className={cx('stat-card')}>
                     <div className={cx('stat-info')}>
-                        <h3>85</h3>
-                        <p>totalPosts</p>
+                        <h3>{loading ? '...' : forumStats.totalPosts}</h3>
+                        <p>Tổng bài đăng</p>
                     </div>
                 </div>
                 <div className={cx('stat-card')}>
                     <div className={cx('stat-info')}>
-                        <h3>156</h3>
-                        <p>pendingApplications</p>
+                        <h3>{loading ? '...' : stats.pendingApplications}</h3>
+                        <p>Đơn chờ duyệt</p>
                     </div>
                 </div>
             </div>

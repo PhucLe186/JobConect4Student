@@ -22,14 +22,15 @@ export class StudentService {
       .exec();
 
     const student = await this.StudentModel.findOne({ user_id: userId })
+      .populate('skills', 'name')
       .lean()
       .exec();
 
-    const skills = await this.SkillsModel.find()
+    const allSkills = await this.SkillsModel.find()
       .lean()
       .exec();
 
-    const result = { ...User, ...student, skills };
+    const result = { ...User, ...student, allSkills };
     delete result._id;
     delete result.user_id;
     return result;
@@ -37,7 +38,7 @@ export class StudentService {
 
   async updateStudent(user: JwtUser, updateData: any): Promise<object | null> {
     const { userId } = user;
-    const { name, email, dateOfbirth, gender, ...studentData } = updateData;
+    const { name, email, dateOfbirth, gender, skills, ...studentData } = updateData;
 
     // Validate graduation_year trước khi cập nhật
     if (studentData.graduation_year !== undefined) {
@@ -46,6 +47,15 @@ export class StudentService {
         throw new Error('Number nha bé');
       }
       studentData.graduation_year = year;
+    }
+
+    // Validate skills nếu có
+    if (skills !== undefined) {
+      if (Array.isArray(skills)) {
+        studentData.skills = skills;
+      } else {
+        throw new Error('Skills phải là array');
+      }
     }
 
     if (name || email || dateOfbirth || gender) {

@@ -1,77 +1,59 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useContext } from 'react';
 import styles from './CandidateManagement.module.scss';
 import classNames from 'classnames/bind';
 import translations from '~/component/Translation';
-import { useContext } from 'react';
 import { AuthContext } from '~/context/AuthContext';
+import { dashboardAPI } from '~/services/api';
 
 const cx = classNames.bind(styles);
 
-const MOCK_CANDIDATES = [
-  {
-    id: 1,
-    name: 'Nguyễn Văn A',
-    avatar: 'https://placehold.co/56x56',
-    phone: '0901234567',
-    address: 'TP.HCM',
-    school: 'Đại học Bách Khoa',
-    major: 'Kỹ thuật phần mềm',
-    gpa: 3.6,
-    graduation_year: 2024,
-    career_goal: 'Trở thành Fullstack Developer chuyên nghiệp trong 2 năm tới.',
-    desired_salary: '15.000.000 VNĐ',
-  },
-  {
-    id: 2,
-    name: 'Trần Thị B',
-    avatar: 'https://placehold.co/56x56',
-    phone: '0912345678',
-    address: 'Hà Nội', 
-    school: 'Đại học Công Nghệ',
-    major: 'Khoa học máy tính',
-    gpa: 3.8,
-    graduation_year: 2025,
-    career_goal: 'Phát triển sâu về AI và Machine Learning.',
-    desired_salary: '20.000.000 VNĐ',
-  },
-  {
-    id: 3,
-    name: 'Lê Văn C',
-    avatar: 'https://placehold.co/56x56',
-    phone: '0987654321',
-    address: 'Đà Nẵng', 
-    school: 'Đại học Bách Khoa Đà Nẵng',
-    major: 'Hệ thống thông tin',
-    gpa: 3.2,
-    graduation_year: 2023,
-    career_goal: 'Mong muốn làm việc trong môi trường quốc tế, sử dụng tiếng Anh.',
-    desired_salary: '12.000.000 VNĐ',
-  },
-];
+
 
 // 2. Thêm prop language
 function CandidateManagement() {
   const {language}= useContext(AuthContext)
   const [query, setQuery] = useState('');
   const [selectedMajor, setSelectedMajor] = useState('all');
+  const [candidates, setCandidates] = useState([]);
+  const [loading, setLoading] = useState(true);
   const t = translations[language];
 
-  // Lấy danh sách các chuyên ngành (Major) để làm bộ lọc
-  const majors = useMemo(() => {
-    const allMajors = MOCK_CANDIDATES.map((c) => c.major);
-    return ['all', ...new Set(allMajors)];
+  useEffect(() => {
+    fetchCandidates();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Xử lý lọc dữ liệu
-  const filtered = MOCK_CANDIDATES.filter((c) => {
+  const fetchCandidates = async () => {
+    try {
+      setLoading(true);
+      const users = await dashboardAPI.getAllUsers();
+      const students = users.filter(user => user.role === 'student');
+      setCandidates(students);
+    } catch (error) {
+      console.error('Error fetching candidates:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const majors = useMemo(() => {
+    const allMajors = candidates.map((c) => c.major).filter(Boolean);
+    return ['all', ...new Set(allMajors)];
+  }, [candidates]);
+
+  const filtered = candidates.filter((c) => {
     const matchQuery =
-      c.name.toLowerCase().includes(query.toLowerCase()) ||
-      c.school.toLowerCase().includes(query.toLowerCase());
+      c.name?.toLowerCase().includes(query.toLowerCase()) ||
+      c.email?.toLowerCase().includes(query.toLowerCase());
 
     const matchMajor = selectedMajor === 'all' || c.major === selectedMajor;
 
     return matchQuery && matchMajor;
   });
+
+  if (loading) {
+    return <div className={cx('loading')}>Đang tải...</div>;
+  }
 
   return (
     <div className={cx('cands')}>
@@ -121,17 +103,17 @@ function CandidateManagement() {
 
       <div className={cx('cands__list')}>
         {filtered.map((c) => (
-          <article key={c.id} className={cx('cand-card')}>
+          <article key={c._id} className={cx('cand-card')}>
             <header className={cx('cand-card__header')}>
               <img
                 className={cx('cand-card__avatar')}
-                src={c.avatar}
+                src={c.avatar || 'https://placehold.co/56x56'}
                 alt={c.name}
               />
               <div className={cx('cand-card__headings')}>
                 <div className={cx('cand-card__name')}>{c.name}</div>
                 <div className={cx('cand-card__role')}>
-                  {c.major}
+                  {c.major || 'Chưa cập nhật'}
                 </div>
               </div>
             </header>
@@ -139,48 +121,66 @@ function CandidateManagement() {
             <ul className={cx('cand-card__info')}>
               {/* Phone */}
               <li className={cx('cand-card__info-item')}>
+                <span className={cx('cand-card__icon')} title="Email">✉️</span>
+                {c.email}
+              </li>
+              <li className={cx('cand-card__info-item')}>
                 <span className={cx('cand-card__icon')} title={t.tooltipPhone}>📞</span>
-                {c.phone}
+                {c.phone || 'Chưa cập nhật'}
               </li>
               
               {/* Address */}
               <li className={cx('cand-card__info-item')}>
                 <span className={cx('cand-card__icon')} title={t.tooltipAddress}>📍</span>
-                {c.address}
+                {c.address || 'Chưa cập nhật'}
               </li>
 
               {/* School */}
               <li className={cx('cand-card__info-item')}>
                 <span className={cx('cand-card__icon')} title={t.tooltipSchool}>🎓</span>
-                {c.school}
+                {c.school || 'Chưa cập nhật'}
               </li>
 
               {/* Graduation Year */}
-              <li className={cx('cand-card__info-item')}>
-                <span className={cx('cand-card__icon')} title={t.tooltipGradYear}>🗓️</span>
-                {t.labelGraduation}: {c.graduation_year}
-              </li>
+              {c.graduation_year && (
+                <li className={cx('cand-card__info-item')}>
+                  <span className={cx('cand-card__icon')} title={t.tooltipGradYear}>🗓️</span>
+                  Năm tốt nghiệp: {c.graduation_year}
+                </li>
+              )}
 
                {/* GPA */}
-               <li className={cx('cand-card__info-item')}>
-                <span className={cx('cand-card__icon')} title={t.tooltipGPA}>📊</span>
-                {t.labelGPA}: <strong>{c.gpa}</strong>
-              </li>
+               {c.gpa && (
+                 <li className={cx('cand-card__info-item')}>
+                  <span className={cx('cand-card__icon')} title={t.tooltipGPA}>📊</span>
+                  GPA: <strong>{c.gpa}</strong>
+                </li>
+               )}
 
               {/* Salary */}
+              {c.desired_salary && (
+                <li className={cx('cand-card__info-item')}>
+                  <span className={cx('cand-card__icon')} title={t.tooltipSalary}>💰</span>
+                  {c.desired_salary} VNĐ
+                </li>
+              )}
               <li className={cx('cand-card__info-item')}>
-                <span className={cx('cand-card__icon')} title={t.tooltipSalary}>💰</span>
-                {c.desired_salary}
+                <span className={cx('cand-card__icon')} title="Trạng thái">🔴</span>
+                <span className={cx('status', c.status === 'online' ? 'online' : 'offline')}>
+                  {c.status === 'online' ? 'Online' : 'Offline'}
+                </span>
               </li>
             </ul>
 
             {/* Career Goal */}
-            <div className={cx('cand-card__goal-section')}>
-              <div className={cx('cand-card__goal-label')}>🎯 {t.labelGoal}:</div>
-              <div className={cx('cand-card__goal-text')}>
-                 {c.career_goal}
+            {c.career_goal && (
+              <div className={cx('cand-card__goal-section')}>
+                <div className={cx('cand-card__goal-label')}>🎯 Mục tiêu:</div>
+                <div className={cx('cand-card__goal-text')}>
+                   {c.career_goal}
+                </div>
               </div>
-            </div>
+            )}
           </article>
         ))}
         
