@@ -53,19 +53,31 @@
     padding: 1.925rem 2.2rem;
     margin-bottom: 1.925rem;
 }
+.company__edit-btn{
+    
+    background: transparent;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.company__edit-btn:hover{
+    background-color: var(--primary-color);
+    color: #fff;
+}
 
 .company__section-header {
+    justify-content: space-between;
     display: flex;
     align-items: center;
     gap: 12px;
     padding-bottom: 1.375rem;
     border-bottom: 1px solid var(--border-color);
     margin-bottom: 1.375rem;
-}
-
-.company__section-icon {
-    font-size: 24px;
-    color: var(--primary-color);
 }
 
 .company__section-title {

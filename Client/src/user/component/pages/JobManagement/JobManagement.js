@@ -87,7 +87,7 @@ function JobManagement() {
     const [openMenuId, setOpenMenuId] = useState(null);
     const menuRef = useRef(null);
     const navigate = useNavigate();
-    const t = translations[language];
+    const t = translations[language||'vi'];
 
     useEffect(() => {
         function handleClickOutside(event) {

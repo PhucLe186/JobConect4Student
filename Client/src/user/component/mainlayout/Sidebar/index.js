@@ -14,7 +14,7 @@ function Sidebar() {
     const [isOpen, setIsopen]= useState(true)
     const {user, language} = useContext(AuthContext);
 
-    const t = translations[language];
+    const t = translations[language|| 'vi'];
 
     const page= user?.type === 'student' ?
         [

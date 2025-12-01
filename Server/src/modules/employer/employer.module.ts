@@ -5,8 +5,10 @@ import { EmployerService } from './employer.service';
 import { Employer, EmployerSchema } from './employer.schema';
 import { JwtAuthGuard } from '../auth/Jwt/jwt-auth.guard';
 import { User, UserSchema } from '../auth/schema/auth.schema';
+import { CloudinaryModule } from 'src/modules/cloudinary/cloudinary.module';
 @Module({
   imports: [
+    CloudinaryModule,
     MongooseModule.forFeature([
       { name: Employer.name, schema: EmployerSchema },
     ]),

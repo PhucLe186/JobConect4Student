@@ -53,7 +53,7 @@ function ApplicationHistory() {
     const {language}= useContext(AuthContext)
 >>>>>>> 165a7464 (new updat 29/11/2025)
 
-    const t = translations[language];
+    const t = translations[language|| 'vi'];
 
     useEffect(() => {
         testAuth();

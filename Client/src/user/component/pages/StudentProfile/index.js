@@ -53,7 +53,7 @@ function StudentProfile() {
     const { api, user } = useContext(AuthContext);
 >>>>>>> c3165e2f (fix tu them cac thong tin ca nhan khi dang ki)
 
-    const t = translations[language];
+    const t = translations[language||'vi'];
 
     useEffect(() => {
         fetchProfileData();

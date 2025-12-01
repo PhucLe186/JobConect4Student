@@ -1,14 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Employer, EmployerDocument } from './employer.schema';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { CreateEmployerDto } from './tdo/employer.dto';
 import { JwtUser } from '../auth/interface/jwt-user.interface';
+import { User, UserDocument } from '../auth/schema/auth.schema';
 
 @Injectable()
 export class EmployerService {
   constructor(
     @InjectModel(Employer.name) private employerModel: Model<EmployerDocument>,
+    @InjectModel(User.name) private UserModel: Model<UserDocument>,
   ) {}
   async employer(): Promise<Employer[]> {
     const company = await this.employerModel.find(
@@ -27,34 +29,45 @@ export class EmployerService {
     return company;
   }
 
+  async InformationEmploy(user: JwtUser): Promise<Employer | any> {
+    const { userId } = user;
+    console.log(userId);
+    const Information = await this.employerModel.findOne({
+      user_id: new Types.ObjectId(userId),
+    });
+    console.log(Information);
+
+    return Information;
+  }
+
   async createEmployer(
-    createEmployerDto: CreateEmployerDto,
+    createEmployerDto: Partial<CreateEmployerDto>,
     user: JwtUser,
+    url: string | null,
   ): Promise<{ message: string }> {
-    console.log(user);
     const { userId, role } = user;
     if (role !== 'employer') {
       return { message: 'bạn không phải employer' };
     }
-    const {
-      company_name,
-      description,
-      size,
-      industry,
-      address,
-      website,
-      logo,
-    } = createEmployerDto;
+    const User = await this.UserModel.findById(userId);
+    const updateData = { ...createEmployerDto };
+    if (url) {
+      updateData.logo = url;
+    }
+    if (User) {
+      await this.employerModel.findOneAndUpdate(
+        { user_id: new Types.ObjectId(userId) },
+        { $set: { ...updateData } },
+        { new: true },
+      );
+      return { message: 'cập nhật dữ liệu thành công' };
+    }
+
     await this.employerModel.create({
-      user_id: userId,
-      company_name,
-      description,
-      size,
-      industry,
-      address,
-      website,
-      logo,
+      user_id: new Types.ObjectId(userId),
+      logo: url,
+      ...createEmployerDto,
     });
-    return { message: 'update thành công' };
+    return { message: 'thêm dữ liệu thành công' };
   }
 }

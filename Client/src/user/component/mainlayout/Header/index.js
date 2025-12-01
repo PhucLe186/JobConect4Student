@@ -101,7 +101,7 @@ function Header() {
                                                 navigate(routesconfig.home);
                                             }}
                                         >
-                                            t.Logout
+                                            {t.Logout}
                                         </button>
                                     </div>
                                 )}

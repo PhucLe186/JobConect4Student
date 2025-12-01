@@ -17,23 +17,21 @@ export class Employer {
   @Prop({ type: Number })
   size: number;
 
-  @Prop({ type: String, trim: true, index: true })
+  @Prop({ type: String, trim: true, index: true, required: true })
   industry: string;
 
-  @Prop({ type: String, trim: true, default: '' })
+  @Prop({ type: String, trim: true })
   address: string;
 
   @Prop({
     type: String,
     trim: true,
-    validate: {
-      validator: (v: string) => !v || /^https?:\/\/[^\s$.?#].[^\s]*$/i.test(v),
-      message: (props) => `${props.value} is not a valid URL`,
-    },
     default: '',
   })
   website: string;
 
+  @Prop({ required: true })
+  phone: string;
   @Prop({ type: String, trim: true, default: '' })
   logo: string;
 }

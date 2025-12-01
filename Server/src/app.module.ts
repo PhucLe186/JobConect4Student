@@ -16,9 +16,14 @@ import { ApplicationsModule } from './modules/applications/applications.module';
 import { ForumModule } from './modules/forum/forum.module';
 import { CommentModule } from './modules/comment/comment.module';
 import { LikesModule } from './modules/likes/likes.module';
+import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     MongooseModule.forRoot(
       'mongodb+srv://hoangphuc1806:Phucle%401806@connect4student.dbrrwmk.mongodb.net/connect4Student?retryWrites=true&w=majority',
     ),
@@ -32,6 +37,7 @@ import { LikesModule } from './modules/likes/likes.module';
     ForumModule,
     CommentModule,
     LikesModule,
+    CloudinaryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

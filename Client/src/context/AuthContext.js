@@ -23,7 +23,32 @@ export const AuthProvider = ({ children }) => {
             }
             return config;
         });
+        instance.interceptors.response.use(
+            res=> res, 
+            async err=> {
+                const originalRequest= err.config;
+                if(err.response.status===400 && !originalRequest._retry) {
+                    originalRequest._retry= true;
+                    try{
+                        const res= await axios.get('http://localhost:5000/auth/refreshtoken', {withCredentials: true});
+                        if(res.data.accesstoken){
+                            setToken(res.data.accesstoken)
+                            setUser(res.data)
+                            setLanguege(res.data.language)
 
+                            originalRequest.headers.Authorization=`Bearer ${res.data.accesstoken}`
+                            return instance(originalRequest)
+                        }
+                    }catch(refreshErr) {
+                        console.error('Refresh token failed:', err.response?.data || err.message);
+                        setUser(null);
+                        setToken(null);
+                        return Promise.reject(refreshErr)
+                    }
+                }
+                return Promise.reject(err)
+            }
+        )
         return instance;
     }, [token]);
 
@@ -43,7 +68,7 @@ export const AuthProvider = ({ children }) => {
             }  
         }
         refreshToken()
-    },[token])
+    },[])
 
     const login = async(userData) => {
        try{
@@ -108,6 +133,7 @@ export const AuthProvider = ({ children }) => {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
     const value = {
+        token, 
         api,
         user,
         language,

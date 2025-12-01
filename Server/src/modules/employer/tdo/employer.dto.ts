@@ -5,5 +5,6 @@ export class CreateEmployerDto {
   readonly industry?: string;
   readonly address?: string;
   readonly website?: string;
+  readonly phone?: string;
   readonly logo?: string;
 }
