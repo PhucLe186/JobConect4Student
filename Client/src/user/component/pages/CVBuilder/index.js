@@ -1,7 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useContext } from 'react';
+import { AuthContext } from '~/context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import styles from './CVBuilder.module.scss';
 
 function App() {
+    const { user } = useContext(AuthContext);
+    const navigate = useNavigate();
     const [brandColor, setBrandColor] = useState('#3b8e74');
     const [cvData, setCvData] = useState({
         fullname: 'Nguyen Van A',
@@ -32,11 +36,50 @@ function App() {
         ],
     });
     const [avatar, setAvatar] = useState(null);
+    const [cvId, setCvId] = useState(null);
     const avatarInputRef = useRef(null);
 
     useEffect(() => {
+        // Kiểm tra quyền truy cập - chỉ student mới được tạo CV
+        if (user && user.type !== 'student') {
+            alert('Chỉ sinh viên mới có thể tạo CV!');
+            navigate('/');
+            return;
+        }
         document.documentElement.style.setProperty('--brand', brandColor);
-    }, [brandColor]);
+    }, [brandColor, user, navigate]);
+
+    useEffect(() => {
+        // Load CV từ localStorage nếu có
+        const savedCV = localStorage.getItem('currentCV');
+        if (savedCV) {
+            const parsed = JSON.parse(savedCV);
+            setCvData(parsed.cvData);
+            setBrandColor(parsed.brandColor);
+            setAvatar(parsed.avatar);
+            setCvId(parsed.id);
+        }
+    }, []);
+
+    const saveCV = async () => {
+        try {
+            // Lưu vào localStorage
+            const cvId = Date.now().toString();
+            localStorage.setItem('currentCV', JSON.stringify({
+                id: cvId,
+                cvData,
+                brandColor,
+                avatar,
+                savedAt: new Date().toISOString()
+            }));
+            
+            setCvId(cvId);
+            alert('CV đã được lưu!');
+        } catch (error) {
+            console.error('Lỗi khi lưu CV:', error);
+            alert('Có lỗi khi lưu CV!');
+        }
+    };
 
     const handleAvatarChange = (e) => {
         const file = e.target.files[0];
@@ -120,11 +163,17 @@ function App() {
         }));
     };
 
-    const handlePrint = () => {
+    const handlePrint = async () => {
+        // Lưu CV trước khi xuất PDF
+        await saveCV();
+        
+        const originalTitle = document.title;
+        document.title = '';
         document.body.classList.add('exporting-pdf');
         setTimeout(() => {
             window.print();
             document.body.classList.remove('exporting-pdf');
+            document.title = originalTitle;
         }, 100);
     };
 
@@ -143,6 +192,7 @@ function App() {
                     />
                     <button onClick={addExperience}>+ Kinh nghiệm</button>
                     <button onClick={addEducation}>+ Học vấn</button>
+                    <button onClick={saveCV}>Lưu CV</button>
                     <button id="printBtn" onClick={handlePrint}>
                         Tải xuống PDF
                     </button>

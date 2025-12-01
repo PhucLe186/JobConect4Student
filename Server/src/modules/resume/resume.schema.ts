@@ -18,9 +18,21 @@ export class CSV {
   pdf_path: string;
 
   @Prop()
+  render: string;
+
+  @Prop({ type: Object })
+  form_data: Record<string, any>;
+
+  @Prop({ enum: ['draft', 'completed'], default: 'draft' })
+  status: string;
+
+  @Prop()
   public_link: string;
 
   @Prop({ type: Date, default: Date.now })
   created_at: Date;
+
+  @Prop({ type: Date, default: Date.now })
+  updated_at: Date;
 }
 export const ResumeSchema = SchemaFactory.createForClass(CSV);
