@@ -20,24 +20,40 @@
 }
 
 .stat-card {
-    cursor: pointer;
     background: white;
     padding: 30px;
     border-radius: 15px;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
     display: flex;
     align-items: center;
-    gap: 20px;
-    transition: transform 0.3s ease;
+    justify-content: space-between;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
 
-    &:hover {
-        transform: translateY(-5px);
+    &.clickable {
+        cursor: pointer;
+        
+        &:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            
+            .card-icon {
+                transform: scale(1.1);
+            }
+        }
+        
+        &:active {
+            transform: translateY(-2px);
+        }
     }
 }
 
-.stat-icon {
+.card-icon {
     font-size: 45px;
-    opacity: 0.8;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+    color: #667eea;
 }
 
 .stat-info {

@@ -16,7 +16,7 @@ const Routes = {
     studentprofile: '/studentprofile',
     applicationhistory: '/applicationhistory',
     ///////////////Admin PAge///////////////////////////////
-    adminlogin: '/adminlogin',
+    adminlogin: '/admin/login',
     dashboard: '/dashboard',
     ForumManagement: '/forumManagement',
     JobManagement: '/jobManagement',

@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { AdminSeedService } from './admin/admin.seed';
 const cookieParser = require('cookie-parser');
 
 async function bootstrap() {
@@ -10,6 +11,11 @@ async function bootstrap() {
     credentials: true,
   });
   app.use(cookieParser());
+  
+  // Create default admin user
+  const adminSeedService = app.get(AdminSeedService);
+  await adminSeedService.createDefaultAdmin();
+  
   await app.listen(process.env.PORT ?? 5000);
 }
 bootstrap();

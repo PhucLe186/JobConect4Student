@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
 import classNames from 'classnames/bind';
-import styles from './JobManagement.module.scss';
 import { useNavigate } from 'react-router-dom';
+import { useAdminLanguage } from '../../../Context/AdminLanguageContext';
+import adminTranslations from '../../../Translation/AdminTranslations';
+import styles from './JobManagement.module.scss';
 
 const cx = classNames.bind(styles);
 
 const JobManagement = () => {
-    const Navigate=useNavigate()
+    const Navigate = useNavigate();
+    const { language } = useAdminLanguage();
+    const t = adminTranslations[language];
     const [jobs, setJobs] = useState([
         { id: 1, title: 'Frontend Developer', company: 'FPT Software', salary: '15-25 triệu', status: 'recruiting' },
         { id: 2, title: 'Backend Developer', company: 'Viettel Group', salary: '18-30 triệu', status: 'recruiting' },
@@ -20,15 +24,38 @@ const JobManagement = () => {
         { id: 10, title: 'Business Analyst', company: 'VNPAY', salary: '15-25 triệu', status: 'pending' },
         { id: 11, title: 'Fullstack Developer', company: 'Tech Corp', salary: '15-20 triệu', status: 'pending' },
     ]);
-     const handleBack=()=> {
+     const handleBack = () => {
         Navigate('/dashboard')
+    }
+    
+    const handleEdit = (job) => {
+        alert(`Chỉnh sửa công việc: ${job.title}`);
+    }
+    
+    const handleDelete = (job) => {
+        if (window.confirm(`Bạn có chắc muốn xóa công việc "${job.title}"?`)) {
+            setJobs(jobs.filter(j => j.id !== job.id));
+            alert(`Đã xóa công việc: ${job.title}`);
+        }
+    }
+    
+    const handleApprove = (job) => {
+        setJobs(jobs.map(j => j.id === job.id ? {...j, status: 'recruiting'} : j));
+        alert(`Đã duyệt công việc: ${job.title}`);
+    }
+    
+    const handleReject = (job) => {
+        if (window.confirm(`Bạn có chắc muốn từ chối công việc "${job.title}"?`)) {
+            setJobs(jobs.map(j => j.id === job.id ? {...j, status: 'closed'} : j));
+            alert(`Đã từ chối công việc: ${job.title}`);
+        }
     }
 
     return (
         
         <div className={cx('content-section')}>
-            <button className={cx('back-btn')} onClick={handleBack}>backToDashboard</button>
-            <h2>jobManagement</h2>
+            <button className={cx('back-btn')} onClick={handleBack}>{t.backToDashboard}</button>
+            <h2>{t.jobManagement}</h2>
             <div className={cx('section-controls')}>
                 <div className={cx('search-filter-container')}>
                     <input
@@ -43,8 +70,8 @@ const JobManagement = () => {
                         // value={filterType}
                         // onChange={(e) => setFilterType(e.target.value)}
                     >
-                        <option value="all">all</option>
-                        <option value="recent">recent</option>
+                        <option value="all">{t.all}</option>
+                        <option value="recent">{t.recent}</option>
                     </select>
                 </div>
             </div>
@@ -53,11 +80,11 @@ const JobManagement = () => {
                     <thead>
                         <tr>
                             {[
-                                { key: 'title', label: 'title' },
-                                { key: 'company', label: 'company' },
-                                { key: 'salary', label: 'salary' },
-                                { key: 'status', label: 'status' },
-                                { key: 'actions', label: 'actions' },
+                                { key: 'title', label: t.title },
+                                { key: 'company', label: t.company },
+                                { key: 'salary', label: t.salary },
+                                { key: 'status', label: t.status },
+                                { key: 'actions', label: t.actions },
                             ].map((column) => (
                                 <th key={column.key}>{column.label}</th>
                             ))}
@@ -80,32 +107,32 @@ const JobManagement = () => {
                                         }`}
                                     >
                                         {job.status === 'recruiting'
-                                            ? 'recruiting'
+                                            ? t.recruiting
                                             : job.status === 'pending'
-                                            ? 'pending'
-                                            : 'closed'}
+                                            ? t.pending
+                                            : t.closed}
                                     </span>
                                 </td>
                                 <td>
                                     {(job.status === 'pending'
                                         ? [
                                               {
-                                                  label: 'approve',
+                                                  label: t.approve,
                                                   className: 'btn-edit',
-                                                  //   onClick: () => handleApproveJob(job.id),
+                                                  onClick: () => handleApprove(job),
                                               },
                                               {
-                                                  label: 'reject',
+                                                  label: t.reject,
                                                   className: 'btn-delete',
-                                                  //   onClick: () => handleRejectJob(job.id),
+                                                  onClick: () => handleReject(job),
                                               },
                                           ]
                                         : [
-                                              { label: 'edit', className: 'btn-edit', onClick: null },
+                                              { label: t.edit, className: 'btn-edit', onClick: () => handleEdit(job) },
                                               {
-                                                  label: 'delete',
+                                                  label: t.delete,
                                                   className: 'btn-delete',
-                                                  //   onClick: () => handleDeleteJob(job.id),
+                                                  onClick: () => handleDelete(job),
                                               },
                                           ]
                                     ).map((btn, index) => (

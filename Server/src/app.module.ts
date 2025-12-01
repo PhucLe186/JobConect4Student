@@ -13,6 +13,7 @@ import { ResumeModule } from './modules/resume/resume.module';
 import { SkillsModule } from './modules/skills/skills.module';
 import { ApplicationsService } from './modules/applications/applications.service';
 import { ApplicationsModule } from './modules/applications/applications.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { ApplicationsModule } from './modules/applications/applications.module';
     ResumeModule,
     SkillsModule,
     ApplicationsModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

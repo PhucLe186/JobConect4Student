@@ -1,12 +1,23 @@
 import React, { useEffect } from 'react';
 import classNames from 'classnames/bind';
+import { useNavigate } from 'react-router-dom';
+import { useAdminLanguage } from '../../../Context/AdminLanguageContext';
+import adminTranslations from '../../../Translation/AdminTranslations';
 import styles from './Dashboard.module.scss';
 const cx = classNames.bind(styles);
 
 const Dashboard = ({ showSection }) => {
+    const navigate = useNavigate();
+    const { language } = useAdminLanguage();
+    const t = adminTranslations[language];
+
     useEffect(() => {
         drawCharts();
     }, []);
+
+    const handleCardClick = (route) => {
+        navigate(route);
+    };
 
     const drawCharts = () => {
         // Vẽ biểu đồ cột người dùng
@@ -85,41 +96,41 @@ const Dashboard = ({ showSection }) => {
 
     return (
         <div className={cx('content-section')}>
-            <h2>dashboardOverview</h2>
+            <h2>{t.dashboard}</h2>
             <div className={cx('stats-grid')}>
-                <div className={cx('stat-card')}>
+                <div className={cx('stat-card', 'clickable')} onClick={() => handleCardClick('/userManagement')}>
                     <div className={cx('stat-info')}>
                         <h3>1,250</h3>
-                        <p>totalUsers</p>
+                        <p>{t.totalUsers}</p>
                     </div>
                 </div>
-                <div className={cx('stat-card')}>
+                <div className={cx('stat-card', 'clickable')} onClick={() => handleCardClick('/jobManagement')}>
                     <div className={cx('stat-info')}>
                         <h3>340</h3>
-                        <p>totalJobs</p>
+                        <p>{t.totalJobs}</p>
                     </div>
                 </div>
-                <div className={cx('stat-card')}>
+                <div className={cx('stat-card', 'clickable')} onClick={() => handleCardClick('/forumManagement')}>
                     <div className={cx('stat-info')}>
                         <h3>85</h3>
-                        <p>totalPosts</p>
+                        <p>{t.totalPosts}</p>
                     </div>
                 </div>
-                <div className={cx('stat-card')}>
+                <div className={cx('stat-card', 'clickable')} onClick={() => handleCardClick('/userManagement')}>
                     <div className={cx('stat-info')}>
                         <h3>156</h3>
-                        <p>pendingApplications</p>
+                        <p>{t.pendingApplications}</p>
                     </div>
                 </div>
             </div>
 
             <div className={cx('charts-container')}>
                 <div className={cx('chart-card')}>
-                    <h3>userRegistrationChart</h3>
+                    <h3>{t.userRegistrationChart}</h3>
                     <canvas id="userChart" width="400" height="200"></canvas>
                 </div>
                 <div className={cx('chart-card')}>
-                    <h3>jobCategoryChart</h3>
+                    <h3>{t.jobCategoryChart}</h3>
                     <canvas id="jobChart" width="300" height="300"></canvas>
                 </div>
             </div>

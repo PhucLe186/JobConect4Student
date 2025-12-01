@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import classNames from 'classnames/bind';
-// import './AdminLogin.scss';
+import { useNavigate } from 'react-router-dom';
+import { AdminAPI } from '../../../Service/AdminAPI';
 import styles from './AdminLogin.module.scss';
 const cx = classNames.bind(styles);
 
-const AdminLogin = ({ onLogin }) => {
+const AdminLogin = () => {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
-        email: '',
+        username: '',
         password: '',
     });
+    const [loading, setLoading] = useState(false);
 
     const handleInputChange = (e) => {
         setFormData({
@@ -17,12 +20,24 @@ const AdminLogin = ({ onLogin }) => {
         });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        if (formData.email === 'admin@jobconnect.com' && formData.password === 'admin123') {
-            onLogin();
-        } else {
-            alert('Email hoặc mật khẩu không đúng!');
+        setLoading(true);
+        try {
+            console.log('Sending login data:', formData);
+            const result = await AdminAPI.login(formData);
+            console.log('Login result:', result);
+            if (result.success) {
+                localStorage.setItem('adminToken', result.token);
+                localStorage.setItem('adminUser', JSON.stringify(result.admin));
+                navigate('/dashboard');
+            } else {
+                alert(result.message || 'Đăng nhập thất bại!');
+            }
+        } catch (error) {
+            alert('Lỗi kết nối! Vui lòng thử lại.');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -36,14 +51,14 @@ const AdminLogin = ({ onLogin }) => {
 
                 <form onSubmit={handleSubmit} className={cx('login-form')}>
                     <div className={cx('form-group')}>
-                        <label>Email</label>
+                        <label>Tên đăng nhập</label>
                         <input
-                            type="email"
-                            name="email"
-                            value={formData.email}
+                            type="text"
+                            name="username"
+                            value={formData.username}
                             onChange={handleInputChange}
                             required
-                            placeholder="Nhập email"
+                            placeholder="Nhập tên đăng nhập"
                         />
                     </div>
 
@@ -59,8 +74,8 @@ const AdminLogin = ({ onLogin }) => {
                         />
                     </div>
 
-                    <button type="submit" className={cx('login-btn')}>
-                        Đăng nhập
+                    <button type="submit" className={cx('login-btn')} disabled={loading}>
+                        {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
                     </button>
                 </form>
             </div>
