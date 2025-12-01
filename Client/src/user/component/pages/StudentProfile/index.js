@@ -1,17 +1,9 @@
-<<<<<<< HEAD
 import React, { useMemo, useState, useEffect, useContext } from "react";
 import classNames from "classnames/bind";
 import styles from "./StudentProfile.module.scss";
 import translations from "~/component/Translation";
 import { AuthContext } from '~/context/AuthContext';
 
-=======
-import React, { useContext, useMemo, useState } from "react";
-import classNames from "classnames/bind";
-import styles from "./StudentProfile.module.scss";
-import translations from "~/component/Translation";
-import { AuthContext } from "~/context/AuthContext";
->>>>>>> 165a7464 (new updat 29/11/2025)
 const cx = classNames.bind(styles);
 
 const skillsCatalog = [
@@ -21,16 +13,8 @@ const skillsCatalog = [
     { id: 10, name: "Communication" }, { id: 11, name: "Teamwork" }, { id: 12, name: "Problem Solving" },
 ];
 
-function StudentProfile() {
-    const {language}= useContext(AuthContext)
+function StudentProfile({ language = 'vi' }) {
     const [selectedSkillId, setSelectedSkillId] = useState(skillsCatalog[0]?.id ?? 1);
-<<<<<<< HEAD
-    const [experience, setExperience] = useState('noExperience');
-    const [studentSkills, setStudentSkills] = useState([
-        { skill_id: 2, experience: 'twoYears' },
-        { skill_id: 3, experience: 'oneYear' },
-    ]);
-=======
     const [level, setLevel] = useState(3);
     const [studentSkills, setStudentSkills] = useState([]);
     const [profileData, setProfileData] = useState({
@@ -51,9 +35,8 @@ function StudentProfile() {
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
     const { api, user } = useContext(AuthContext);
->>>>>>> c3165e2f (fix tu them cac thong tin ca nhan khi dang ki)
 
-    const t = translations[language||'vi'];
+    const t = translations[language];
 
     useEffect(() => {
         fetchProfileData();
@@ -181,7 +164,7 @@ function StudentProfile() {
     return (
         <main className={cx("profile-page")}>
             <header className={cx("profile-page__header")}>
-                <h1 className={cx("profile-page__title")}>{t.studentProfile}</h1>
+                <h1 className={cx("profile-page__title")}>{t.pageTitle}</h1>
             </header>
 
             <form className={cx("profile-form")} onSubmit={handleFormSubmit}>

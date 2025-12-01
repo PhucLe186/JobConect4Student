@@ -10,7 +10,7 @@ const Community = () => {
     const [posts, setPosts] = useState([])
     const [Content, setContent] = useState('');
     const [Comment, setComment] = useState('');
-    const t = translations[language];
+    const t = translations[language||'vi'];
 
     function timeAgo(dateString) {
         const now = Date.now();

@@ -37,13 +37,44 @@ export class ApplicationsService {
     });
     return { status: 'apply thành công' };
   }
+  async getCandidateApply(): Promise<any[]> {
+    const list = await this.jobApplyModel
+      .find()
+      .populate({
+        path: 'student_id',
+        select: 'name email',
+      })
+      .populate({
+        path: 'job_id',
+        select: 'title',
+      })
+      .populate({
+        path: 'cv_id',
+        select: 'public_link',
+      })
+      .lean();
+    console.log(list);
+    const flattened = list.map((item) => ({
+      _id: item._id.toString(),
+      jobApplied: (item.job_id as any)?.title || null,
+      name: (item.student_id as any)?.name || null,
+      email: (item.student_id as any)?.email || null,
+      link: (item.cv_id as any)?.public_link || null,
+      status: item.status,
+      applied_at: item.applied_at,
+    }));
+
+    return flattened;
+  }
 
   async getApplicationHistory(user: JwtUser) {
     const { userId } = user;
 
     // Lấy thông tin user và student
     const userInfo = await this.userModel.findById(userId);
-    const studentInfo = await this.studentModel.findOne({ user_id: new Types.ObjectId(userId) });
+    const studentInfo = await this.studentModel.findOne({
+      user_id: new Types.ObjectId(userId),
+    });
 
     // Lấy lịch sử ứng tuyển với populate thông tin job và employer
     const applications = await this.jobApplyModel
@@ -54,8 +85,8 @@ export class ApplicationsService {
         populate: {
           path: 'employer_id',
           model: 'Employer',
-          select: 'company_name logo'
-        }
+          select: 'company_name logo',
+        },
       })
       .populate('cv_id')
       .sort({ applied_at: -1 });
@@ -74,17 +105,17 @@ export class ApplicationsService {
         gpa: studentInfo?.gpa,
         graduation_year: studentInfo?.graduation_year,
         career_goal: studentInfo?.career_goal,
-        desired_salary: studentInfo?.desired_salary
+        desired_salary: studentInfo?.desired_salary,
       },
-      applications: applications.map(app => ({
+      applications: applications.map((app) => ({
         id: app._id,
         jobTitle: (app.job_id as any)?.title || 'N/A',
         companyName: (app.job_id as any)?.employer_id?.company_name || 'N/A',
         companyLogo: (app.job_id as any)?.employer_id?.logo,
         status: app.status,
         applied_at: app.applied_at,
-        cv: app.cv_id
-      }))
+        cv: app.cv_id,
+      })),
     };
   }
 }

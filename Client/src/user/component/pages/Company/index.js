@@ -34,7 +34,7 @@ const Company = () => {
         fetchCompany()
     }, [])
 
-    const t = translations[language];
+    const t = translations[language||'vi'];
     const size= [
         {lable: t.choose_size },
         {lable: '1-50'+t.employees },

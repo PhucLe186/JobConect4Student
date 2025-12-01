@@ -8,10 +8,10 @@ export class job_applications {
   @Prop({ type: Types.ObjectId, ref: 'Jobs', required: true })
   job_id: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: 'Student', required: true })
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   student_id: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: 'CV', required: true })
+  @Prop({ type: Types.ObjectId, ref: 'CSV', required: true })
   cv_id?: Types.ObjectId;
 
   @Prop({ enum: ['sent', 'viewed', 'rejected', 'accepted'], default: 'sent' })

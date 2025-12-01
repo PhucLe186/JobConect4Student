@@ -29,6 +29,7 @@ const CompanyDetail = ({onPageChange}) => {
         }
         fetchData()
     }, [])
+    console.log(data)
 
 
     return (
@@ -52,7 +53,7 @@ const CompanyDetail = ({onPageChange}) => {
                             </p>
                             <p>
                                 <i className="fas fa-calendar-alt"></i>
-                                {t.founded}: {data.founded}
+                                {t.founded}: {data.email}
                             </p>
                         </div>
                         <button className={cx('viewJobsBtn')} onClick={() => onPageChange(1, 'samsung')}>

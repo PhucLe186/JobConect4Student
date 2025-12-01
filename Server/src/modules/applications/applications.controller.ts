@@ -3,6 +3,7 @@ import { JwtUser } from '../auth/interface/jwt-user.interface';
 import type { Request } from 'express';
 import { ApplicationsService } from './applications.service';
 import { JwtAuthGuard } from '../auth/Jwt/jwt-auth.guard';
+import { OptionAuthGuard } from '../auth/Jwt/jwt-option.authguagd';
 
 @Controller('applications')
 export class ApplicationsController {
@@ -12,6 +13,11 @@ export class ApplicationsController {
   @Post('')
   async ApplyJob(@Body('id') job_id: string, @Req() req: Request) {
     return this.applicationsService.applyJobs(job_id, req.user as JwtUser);
+  }
+  @UseGuards(OptionAuthGuard)
+  @Get('')
+  async getJobApply() {
+    return this.applicationsService.getCandidateApply();
   }
 
   @UseGuards(JwtAuthGuard)

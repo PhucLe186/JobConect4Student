@@ -62,7 +62,6 @@ export class ForumService {
         time: i.created_at,
       });
     }
-    console.log(finalPost);
 
     const result = Posts.map((item) => ({
       id: item._id.toString(),

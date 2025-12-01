@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useContext } from 'react';
+import React, { useState, useMemo, useContext, useEffect } from 'react';
 import styles from './CandidateManagement.module.scss';
 import classNames from 'classnames/bind';
 import translations from '~/component/Translation';
@@ -6,54 +6,48 @@ import { AuthContext } from '~/context/AuthContext';
 
 const cx = classNames.bind(styles);
 
-const MOCK_CANDIDATES = [
-  {
-    id: 1,
-    name: 'Nguyễn Văn A',
-    avatar: 'https://placehold.co/56x56',
-    jobApplied: 'Frontend Developer (ReactJS)',
-    dateApplied: '20/11/2025',
-    status: 'Pending'
-  },
-  {
-    id: 2,
-    name: 'Trần Thị B',
-    avatar: 'https://placehold.co/56x56',
-    jobApplied: 'Backend Developer (NodeJS)',
-    dateApplied: '21/11/2025',
-    status: 'Pending'
-  },
-  {
-    id: 3,
-    name: 'Lê Văn C',
-    avatar: 'https://placehold.co/56x56',
-    jobApplied: 'Fullstack Developer',
-    dateApplied: '22/11/2025',
-    status: 'Pending'
-  },
-];
-
 // 2. Thêm prop language
 function CandidateManagement() {
-  const {language}= useContext(AuthContext)
+  const {language, api}= useContext(AuthContext)
   const [query, setQuery] = useState('');
-  const [selectedMajor, setSelectedMajor] = useState('all');
+  const [data, setData]= useState([]);
   const t = translations[language];
-
-  // Lấy danh sách các chuyên ngành (Major) để làm bộ lọc
-  const majors = useMemo(() => {
-    const allMajors = MOCK_CANDIDATES.map((c) => c.major);
-    return ['all', ...new Set(allMajors)];
-  }, []);
-
-  // Xử lý lọc dữ liệu
-  const filtered = MOCK_CANDIDATES.filter((c) => {
+  const filtered = data.filter((c) => {
     const matchQuery =
-      c.name.toLowerCase().includes(query.toLowerCase()) ||
-      c.jobApplied.toLowerCase().includes(query.toLowerCase());
-
+      c.name?.toLowerCase().includes(query.toLowerCase()) ||
+      c.jobApplied?.toLowerCase().includes(query.toLowerCase());
     return matchQuery;
   });
+  function timeAgo(dateString) {
+        const now = Date.now();
+        const postTime = new Date(dateString).getTime();
+        const diffMs = now - postTime;
+
+        const seconds = Math.floor(diffMs / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
+
+        if (days > 0) return `${days} ngày trước`;
+        if (hours > 0) return `${hours} giờ trước`;
+        if (minutes > 0) return `${minutes} phút trước`;
+        return 'Vừa xong';
+    }
+
+  useEffect(()=> {
+    const fetchData= async()=> {
+      const res= await api.get('applications')
+      if(res.data) {
+        console.log(res.data)
+        setData(res.data)
+      }
+    }
+    fetchData()
+  },[])
+  console.log(data)
+  const handleView= (url)=> {
+    window.open(url)
+  }
 
   return (
     <div className={cx('cands')}>
@@ -91,14 +85,13 @@ function CandidateManagement() {
                     <tr key={c.id}>
                         <td>
                             <div className={cx('cand-info')}>
-                                <img src={c.avatar} alt={c.name} className={cx('cand-avatar')} />
                                 <span className={cx('cand-name')}>{c.name}</span>
                             </div>
                         </td>
                         <td>{c.jobApplied}</td>
-                        <td>{c.dateApplied}</td>
+                        <td>{timeAgo(c.applied_at)}</td>
                         <td>
-                            <button className={cx('btn', 'btn-view')}>{t.btnViewCV}</button>
+                            <button className={cx('btn', 'btn-view')} onClick={()=>handleView(c.link)} >{t.btnViewCV}</button>
                         </td>
                         <td>
                             <div className={cx('action-buttons')}>
