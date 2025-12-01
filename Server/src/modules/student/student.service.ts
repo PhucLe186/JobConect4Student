@@ -25,4 +25,20 @@ export class StudentService {
     delete result._id;
     return result;
   }
+
+  async updateAvatar(user: JwtUser, filename: string) {
+    const { userId } = user;
+    const avatarUrl = `http://localhost:5000/uploads/avatars/${filename}`;
+    
+    await this.StudentModel.findOneAndUpdate(
+      { user_id: userId },
+      { avatar: avatarUrl },
+      { upsert: true, new: true }
+    );
+
+    return { 
+      message: 'Avatar updated successfully',
+      avatarUrl 
+    };
+  }
 }

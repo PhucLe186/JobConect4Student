@@ -76,9 +76,10 @@
     font-weight: bold;
 }
 
-/* Style input, textarea */
+/* Style input, textarea, select */
 .newjob__input,
-.newjob__textarea {
+.newjob__textarea,
+.newjob__select-native {
     width: 100%;
     border: 1px solid var(--border-color);
     background-color: #fff;
@@ -91,7 +92,8 @@
 }
 
 .newjob__input:focus,
-.newjob__textarea:focus {
+.newjob__textarea:focus,
+.newjob__select-native:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15); /* Hiệu ứng focus xanh lan tỏa */
@@ -106,6 +108,27 @@
 .newjob__textarea {
     resize: vertical;
     min-height: 160px; /* Tăng chiều cao mặc định textarea */
+}
+
+/* SELECT DROPDOWN */
+.newjob__select {
+    position: relative;
+}
+
+.newjob__select-native {
+    appearance: none;
+    padding-right: 40px;
+    cursor: pointer;
+}
+
+.newjob__select-caret {
+    position: absolute;
+    right: 1.1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    font-size: 1.2rem;
+    color: #6c757d;
 }
 
 .newjob__grid {

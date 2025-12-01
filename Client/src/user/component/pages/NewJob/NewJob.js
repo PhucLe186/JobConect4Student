@@ -54,7 +54,8 @@ function NewJob({ language = 'vi' }) {
     description: '',
     job_type: '', 
     salary_range: '',
-    location: '',
+    province: '',
+    district: '',
     deadline: '',
   });
 
@@ -63,9 +64,23 @@ function NewJob({ language = 'vi' }) {
   // 3. Lấy từ điển
   const t = trans__newJob[language] || trans__newJob.vi;
 
+  // Dữ liệu quận/huyện theo tỉnh thành
+  const districtsByProvince = {
+    'TP.HCM': ['Quận 1', 'Quận 3', 'Quận 7', 'Quận Bình Thạnh', 'Quận Tân Bình', 'Quận Phú Nhuận'],
+    'Hà Nội': ['Ba Đình', 'Hoàn Kiếm', 'Hai Bà Trưng', 'Đống Đa', 'Tây Hồ', 'Cầu Giấy'],
+    'Đà Nẵng': ['Hải Châu', 'Thanh Khê', 'Sơn Trà', 'Ngũ Hành Sơn', 'Liên Chiểu', 'Cẩm Lệ'],
+    'Cần Thơ': ['Ninh Kiều', 'Bình Thủy', 'Cái Răng', 'Ô Môn', 'Thốt Nốt'],
+    'Hải Phòng': ['Hồng Bàng', 'Ngô Quyền', 'Lê Chân', 'Hải An', 'Kiến An'],
+    'Biên Hòa': ['Trung Dũng', 'Quyết Thắng', 'Thống Nhất', 'Tân Hòa', 'Tân Hiệp']
+  };
+
   const onChange = (e) => {
     const { name, value } = e.target;
-    setForm((s) => ({ ...s, [name]: value }));
+    if (name === 'province') {
+      setForm((s) => ({ ...s, [name]: value, district: '' })); // Reset district khi đổi tỉnh
+    } else {
+      setForm((s) => ({ ...s, [name]: value }));
+    }
   };
 
   const onSubmit = (e) => {
@@ -130,14 +145,21 @@ function NewJob({ language = 'vi' }) {
               <label className={cx('newjob__label')}>
                 {t.labelType} <span className={cx('newjob__req')}>*</span>
               </label>
-              <input
-                className={cx('newjob__input')}
-                name="job_type"
-                placeholder={t.ph_Type}
-                value={form.job_type}
-                onChange={onChange}
-                required
-              />
+              <div className={cx('newjob__select')}>
+                <select
+                  className={cx('newjob__select-native')}
+                  name="job_type"
+                  value={form.job_type}
+                  onChange={onChange}
+                  required
+                >
+                  <option value="">Chọn loại công việc</option>
+                  <option value="fulltime">Full-time</option>
+                  <option value="parttime">Part-time</option>
+                  <option value="thuctap">Thực tập</option>
+                </select>
+                <span className={cx('newjob__select-caret')}>▾</span>
+              </div>
             </div>
 
             <div className={cx('newjob__field')}>
@@ -155,16 +177,48 @@ function NewJob({ language = 'vi' }) {
 
             <div className={cx('newjob__field')}>
               <label className={cx('newjob__label')}>
-                {t.labelLocation} <span className={cx('newjob__req')}>*</span>
+                Tỉnh thành <span className={cx('newjob__req')}>*</span>
               </label>
-              <input
-                className={cx('newjob__input')}
-                name="location"
-                placeholder={t.ph_Location}
-                value={form.location}
-                onChange={onChange}
-                required
-              />
+              <div className={cx('newjob__select')}>
+                <select
+                  className={cx('newjob__select-native')}
+                  name="province"
+                  value={form.province}
+                  onChange={onChange}
+                  required
+                >
+                  <option value="">Chọn tỉnh thành</option>
+                  <option value="TP.HCM">TP. Hồ Chí Minh</option>
+                  <option value="Hà Nội">Hà Nội</option>
+                  <option value="Đà Nẵng">Đà Nẵng</option>
+                  <option value="Cần Thơ">Cần Thơ</option>
+                  <option value="Hải Phòng">Hải Phòng</option>
+                  <option value="Biên Hòa">Biên Hòa</option>
+                </select>
+                <span className={cx('newjob__select-caret')}>▾</span>
+              </div>
+            </div>
+
+            <div className={cx('newjob__field')}>
+              <label className={cx('newjob__label')}>
+                Quận huyện <span className={cx('newjob__req')}>*</span>
+              </label>
+              <div className={cx('newjob__select')}>
+                <select
+                  className={cx('newjob__select-native')}
+                  name="district"
+                  value={form.district}
+                  onChange={onChange}
+                  required
+                  disabled={!form.province}
+                >
+                  <option value="">{!form.province ? 'Chọn tỉnh thành trước' : 'Chọn quận huyện'}</option>
+                  {form.province && districtsByProvince[form.province]?.map(district => (
+                    <option key={district} value={district}>{district}</option>
+                  ))}
+                </select>
+                <span className={cx('newjob__select-caret')}>▾</span>
+              </div>
             </div>
 
             <div className={cx('newjob__field')}>
