@@ -11,44 +11,43 @@ const cx = classNames.bind(style);
 
 const Homepage = () => {
     const navigate = useNavigate();
-    const {api, language } = useContext(AuthContext);
+    const { api, language } = useContext(AuthContext);
     const [salaryValue, setSalaryValue] = useState(50);
-    const [allJobData, setAllJobData]= useState([])
+    const [allJobData, setAllJobData] = useState([]);
     const [experience] = useState('');
     const [location] = useState('');
     const [jobType] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const JobPerPages = 9;
 
-    const totalJob= allJobData.length
-    const totalPages=Math.ceil(totalJob/JobPerPages)
-    const startIndex=(currentPage-1)*JobPerPages
-    const EndIndex=startIndex+JobPerPages
-    const finalJobPage=allJobData.slice(startIndex, EndIndex)
+    const totalJob = allJobData.length;
+    const totalPages = Math.ceil(totalJob / JobPerPages);
+    const startIndex = (currentPage - 1) * JobPerPages;
+    const EndIndex = startIndex + JobPerPages;
+    const finalJobPage = allJobData.slice(startIndex, EndIndex);
 
-    const t = translations[language|| 'vi'];
+    const t = translations[language || 'vi'];
     const updateSalary = (value) => {
         setSalaryValue(value);
     };
-    
-    useEffect(()=> {
-        const fetchData=async()=> {
-            try{
-                const res= await api.get('jobs')
-                if(res.data) {
-                    setAllJobData(res.data)
-                }           
-            }catch(error) {
-                if(error.response) {
-                    alert(error.response?.data?.message)
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const res = await api.get('jobs');
+                if (res.data) {
+                    setAllJobData(res.data);
                 }
-                else {
-                    alert('lỗi kết nối tới server')
+            } catch (error) {
+                if (error.response) {
+                    alert(error.response?.data?.message);
+                } else {
+                    alert('lỗi kết nối tới server');
                 }
             }
-        }
-        fetchData()
-    },[api])
+        };
+        fetchData();
+    }, [api]);
 
     return (
         <div className={cx('home-page')}>
@@ -89,10 +88,7 @@ const Homepage = () => {
                         </div>
                         <div className={cx('filter-item')}>
                             <label>{t.experienceLevel}</label>
-                            <select
-                                className={cx('filter-select')}
-                                value={experience}
-                            >
+                            <select className={cx('filter-select')} value={experience}>
                                 <option value="">{t.chooseExp}</option>
                                 <option>{t.noExp}</option>
                                 <option>1 - 2 {language === 'vi' ? 'năm' : 'years'}</option>
@@ -158,7 +154,7 @@ const Homepage = () => {
                         >
                             {t.previous}
                         </button>
-                        {Array.from({length: totalPages}, (_, i)=> i+1).map((page) => (
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                             <button
                                 key={page}
                                 className={cx('page-btn', { active: currentPage === page })}
@@ -175,8 +171,6 @@ const Homepage = () => {
                             {t.next}
                         </button>
                     </div>
-
-
                 </div>
             </div>
         </div>
