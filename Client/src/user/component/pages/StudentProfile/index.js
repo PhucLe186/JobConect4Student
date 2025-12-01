@@ -14,10 +14,10 @@ const skillsCatalog = [
 
 function StudentProfile({ language = 'vi' }) {
     const [selectedSkillId, setSelectedSkillId] = useState(skillsCatalog[0]?.id ?? 1);
-    const [level, setLevel] = useState(3);
+    const [experience, setExperience] = useState('noExperience');
     const [studentSkills, setStudentSkills] = useState([
-        { skill_id: 2, level: 4 },
-        { skill_id: 3, level: 3 },
+        { skill_id: 2, experience: 'twoYears' },
+        { skill_id: 3, experience: 'oneYear' },
     ]);
 
     const t = translations[language];
@@ -31,10 +31,10 @@ function StudentProfile({ language = 'vi' }) {
             const existingSkillIndex = prevSkills.findIndex(s => s.skill_id === Number(selectedSkillId));
             if (existingSkillIndex >= 0) {
                 const updatedSkills = [...prevSkills];
-                updatedSkills[existingSkillIndex] = { ...updatedSkills[existingSkillIndex], level: Number(level) };
+                updatedSkills[existingSkillIndex] = { ...updatedSkills[existingSkillIndex], experience: experience };
                 return updatedSkills;
             } else {
-                return [...prevSkills, { skill_id: Number(selectedSkillId), level: Number(level) }];
+                return [...prevSkills, { skill_id: Number(selectedSkillId), experience: experience }];
             }
         });
     };
@@ -147,26 +147,41 @@ function StudentProfile({ language = 'vi' }) {
                                 </select>
                             </div>
                             <div className={cx("form-group")}>
-                                <label className={cx("form-group__label")} htmlFor="level">{t.levelLabel}</label>
-                                <input id="level" name="level" className={cx("form-group__input")} type="range" min="1" max="5" value={level} onChange={(e) => setLevel(Number(e.target.value))} />
-                                <span className={cx("skills__level-indicator")}>{level}</span>
+                                <label className={cx("form-group__label")} htmlFor="experience">{t.experienceLabel}</label>
+                                <select id="experience" name="experience" className={cx("form-group__input")} value={experience} onChange={(e) => setExperience(e.target.value)}>
+                                    <option value="noExperience">{t.noExperience}</option>
+                                    <option value="oneYear">{t.oneYear}</option>
+                                    <option value="twoYears">{t.twoYears}</option>
+                                    <option value="threeYears">{t.threeYears}</option>
+                                    <option value="fourYears">{t.fourYears}</option>
+                                </select>
                             </div>
                             <button type="submit" className={cx("btn", "btn--primary", "skills__add-btn")}>{t.addSkillButton}</button>
                         </div>
                         <ul className={cx("skills__list")}>
-                            {studentSkills.map(({ skill_id, level }) => (
-                                <li key={skill_id} className={cx("skills__item")}>
-                                    <span className={cx("skills__name")}>{skillMap[skill_id] ?? `Skill ID #${skill_id}`}</span>
-                                    <span className={cx("skills__rating")}>{"★".repeat(level)}{"☆".repeat(5 - level)}</span>
-                                    <button 
-                                        type="button" 
-                                        className={cx("skills__remove-btn")} 
-                                        // aria-label={t.removeSkillAria(skillMap[skill_id])}
-                                        // onClick={() => handleRemoveSkill(skill_id)} 
-                                        // title={t.removeSkillAria(skillMap[skill_id])}
-                                    />
-                                </li>
-                            ))}
+                            {studentSkills.map(({ skill_id, experience }) => {
+                                const getExperienceText = (exp) => {
+                                    switch(exp) {
+                                        case 'noExperience': return t.noExperience;
+                                        case 'oneYear': return t.oneYear;
+                                        case 'twoYears': return t.twoYears;
+                                        case 'threeYears': return t.threeYears;
+                                        case 'fourYears': return t.fourYears;
+                                        default: return exp;
+                                    }
+                                };
+                                return (
+                                    <li key={skill_id} className={cx("skills__item")}>
+                                        <span className={cx("skills__name")}>{skillMap[skill_id] ?? `Skill ID #${skill_id}`}</span>
+                                        <span className={cx("skills__rating")}>{getExperienceText(experience)}</span>
+                                        <button 
+                                            type="button" 
+                                            className={cx("skills__remove-btn")} 
+                                            onClick={() => handleRemoveSkill(skill_id)}
+                                        />
+                                    </li>
+                                );
+                            })}
                         </ul>
                     </div>
                 </section>

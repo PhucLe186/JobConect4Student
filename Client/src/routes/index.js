@@ -22,6 +22,7 @@ import CandidateManagement from '~/user/component/pages/CandidateManagement/Cand
 import NTDJobManagement from '~/user/component/pages/JobManagement/JobManagement'
 import NTDProfile from '~/user/component/pages/NTDProfile';
 import NewJob from '~/user/component/pages/NewJob/NewJob';
+import JobSuggestions from '~/user/component/pages/JobSuggestions';
 
 const publicRoutes = [
     { path: routesconfig.home, component: Home },
@@ -35,6 +36,7 @@ const publicRoutes = [
     { path: routesconfig.companyDetail, component: CompanyDetail },
     { path: routesconfig.role, component: Role, layout: null },
     { path: routesconfig.cvBuilder, component: CVBuilder },
+    { path: routesconfig.jobSuggestions, component: JobSuggestions },
     { path: routesconfig.applicationhistory, component: ApplicationHistory, layout: Default },
     { path: routesconfig.studentprofile, component: StudentProfile, layout: Default },
     { path: routesconfig.CandidateManagement, component: CandidateManagement, layout: Default  },

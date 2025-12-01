@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import classNames from 'classnames/bind';
 import style from './Home.module.scss';
 import LookJobsImg from '~/asset/img/LookJobs.png';
@@ -14,9 +14,9 @@ const Homepage = () => {
     const {api, language } = useContext(AuthContext);
     const [salaryValue, setSalaryValue] = useState(50);
     const [allJobData, setAllJobData]= useState([])
-    const [experience, setExperience] = useState('');
-    const [location, setLocation] = useState('');
-    const [jobType, setJobType] = useState('');
+    const [experience] = useState('');
+    const [location] = useState('');
+    const [jobType] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const JobPerPages = 9;
 
@@ -48,7 +48,7 @@ const Homepage = () => {
             }
         }
         fetchData()
-    },[])
+    },[api])
 
     return (
         <div className={cx('home-page')}>
@@ -175,6 +175,8 @@ const Homepage = () => {
                             {t.next}
                         </button>
                     </div>
+
+
                 </div>
             </div>
         </div>

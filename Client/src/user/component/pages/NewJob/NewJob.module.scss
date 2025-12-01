@@ -161,6 +161,8 @@
     color: #212529;
 }
 
+
+
 /* Responsive */
 @media (max-width: 768px) {
     .newjob__grid--2 {
@@ -176,10 +178,12 @@
     }
 
     .newjob__actions {
-        flex-direction: column-reverse; /* Trên mobile nút Back xuống dưới */
+        flex-direction: column-reverse;
     }
 
     .newjob__btn {
-        width: 100%; /* Full width button trên mobile */
+        width: 100%;
     }
+
+
 }

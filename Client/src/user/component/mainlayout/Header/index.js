@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { href, Link, useNavigate } from 'react-router-dom';
+import React, { useState, useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import classNames from 'classnames/bind';
 import styles from './header.module.scss';
 import routesconfig from '~/routes/routes';
@@ -28,6 +28,7 @@ function Header() {
     const page=[
         { href: routesconfig.company, title: t.company },
         { href: routesconfig.jobs, title: t.jobs },
+        { href: routesconfig.jobSuggestions, title: language === 'vi' ? 'Gợi ý công việc' : 'Job Suggestions' },
         { href: routesconfig.community, title: t.community},
         { href: routesconfig.contact, title: t.contact },
         { href: routesconfig.cvBuilder, title: t.cvBuilder},
