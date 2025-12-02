@@ -13,7 +13,7 @@ function ApplicationHistory() {
     const [error, setError] = useState(null);
     const { api, user, language } = useContext(AuthContext);
 
-    const t = translations[language];
+    const t = translations[language|| 'vi'];
 
     useEffect(() => {
         testAuth();

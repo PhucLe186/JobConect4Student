@@ -5,14 +5,14 @@ import translations from '~/component/Translation';
 import { AuthContext } from '~/context/AuthContext';
 import axios from 'axios';
 import Swal from "sweetalert2";
-import { object } from 'prop-types';
+
 
 const cx = classNames.bind(styles);
 
 function NTDProfile() {
   const fileInputRef = useRef(null);
   const {language, api}= useContext(AuthContext)
-  const t = translations[language];
+  const t = translations[language||'vi'];
   const [provinceOptions, setProvinceOptions]=useState([])
   const [districtOptions, setDistrictOptions]=useState([])
   const [isEditing, setIsEditing] = useState(false);
@@ -258,7 +258,6 @@ function NTDProfile() {
       {/*Thông tin liên hệ*/}
       <section className={cx('company__section')}>
         <div className={cx('company__section-header')}>
-          <span className={cx('company__section-icon')} aria-hidden>📍</span>
           <h2 className={cx('company__section-title')}>{t.sectionContact}</h2>
         </div>
 

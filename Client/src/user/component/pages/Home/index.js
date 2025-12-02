@@ -6,6 +6,7 @@ import LookJobsImg from '~/asset/img/LookJobs.png';
 // Import company logos
 import translations from '~/component/Translation';
 import { AuthContext } from '~/context/AuthContext';
+import axios from 'axios';
 
 const cx = classNames.bind(style);
 
@@ -14,10 +15,12 @@ const Homepage = () => {
     const {api, language } = useContext(AuthContext);
     const [salaryValue, setSalaryValue] = useState(50);
     const [allJobData, setAllJobData]= useState([])
-    const [experience] = useState('');
-    const [location] = useState('');
-    const [jobType] = useState('');
+    const [provinceOptions, setProvinceOptions]=useState([])
+    const [experience, setExperience] = useState('');
+    const [location, setLocation] = useState('');
+    const [jobType, setJobType] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
+    const [searchJob,setSearchJob]=useState('');
     const JobPerPages = 9;
 
     const totalJob= allJobData.length
@@ -30,7 +33,24 @@ const Homepage = () => {
     const updateSalary = (value) => {
         setSalaryValue(value);
     };
-    
+    const filteredJobs= finalJobPage.filter(item=> {
+        const searchName=item.title.toLowerCase().includes(searchJob.toLowerCase());
+        const workLocation=location? item.address?.split(',').pop().trim() === location: true;
+        const JobType= jobType? item.job_type===jobType: true
+        return searchName && workLocation&&JobType
+    })
+
+    useEffect(()=> {
+        const FetchAdress=async()=> {
+        const res= await axios.get('https://provinces.open-api.vn/api/v1/?depth=2')
+        if(res.data) {
+            setProvinceOptions(res.data
+            .map(item=> ({name:item.name, id:item.code}))
+            )
+        }
+        }
+        FetchAdress()
+    },[])
     useEffect(()=> {
         const fetchData=async()=> {
             try{
@@ -48,7 +68,7 @@ const Homepage = () => {
             }
         }
         fetchData()
-    },[api])
+    },[])
 
     return (
         <div className={cx('home-page')}>
@@ -61,7 +81,11 @@ const Homepage = () => {
                         </div>
                         <h1 className={cx('hero-title')}>{t.findJob}</h1>
                         <div className={cx('search-box')}>
-                            <input type="text" className={cx('search-input')} placeholder={t.searchPlaceholder} />
+                            <input 
+                            type="text" 
+                            onChange={e=> setSearchJob(e.target.value)}
+                            className={cx('search-input')}
+                            placeholder={t.searchPlaceholder} />
                         </div>
                     </div>
                 </div>
@@ -109,11 +133,9 @@ const Homepage = () => {
                                 onChange={(e) => setLocation(e.target.value)}
                             >
                                 <option value="">{t.chooseLocation}</option>
-                                <option>{language === 'vi' ? 'Hà Nội' : 'Hanoi'}</option>
-                                <option>{language === 'vi' ? 'Hồ Chí Minh' : 'Ho Chi Minh City'}</option>
-                                <option>{language === 'vi' ? 'Đà Nẵng' : 'Da Nang'}</option>
-                                <option>{language === 'vi' ? 'Cần Thơ' : 'Can Tho'}</option>
-                                <option>{language === 'vi' ? 'Hải Phòng' : 'Hai Phong'}</option>
+                                {provinceOptions.map(item=> (
+                                    <option key={item.id}>{item.name}</option>
+                                ))}
                             </select>
                         </div>
                         <div className={cx('filter-item')}>
@@ -137,7 +159,7 @@ const Homepage = () => {
             <div className={cx('jobs-section')}>
                 <div className={cx('container')}>
                     <div className={cx('jobs-grid')}>
-                        {finalJobPage.map((job, index) => (
+                        {filteredJobs.map((job, index) => (
                             <div className={cx('job-card')} key={index}>
                                 <div className={cx('job-header')}>
                                     <img src={job.logo} alt={job.company} className={cx('company-logo')} />

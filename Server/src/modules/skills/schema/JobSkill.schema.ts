@@ -11,4 +11,4 @@ export class JobSkills {
   @Prop({ type: Types.ObjectId, ref: 'SKills' })
   skill_id: Types.ObjectId;
 }
-export const SkillSchema = SchemaFactory.createForClass(JobSkills);
+export const JobSkillSchema = SchemaFactory.createForClass(JobSkills);

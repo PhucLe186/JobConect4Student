@@ -1,62 +1,21 @@
 import {
   IsString,
-  IsNotEmpty,
-  IsEnum,
   IsOptional,
-  IsDateString,
-  IsMongoId,
+  IsArray,
+  ValidateNested,
+  IsEnum,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateJobDto {
-  @IsMongoId()
-  @IsNotEmpty()
-  employer_id: string;
-
   @IsString()
-  @IsNotEmpty()
   title: string;
 
   @IsString()
-  @IsNotEmpty()
   description: string;
 
-  @IsEnum(['full-time', 'part-time', 'internship'])
-  job_type: string;
-
   @IsString()
-  @IsNotEmpty()
-  min_salary: string;
-
-  @IsString()
-  @IsNotEmpty()
-  max_salary: string;
-
-  @IsString()
-  @IsNotEmpty()
-  location: string;
-
-  @IsDateString()
-  @IsNotEmpty()
-  deadline: Date;
-
-  @IsString()
-  @IsNotEmpty()
   industry: string;
-
-  @IsEnum([
-    'không yêu cầu',
-    'dưới 1 năm',
-    '1 năm',
-    '2 năm',
-    '3 năm',
-    '4 năm',
-    '4 năm trở lên',
-  ])
-  experience: string;
-
-  @IsString()
-  @IsOptional()
-  requirements?: string;
 
   @IsEnum([
     'Nhân viên',
@@ -68,10 +27,52 @@ export class CreateJobDto {
     'Giám đốc',
     'Thực tập sinh',
   ])
-  @IsOptional()
-  level?: string;
+  @IsString()
+  level: string;
 
-  @IsEnum(['open', 'close', 'draft'])
   @IsOptional()
-  status?: string;
+  @IsString()
+  job_type?: string;
+
+  @IsOptional()
+  @IsString()
+  min_salary?: string;
+
+  @IsOptional()
+  @IsString()
+  max_salary?: string;
+
+  @IsEnum([
+    'không yêu cầu',
+    'dưới 1 năm',
+    '1 năm',
+    '2 năm',
+    '3 năm',
+    '4 năm',
+    '4 năm trở lên',
+  ])
+  @IsString()
+  experience: string;
+
+  @IsString()
+  requirements: string;
+
+  @IsString()
+  location: string;
+
+  @IsString()
+  deadline: string;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SkillDTO)
+  skills: SkillDTO[];
+}
+
+export class SkillDTO {
+  @IsString()
+  skill_name: string;
+
+  @IsOptional()
+  skill_id: number;
 }

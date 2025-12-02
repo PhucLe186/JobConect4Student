@@ -16,6 +16,7 @@ const skillsCatalog = [
 function StudentProfile({ language = 'vi' }) {
     const [selectedSkillId, setSelectedSkillId] = useState(skillsCatalog[0]?.id ?? 1);
     const [level, setLevel] = useState(3);
+    const [experience, setExperience] = useState('');
     const [studentSkills, setStudentSkills] = useState([]);
     const [profileData, setProfileData] = useState({
         name: '',

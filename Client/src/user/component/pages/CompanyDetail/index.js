@@ -56,9 +56,6 @@ const CompanyDetail = ({onPageChange}) => {
                                 {t.founded}: {data.email}
                             </p>
                         </div>
-                        <button className={cx('viewJobsBtn')} onClick={() => onPageChange(1, 'samsung')}>
-                            {t.viewJobs}
-                        </button>
                     </div>
                 </div>
             </div>

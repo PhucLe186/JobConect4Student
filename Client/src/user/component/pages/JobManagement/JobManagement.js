@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './JobManagement.module.scss';
 import classNames from 'classnames/bind';
+
 import translations from '~/component/Translation';
 import { AuthContext } from '~/context/AuthContext';
 
@@ -12,18 +13,25 @@ const MOCK_JOBS = [
         id: 1,
         title: 'Frontend Developer Reactjs',
         location: 'TP.HCM',
+        province: 'TP.HCM',
+        district: 'Quận 1',
+        jobType: 'fulltime',
         salaryMin: 15000000,
         salaryMax: 20000000,
         applicants: 50,
         views: 100,
         tags: ['ReactJS', 'TypeScript', 'JavaScript'],
-        status: 'approved',
+        status: 'pending',
         department: 'Engineering',
+        description: 'Tuyển dụng vị trí Frontend Developer có kinh nghiệm với ReactJS. Ứng viên cần có khả năng phát triển giao diện người dùng hiện đại, responsive và tối ưu hiệu suất. Yêu cầu thành thạo JavaScript ES6+, TypeScript, HTML5, CSS3. Kinh nghiệm với các thư viện như Redux, React Router. Ưu tiên ứng viên có kinh nghiệm làm việc với API RESTful, Git, và các công cụ build như Webpack.'
     },
     {
         id: 2,
         title: 'Backend Developer Nodejs',
         location: 'TP.HCM',
+        province: 'TP.HCM',
+        district: 'Quận 3',
+        jobType: 'parttime',
         salaryMin: 15000000,
         salaryMax: 25000000,
         applicants: 20,
@@ -31,11 +39,15 @@ const MOCK_JOBS = [
         tags: ['NodeJS', 'Express', 'MongoDB'],
         status: 'pending',
         department: 'Engineering',
+        description: 'Tìm kiếm Backend Developer chuyên về Node.js để phát triển các ứng dụng web và API. Ứng viên cần thành thạo JavaScript, Node.js, Express.js và các cơ sở dữ liệu NoSQL như MongoDB. Có kinh nghiệm thiết kế RESTful API, xử lý authentication, authorization. Hiểu biết về microservices, Docker, và cloud services là một lợi thế.'
     },
     {
         id: 3,
         title: 'UI/UX Designer',
         location: 'Đà Nẵng',
+        province: 'Đà Nẵng',
+        district: 'Hải Châu',
+        jobType: 'thuctap',
         salaryMin: 12000000,
         salaryMax: 18000000,
         applicants: 35,
@@ -43,11 +55,15 @@ const MOCK_JOBS = [
         tags: ['Figma', 'Sketch', 'Adobe XD'],
         status: 'approved',
         department: 'Design',
+        description: 'Cần tuyển UI/UX Designer sáng tạo và có tư duy thiết kế tốt. Ứng viên cần có khả năng nghiên cứu người dùng, tạo wireframe, prototype và thiết kế giao diện đẹp mắt, dễ sử dụng. Thành thạo các công cụ thiết kế như Figma, Sketch, Adobe XD. Có kinh nghiệm làm việc với design system và responsive design.'
     },
     {
         id: 4,
         title: 'Product Manager',
         location: 'Hà Nội',
+        province: 'Hà Nội',
+        district: 'Ba Đình',
+        jobType: 'fulltime',
         salaryMin: 25000000,
         salaryMax: 40000000,
         applicants: 15,
@@ -55,6 +71,7 @@ const MOCK_JOBS = [
         tags: ['Agile', 'Scrum', 'JIRA'],
         status: 'approved',
         department: 'Product',
+        description: 'Tuyển Product Manager có kinh nghiệm quản lý sản phẩm công nghệ. Ứng viên cần có khả năng phân tích thị trường, định nghĩa yêu cầu sản phẩm, làm việc với các team kỹ thuật. Thành thạo phương pháp Agile/Scrum, các công cụ quản lý dự án như JIRA, Confluence. Có tư duy phân tích dữ liệu và hiểu biết về UX/UI.'
     },
 ];
 
@@ -78,7 +95,7 @@ function JobActionsMenu({ jobId, t }) {
     );
 }
 
-// 3. Component chính nhận language
+
 function JobManagement() {
     const {language}= useContext(AuthContext)
     const [query, setQuery] = useState('');
@@ -87,7 +104,9 @@ function JobManagement() {
     const [openMenuId, setOpenMenuId] = useState(null);
     const menuRef = useRef(null);
     const navigate = useNavigate();
-    const t = translations[language||'vi'];
+
+    // 4. Lấy từ điển
+    const t = translations[language];
 
     useEffect(() => {
         function handleClickOutside(event) {
@@ -143,9 +162,9 @@ function JobManagement() {
                             value={status}
                             onChange={(e) => setStatus(e.target.value)}
                         >
-                            <option value="all">{t.filterStatusAll}</option>
-                            <option value="pending">{t.filterStatusPending}</option>
-                            <option value="approved">{t.filterStatusApproved}</option>
+                            <option value="all">Tất cả trạng thái</option>
+                            <option value="pending">Pending</option>
+                            <option value="approved">Approved</option>
                         </select>
                         <span className={cx('jobs__select-caret')}>▾</span>
                     </div>
@@ -155,7 +174,7 @@ function JobManagement() {
                             value={dept}
                             onChange={(e) => setDept(e.target.value)}
                         >
-                            <option value="all">{t.filterDeptAll}</option>
+                            <option value="all">Tất cả phòng ban</option>
                             <option value="Engineering">Engineering</option>
                             <option value="Product">Product</option>
                             <option value="Design">Design</option>
@@ -166,46 +185,70 @@ function JobManagement() {
                 </div>
             </div>
 
-            <div className={cx('jobs__list')}>
-                {MOCK_JOBS.map((job) => (
-                    <article key={job.id} className={cx('job-card')}>
-                        <header className={cx('job-card__header')}>
-                            <h3 className={cx('job-card__title')}>{job.title}</h3>
-                            <div
-                                className={cx('job-card__more-wrapper')}
-                                ref={openMenuId === job.id ? menuRef : null}
-                            >
-                                <button
-                                    className={cx('job-card__more-btn')}
-                                    aria-label="More options"
-                                    onClick={() =>
-                                        setOpenMenuId(openMenuId === job.id ? null : job.id)
-                                    }>⋮</button>
-                                {/* 5. Truyền t vào menu con */}
-                                {openMenuId === job.id && <JobActionsMenu jobId={job.id} t={t} />}
-                            </div>
-                        </header>
-                        <ul className={cx('job-card__meta')}>
-                            <li className={cx('job-card__meta-item')}>📍 {job.location}</li>
-                            <li className={cx('job-card__meta-item')}>
-                                💲 {currency(job.salaryMin)} - {currency(job.salaryMax)}
-                            </li>
-                            <li className={cx('job-card__meta-item')}>
-                                👥 {job.applicants} {t.applicants}
-                            </li>
-                            <li className={cx('job-card__meta-item')}>
-                                👁️ {job.views} {t.views}
-                            </li>
-                        </ul>
-                        <div className={cx('job-card__tags')}>
-                            {job.tags.map((tag) => (
-                                <span key={tag} className={cx('job-card__tag')}>
-                                    {tag}
-                                </span>
-                            ))}
-                        </div>
-                    </article>
-                ))}
+            <div className={cx('jobs__table-container')}>
+                <table className={cx('jobs__table')}>
+                    <thead>
+                        <tr>
+                            <th className={cx('jobs__table-header')}>Quản lý tin đăng</th>
+                            <th className={cx('jobs__table-header')}>Trạng thái</th>
+                            <th className={cx('jobs__table-header')}>Mô tả</th>
+                            <th className={cx('jobs__table-header')}>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {MOCK_JOBS.map((job) => (
+                            <tr key={job.id} className={cx('jobs__table-row')}>
+                                <td className={cx('jobs__table-cell')}>
+                                    <div className={cx('job-info')}>
+                                        <h3 className={cx('job-info__title')}>{job.title}</h3>
+                                        <div className={cx('job-info__meta')}>
+                                            <span>{job.location}</span>
+                                            <span>{currency(job.salaryMin)} - {currency(job.salaryMax)}</span>
+                                            <span>{job.jobType === 'fulltime' ? 'Full-time' : job.jobType === 'parttime' ? 'Part-time' : 'Thực tập'}</span>
+                                        </div>
+                                        <div className={cx('job-info__stats')}>
+                                            <span>{job.applicants} {t.applicants}</span>
+                                            <span>{job.views} {t.views}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td className={cx('jobs__table-cell')}>
+                                    <span className={cx('status-badge', `status-badge--${job.status}`)}>
+                                        {job.status === 'pending' ? 'Pending' : job.status === 'approved' ? 'Approved' : job.status}
+                                    </span>
+                                </td>
+                                <td className={cx('jobs__table-cell')}>
+                                    <div className={cx('job-description')}>
+                                        <p>{job.description}</p>
+                                        <div className={cx('job-tags')}>
+                                            {job.tags.map((tag) => (
+                                                <span key={tag} className={cx('job-tag')}>
+                                                    {tag}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td className={cx('jobs__table-cell')}>
+                                    <div
+                                        className={cx('action-menu-wrapper')}
+                                        ref={openMenuId === job.id ? menuRef : null}
+                                    >
+                                        <button
+                                            className={cx('action-menu-btn')}
+                                            onClick={() =>
+                                                setOpenMenuId(openMenuId === job.id ? null : job.id)
+                                            }
+                                        >
+                                            ⋮
+                                        </button>
+                                        {openMenuId === job.id && <JobActionsMenu jobId={job.id} t={t} />}
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             </div>
         </div>
     );

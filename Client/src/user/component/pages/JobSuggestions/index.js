@@ -27,7 +27,7 @@ function JobSuggestions() {
             }
         };
         fetchSuggestedJobs();
-    }, [api]);
+    }, []);
 
     return (
         <div className={cx('job-suggestions')}>

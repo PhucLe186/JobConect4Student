@@ -21,7 +21,7 @@ export class Jobs {
 
   @Prop({
     required: true,
-    enum: ['full-time', 'part-time', 'internship'],
+    enum: ['Full-time', 'Part-time', 'Internship'],
   })
   job_type: string;
 
@@ -74,7 +74,7 @@ export class Jobs {
   })
   level: string;
 
-  @Prop({ enum: ['open', 'close', 'draft'], default: 'draft', required: true })
+  @Prop({ enum: ['pending', 'approved'], default: 'pending', required: true })
   status: string;
 }
 
