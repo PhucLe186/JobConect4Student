@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { CSV, ResumeDocument } from './resume.schema';
 import { Model, Types } from 'mongoose';
+import { CreateResumeDto } from './dto/create-resume.dto';
 
 @Injectable()
 export class ResumeService {
@@ -9,17 +10,59 @@ export class ResumeService {
     @InjectModel(CSV.name) private ResumeModel: Model<ResumeDocument>,
   ) {}
 
-  async resume(): Promise<{ message: string }> {
-    await this.ResumeModel.create({
-      student_id: new Types.ObjectId('692444b364dcc0b0399a5f39'),
-      title: 'Backend Developer',
-      template_type: 'Test',
-      pdf_path:
-        'https://res.cloudinary.com/dmfye1o7a/image/upload/v1760260066/restaurant_dif2rz.png',
-      public_link:
-        'https://res.cloudinary.com/dmfye1o7a/image/upload/v1760260066/restaurant_dif2rz.png',
+  async createResume(studentId: string, createResumeDto: CreateResumeDto): Promise<CSV> {
+    console.log('Creating resume for student:', studentId);
+    console.log('Resume data:', createResumeDto);
+    const resume = await this.ResumeModel.create({
+      student_id: new Types.ObjectId(studentId),
+      ...createResumeDto,
       created_at: new Date(),
+      updated_at: new Date(),
     });
-    return { message: 'ok' };
+    console.log('Resume created:', resume);
+    return resume;
+  }
+
+  async saveOrUpdateResume(studentId: string, createResumeDto: CreateResumeDto, resumeId?: string): Promise<CSV> {
+    if (resumeId) {
+      // Cập nhật CV đã có
+      const updated = await this.ResumeModel.findByIdAndUpdate(
+        resumeId,
+        { ...createResumeDto, updated_at: new Date() },
+        { new: true }
+      );
+      if (!updated) {
+        throw new Error('Không tìm thấy CV để cập nhật');
+      }
+      return updated;
+    } else {
+      // Tạo CV mới
+      return await this.createResume(studentId, createResumeDto);
+    }
+  }
+
+  async updateResume(resumeId: string, updateData: Partial<CreateResumeDto>): Promise<CSV | null> {
+    return await this.ResumeModel.findByIdAndUpdate(
+      resumeId,
+      { ...updateData, updated_at: new Date() },
+      { new: true }
+    );
+  }
+
+  async getResumesByStudent(studentId: string): Promise<CSV[]> {
+    return await this.ResumeModel.find({ student_id: new Types.ObjectId(studentId) });
+  }
+
+  async getResumeById(resumeId: string): Promise<CSV | null> {
+    return await this.ResumeModel.findById(resumeId);
+  }
+
+  async deleteResume(resumeId: string): Promise<{ message: string }> {
+    await this.ResumeModel.findByIdAndDelete(resumeId);
+    return { message: 'CV đã được xóa thành công' };
+  }
+
+  async getAllResumes(): Promise<CSV[]> {
+    return await this.ResumeModel.find().sort({ created_at: -1 });
   }
 }

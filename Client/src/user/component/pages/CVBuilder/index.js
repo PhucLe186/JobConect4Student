@@ -128,6 +128,51 @@ function App() {
         }, 100);
     };
 
+    const saveCV = async () => {
+        try {
+            console.log('Saving CV...');
+            const cvPayload = {
+                title: cvData.title || 'CV của tôi',
+                template_type: 'default',
+                fullname: cvData.fullname,
+                birth: cvData.birth,
+                phone: cvData.phone,
+                email: cvData.email,
+                address: cvData.address,
+                summary: cvData.summary,
+                avatar: avatar,
+                brand_color: brandColor,
+                skills: cvData.skills,
+                experience: cvData.experience,
+                education: cvData.education
+            };
+            
+            console.log('CV Payload:', cvPayload);
+
+            const response = await fetch('http://localhost:5000/resume/save?studentId=692444b364dcc0b0399a5f39', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(cvPayload)
+            });
+
+            console.log('Response status:', response.status);
+            const result = await response.json();
+            console.log('Response data:', result);
+            
+            if (response.ok) {
+                alert('CV đã được lưu thành công!');
+            } else {
+                alert(`Có lỗi xảy ra: ${result.message || 'Unknown error'}`);
+            }
+        } catch (error) {
+            console.error('Error saving CV:', error);
+            const errorMessage = error.message || 'Có lỗi xảy ra khi lưu CV';
+            alert(`Lỗi: ${errorMessage}`);
+        }
+    };
+
     return (
         <div className={styles.App || 'App'}>
             <header className={styles.topbar}>
@@ -143,6 +188,9 @@ function App() {
                     />
                     <button onClick={addExperience}>+ Kinh nghiệm</button>
                     <button onClick={addEducation}>+ Học vấn</button>
+                    <button onClick={saveCV} style={{backgroundColor: '#28a745', color: 'white'}}>
+                        Lưu CV
+                    </button>
                     <button id="printBtn" onClick={handlePrint}>
                         Tải xuống PDF
                     </button>
