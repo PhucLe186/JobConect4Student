@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useContext } from "react";
+import React, { useMemo, useState, useEffect, useContext, useCallback } from "react";
 import classNames from "classnames/bind";
 import styles from "./StudentProfile.module.scss";
 import translations from "~/component/Translation";
@@ -41,11 +41,7 @@ function StudentProfile({ language = 'vi' }) {
 
     const t = translations[language];
 
-    useEffect(() => {
-        fetchProfileData();
-    }, []);
-
-    const fetchProfileData = async () => {
+    const fetchProfileData = useCallback(async () => {
         try {
             if (!user) {
                 setLoading(false);
@@ -77,7 +73,11 @@ function StudentProfile({ language = 'vi' }) {
         } finally {
             setLoading(false);
         }
-    };
+    }, [api, user]);
+
+    useEffect(() => {
+        fetchProfileData();
+    }, [fetchProfileData]);
 
     const skillMap = useMemo(() => Object.fromEntries(skillsCatalog.map(s => [s.id, s.name])), []);
 

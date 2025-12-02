@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import classNames from "classnames/bind";
 import styles from "./ApplicationHistory.module.scss";
 import translations from '~/component/Translation';
@@ -8,18 +8,27 @@ const cx = classNames.bind(styles);
 
 function ApplicationHistory({ language = 'vi' }) {
     const [applications, setApplications] = useState([]);
-    const [personalInfo, setPersonalInfo] = useState({});
+
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const { api, user } = useContext(AuthContext);
 
     const t = translations[language];
 
-    useEffect(() => {
-        testAuth();
-    }, []);
+    const fetchApplicationHistory = useCallback(async () => {
+        try {
+            const response = await api.get('applications/history');
+            console.log('Response data:', response.data);
+            setApplications(response.data.applications || []);
+        } catch (err) {
+            console.error('Fetch error:', err);
+            setError(`Lỗi kết nối: ${err.response?.data?.message || err.message}`);
+        } finally {
+            setLoading(false);
+        }
+    }, [api]);
 
-    const testAuth = async () => {
+    const testAuth = useCallback(async () => {
         try {
             if (!user) {
                 setError('Vui lòng đăng nhập để xem lịch sử ứng tuyển.');
@@ -37,21 +46,11 @@ function ApplicationHistory({ language = 'vi' }) {
             setError(`Auth error: ${err.response?.data?.message || err.message}`);
             setLoading(false);
         }
-    };
+    }, [user, api, fetchApplicationHistory]);
 
-    const fetchApplicationHistory = async () => {
-        try {
-            const response = await api.get('applications/history');
-            console.log('Response data:', response.data);
-            setApplications(response.data.applications || []);
-            setPersonalInfo(response.data.personalInfo || {});
-        } catch (err) {
-            console.error('Fetch error:', err);
-            setError(`Lỗi kết nối: ${err.response?.data?.message || err.message}`);
-        } finally {
-            setLoading(false);
-        }
-    };
+    useEffect(() => {
+        testAuth();
+    }, [testAuth]);
 
     if (loading) return <div className={cx("loading")}>Đang tải...</div>;
     if (error) return <div className={cx("error")}>{error}</div>;

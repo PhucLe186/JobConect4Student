@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
     
     const api = useMemo(() => {
         const instance = axios.create({
-            baseURL: "http://localhost:5000/",
+            baseURL: "http://localhost:5001/",
             withCredentials: true,
         });
 
@@ -43,7 +43,7 @@ export const AuthProvider = ({ children }) => {
             }  
         }
         refreshToken()
-    },[token])
+    },[api])
 
     const login = async(userData) => {
        try{
