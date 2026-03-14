@@ -38,6 +38,45 @@ export class ApplicationsService {
     return { status: 'apply thành công' };
   }
 
+  async applyWithDetails(
+    applicationData: {
+      jobId: string;
+      fullName: string;
+      email: string;
+      phone: string;
+      coverLetter?: string;
+    },
+    cvFile: Express.Multer.File,
+    user: JwtUser
+  ): Promise<{ status: string }> {
+    const { userId } = user;
+    const { jobId, fullName, email, phone, coverLetter } = applicationData;
+
+    // Kiểm tra xem đã ứng tuyển chưa
+    const existingApplication = await this.jobApplyModel.findOne({
+      job_id: new Types.ObjectId(jobId),
+      student_id: new Types.ObjectId(userId)
+    });
+
+    if (existingApplication) {
+      throw new Error('Bạn đã ứng tuyển vị trí này rồi!');
+    }
+
+    // Tạo đơn ứng tuyển mới
+    await this.jobApplyModel.create({
+      job_id: new Types.ObjectId(jobId),
+      student_id: new Types.ObjectId(userId),
+      cv_file_path: cvFile.path,
+      full_name: fullName,
+      email: email,
+      phone: phone,
+      cover_letter: coverLetter || '',
+      applied_at: new Date(),
+    });
+
+    return { status: 'Ứng tuyển thành công!' };
+  }
+
   async getApplicationHistory(user: JwtUser) {
     const { userId } = user;
 
@@ -83,7 +122,12 @@ export class ApplicationsService {
         companyLogo: (app.job_id as any)?.employer_id?.logo,
         status: app.status,
         applied_at: app.applied_at,
-        cv: app.cv_id
+        cv: app.cv_id,
+        cv_file_path: app.cv_file_path,
+        full_name: app.full_name,
+        email: app.email,
+        phone: app.phone,
+        cover_letter: app.cover_letter
       }))
     };
   }

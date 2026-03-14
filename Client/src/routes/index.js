@@ -3,6 +3,8 @@ import Home from '~/user/component/pages/Home';
 import Community from '~/user/component/pages/Community';
 import Login from '~/user/component/pages/Login';
 import Register from '~/user/component/pages/Register';
+import ForgotPassword from '~/user/component/pages/ForgotPassword';
+import SocialRoleSelection from '~/user/component/pages/SocialRoleSelection';
 import Job from '~/user/component/pages/DetailJob';
 import Contact from '~/user/component/pages/Contact';
 import Company from '~/user/component/pages/Company';
@@ -28,6 +30,8 @@ const publicRoutes = [
     { path: routesconfig.community, component: Community },
     { path: routesconfig.login, component: Login, layout: null },
     { path: routesconfig.register, component: Register, layout: null },
+    { path: routesconfig.forgotPassword, component: ForgotPassword, layout: null },
+    { path: routesconfig.socialRoleSelection, component: SocialRoleSelection, layout: null },
     { path: routesconfig.jobs, component: Home },
     { path: routesconfig.jobDetail, component: Job },
     { path: routesconfig.contact, component: Contact },

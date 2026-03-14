@@ -6,10 +6,17 @@ import { AuthContext } from '~/context/AuthContext';
 
 const cx = classNames.bind(styles);
 
+const skillsCatalog = [
+    { id: 1, name: "JavaScript" }, { id: 2, name: "React" }, { id: 3, name: "Node.js" },
+    { id: 4, name: "Python" }, { id: 5, name: "Java" }, { id: 6, name: "C/C++" },
+    { id: 7, name: "SQL" }, { id: 8, name: "UI/UX" }, { id: 9, name: "Git" },
+    { id: 10, name: "Communication" }, { id: 11, name: "Teamwork" }, { id: 12, name: "Problem Solving" },
+];
+
 function StudentProfile({ language = 'vi' }) {
-    const [skillRows, setSkillRows] = useState([{ id: 1, skillId: '', level: 3 }]); // Mảng các dòng skill
+    const [selectedSkillId, setSelectedSkillId] = useState(skillsCatalog[0]?.id ?? 1);
+    const [level, setLevel] = useState(3);
     const [studentSkills, setStudentSkills] = useState([]);
-    const [availableSkills, setAvailableSkills] = useState([]);
     const [profileData, setProfileData] = useState({
         name: '',
         email: '',
@@ -35,9 +42,7 @@ function StudentProfile({ language = 'vi' }) {
     useEffect(() => {
         console.log('useEffect triggered, user:', user);
         fetchProfileData();
-        fetchAvailableSkills();
-        // fetchStudentSkills(); // Không cần gọi riêng vì skills đã có trong profile
-    }, [user]);
+    }, [user]); // Thêm dependency
 
     const fetchProfileData = async () => {
         try {
@@ -49,6 +54,7 @@ function StudentProfile({ language = 'vi' }) {
             
             console.log('Fetching profile for user:', user);
             
+            // Gọi API lấy thông tin student profile
             const response = await api.get('student');
             console.log('Profile Response data:', response.data);
             
@@ -73,12 +79,6 @@ function StudentProfile({ language = 'vi' }) {
                 console.log('Avatar URL:', profileData.avatar);
                 
                 setProfileData(profileData);
-                
-                // Set skills từ profile data
-                if (response.data.skills) {
-                    console.log('Setting skills from profile:', response.data.skills);
-                    setStudentSkills(response.data.skills);
-                }
             }
         } catch (err) {
             console.error('Lỗi khi tải thông tin profile:', err);
@@ -87,107 +87,38 @@ function StudentProfile({ language = 'vi' }) {
         }
     };
 
-    const fetchAvailableSkills = async () => {
-        try {
-            console.log('🔄 Fetching available skills...');
-            const response = await api.get('skills');
-            console.log('📥 Available skills response:', response.data);
-            console.log('📊 Skills count:', response.data ? response.data.length : 0);
-            setAvailableSkills(response.data || []);
-            console.log('✅ Available skills set in state');
-        } catch (err) {
-            console.error('❌ Lỗi khi tải danh sách skills:', err);
-        }
-    };
+    const skillMap = useMemo(() => Object.fromEntries(skillsCatalog.map(s => [s.id, s.name])), []);
 
-    const fetchStudentSkills = async () => {
-        // Skills sẽ được load từ fetchProfileData, không cần gọi API riêng
-        console.log('Skills will be loaded from profile data');
-    };
-
-    // Lấy danh sách skills chưa được thêm
-    const getAvailableSkillsForAdd = () => {
-        const studentSkillIds = studentSkills.map(ss => ss.skill_id?._id).filter(Boolean);
-        const filtered = availableSkills.filter(skill => !studentSkillIds.includes(skill._id));
-        console.log('🎯 Available skills for add:', filtered.length);
-        console.log('🚫 Student skill IDs:', studentSkillIds);
-        return filtered;
-    };
-
-    const addNewSkillRow = () => {
-        const newId = Math.max(...skillRows.map(row => row.id)) + 1;
-        setSkillRows([...skillRows, { id: newId, skillId: '', level: 3 }]);
-    };
-
-    const removeSkillRow = (rowId) => {
-        if (skillRows.length > 1) {
-            setSkillRows(skillRows.filter(row => row.id !== rowId));
-        }
-    };
-
-    const updateSkillRow = (rowId, field, value) => {
-        setSkillRows(skillRows.map(row => 
-            row.id === rowId ? { ...row, [field]: value } : row
-        ));
-    };
-
-    const handleAddAllSkills = async () => {
-        // Lọc các dòng có skillId hợp lệ
-        const validSkills = skillRows.filter(row => row.skillId);
-        
-        if (validSkills.length === 0) {
-            alert('Vui lòng chọn ít nhất một kỹ năng');
-            return;
-        }
-        
-        try {
-            // Sử dụng API bulk để thêm nhiều skills cùng lúc
-            const skillsToAdd = validSkills.map(row => ({
-                skillId: row.skillId,
-                level: row.level
-            }));
-            
-            const response = await api.post('skills/student/bulk', {
-                skills: skillsToAdd
-            });
-            
-            if (response.data) {
-                alert(response.data.message || `Thêm thành công ${skillsToAdd.length} kỹ năng!`);
-                // Reset về 1 dòng trống
-                setSkillRows([{ id: 1, skillId: '', level: 3 }]);
-                // Refresh profile để lấy skills mới
-                await fetchProfileData();
+    const handleAddSkill = (e) => {
+        e.preventDefault();
+        if (!selectedSkillId) return;
+        setStudentSkills((prevSkills) => {
+            const existingSkillIndex = prevSkills.findIndex(s => s.skill_id === Number(selectedSkillId));
+            if (existingSkillIndex >= 0) {
+                const updatedSkills = [...prevSkills];
+                updatedSkills[existingSkillIndex] = { ...updatedSkills[existingSkillIndex], level: Number(level) };
+                return updatedSkills;
+            } else {
+                return [...prevSkills, { skill_id: Number(selectedSkillId), level: Number(level) }];
             }
-        } catch (error) {
-            console.error('Lỗi khi thêm skills:', error);
-            alert(error.response?.data?.message || 'Có lỗi xảy ra khi thêm kỹ năng');
-        }
+        });
     };
 
-    const handleRemoveSkill = async (skillIdToRemove) => {
-        try {
-            const response = await api.delete(`skills/student/${skillIdToRemove}`);
-            
-            if (response.data) {
-                alert(response.data.message || 'Xóa kỹ năng thành công!');
-                // Refresh profile để cập nhật skills
-                await fetchProfileData();
-            }
-        } catch (error) {
-            console.error('Lỗi khi xóa skill:', error);
-            alert(error.response?.data?.message || 'Có lỗi xảy ra khi xóa kỹ năng');
-        }
+    const handleRemoveSkill = (skillIdToRemove) => {
+        setStudentSkills((prevSkills) => prevSkills.filter(s => s.skill_id !== skillIdToRemove));
     };
 
     const handleAvatarChange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
+        // Kiểm tra kích thước file (max 5MB)
         if (file.size > 5 * 1024 * 1024) {
             alert('File quá lớn. Vui lòng chọn file nhỏ hơn 5MB.');
             return;
         }
 
+        // Kiểm tra định dạng file
         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
         if (!allowedTypes.includes(file.type)) {
             alert('Vui lòng chọn file jpg, jpeg hoặc png.');
@@ -197,6 +128,7 @@ function StudentProfile({ language = 'vi' }) {
         setUploading(true);
         
         try {
+            // Tạo preview ngay lập tức
             const reader = new FileReader();
             reader.onload = (e) => {
                 setProfileData(prev => ({
@@ -206,6 +138,7 @@ function StudentProfile({ language = 'vi' }) {
             };
             reader.readAsDataURL(file);
 
+            // Upload file lên server với JWT token
             const formData = new FormData();
             formData.append('avatar', file);
             
@@ -216,6 +149,7 @@ function StudentProfile({ language = 'vi' }) {
             });
             
             if (response.data && response.data.avatarUrl) {
+                // Cập nhật avatar URL từ server
                 setProfileData(prev => ({ 
                     ...prev, 
                     avatar: response.data.avatarUrl 
@@ -223,6 +157,7 @@ function StudentProfile({ language = 'vi' }) {
                 console.log('Avatar updated successfully:', response.data.avatarUrl);
                 alert('Tải ảnh thành công!');
                 
+                // Gọi lại fetchProfileData để đảm bảo dữ liệu đồng bộ
                 await fetchProfileData();
             } else {
                 console.error('Invalid response:', response.data);
@@ -232,6 +167,7 @@ function StudentProfile({ language = 'vi' }) {
         } catch (error) {
             console.error('Lỗi upload ảnh:', error);
             alert('Lỗi khi tải ảnh lên. Vui lòng thử lại.');
+            // Khôi phục avatar cũ
             fetchProfileData();
         } finally {
             setUploading(false);
@@ -249,6 +185,7 @@ function StudentProfile({ language = 'vi' }) {
             
             if (response.data && response.data.success) {
                 alert('Lưu hồ sơ thành công!');
+                // Tải lại dữ liệu để đảm bảo đồng bộ
                 await fetchProfileData();
             } else {
                 alert('Có lỗi xảy ra khi lưu hồ sơ.');
@@ -486,107 +423,36 @@ function StudentProfile({ language = 'vi' }) {
                 <section className={cx("profile-form__section", "card")}>
                     <h2 className={cx("card__title")}>{t.skillsTitle}</h2>
                     <div className={cx("skills")}>
-                        {/* Hiển thị skills hiện tại */}
-                        <div className={cx("current-skills")}>
-                            <h3>Kỹ năng hiện tại:</h3>
-                            <ul className={cx("skills__list")}>
-                                {studentSkills.map((studentSkill) => (
-                                    <li key={studentSkill._id} className={cx("skills__item")}>
-                                        <span className={cx("skills__name")}>
-                                            {studentSkill.skill_id?.name || 'Unknown Skill'}
-                                        </span>
-                                        <span className={cx("skills__rating")}>{"★".repeat(studentSkill.level)}{"☆".repeat(5 - studentSkill.level)}</span>
-                                        <button 
-                                            type="button" 
-                                            className={cx("skills__remove-btn")} 
-                                            onClick={() => handleRemoveSkill(studentSkill.skill_id._id)}
-                                            title={`Xóa kỹ năng ${studentSkill.skill_id?.name}`}
-                                        >
-                                            ×
-                                        </button>
-                                    </li>
-                                ))}
-                                {studentSkills.length === 0 && (
-                                    <li className={cx("no-skills")}>Chưa có kỹ năng nào</li>
-                                )}
-                            </ul>
-                        </div>
-
-                        {/* Form thêm skills */}
-                        <div className={cx("add-skills-section")}>
-                            <h3>Thêm kỹ năng mới:</h3>
-                            <div className={cx("skills__form")}>
-                                {skillRows.map((row, index) => (
-                                    <div key={row.id} className={cx("skill-row")}>
-                                        <div className={cx("form-group")}>
-                                            <label className={cx("form-group__label")} htmlFor={`skill_${row.id}`}>
-                                                {index === 0 ? t.selectSkillLabel : `Kỹ năng ${index + 1}`}
-                                            </label>
-                                            <select 
-                                                id={`skill_${row.id}`}
-                                                className={cx("form-group__input")} 
-                                                value={row.skillId} 
-                                                onChange={(e) => updateSkillRow(row.id, 'skillId', e.target.value)}
-                                            >
-                                                <option value="">Chọn kỹ năng...</option>
-                                                {getAvailableSkillsForAdd().map(skill => (
-                                                    <option key={skill._id} value={skill._id}>{skill.name}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                        
-                                        <div className={cx("form-group")}>
-                                            <label className={cx("form-group__label")} htmlFor={`level_${row.id}`}>
-                                                {index === 0 ? t.levelLabel : `Mức độ ${index + 1}`}
-                                            </label>
-                                            <input 
-                                                id={`level_${row.id}`}
-                                                className={cx("form-group__input")} 
-                                                type="range" 
-                                                min="1" 
-                                                max="5" 
-                                                value={row.level} 
-                                                onChange={(e) => updateSkillRow(row.id, 'level', Number(e.target.value))}
-                                            />
-                                            <span className={cx("skills__level-indicator")}>
-                                                {row.level} {"★".repeat(row.level)}{"☆".repeat(5 - row.level)}
-                                            </span>
-                                        </div>
-                                        
-                                        <div className={cx("skill-row-actions")}>
-                                            {index === skillRows.length - 1 && (
-                                                <button 
-                                                    type="button" 
-                                                    className={cx("btn", "btn--secondary", "add-row-btn")}
-                                                    onClick={addNewSkillRow}
-                                                >
-                                                    + Thêm dòng
-                                                </button>
-                                            )}
-                                            {skillRows.length > 1 && (
-                                                <button 
-                                                    type="button" 
-                                                    className={cx("btn", "btn--danger", "remove-row-btn")}
-                                                    onClick={() => removeSkillRow(row.id)}
-                                                >
-                                                    Xóa
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
-                                
-                                <div className={cx("form-actions")}>
+                        <form className={cx("skills__form")} onSubmit={handleAddSkill}>
+                            <div className={cx("form-group")}>
+                                <label className={cx("form-group__label")} htmlFor="skill_id">{t.selectSkillLabel}</label>
+                                <select id="skill_id" name="skill_id" className={cx("form-group__input")} value={selectedSkillId} onChange={(e) => setSelectedSkillId(Number(e.target.value))}>
+                                    {skillsCatalog.map(s => (<option key={s.id} value={s.id}>{s.name}</option>))}
+                                </select>
+                            </div>
+                            <div className={cx("form-group")}>
+                                <label className={cx("form-group__label")} htmlFor="level">{t.levelLabel}</label>
+                                <input id="level" name="level" className={cx("form-group__input")} type="range" min="1" max="5" value={level} onChange={(e) => setLevel(Number(e.target.value))} />
+                                <span className={cx("skills__level-indicator")}>{level}</span>
+                            </div>
+                            <button type="submit" className={cx("btn", "btn--primary", "skills__add-btn")}>{t.addSkillButton}</button>
+                        </form>
+                        <ul className={cx("skills__list")}>
+                            {studentSkills.map(({ skill_id, level }) => (
+                                <li key={skill_id} className={cx("skills__item")}>
+                                    <span className={cx("skills__name")}>{skillMap[skill_id] ?? `Skill ID #${skill_id}`}</span>
+                                    <span className={cx("skills__rating")}>{"★".repeat(level)}{"☆".repeat(5 - level)}</span>
                                     <button 
                                         type="button" 
-                                        className={cx("btn", "btn--primary", "skills__add-btn")}
-                                        onClick={handleAddAllSkills}
+                                        className={cx("skills__remove-btn")} 
+                                        onClick={() => handleRemoveSkill(skill_id)}
+                                        title={`Xóa kỹ năng ${skillMap[skill_id]}`}
                                     >
-                                        Thêm tất cả kỹ năng
+                                        ×
                                     </button>
-                                </div>
-                            </div>
-                        </div>
+                                </li>
+                            ))}
+                        </ul>
                     </div>
                 </section>
 

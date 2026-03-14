@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Req, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Req, UseGuards, UseInterceptors, UploadedFile, Body } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { StudentService } from './student.service';
 import type { Request } from 'express';
@@ -18,6 +18,12 @@ export class StudentController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('debug')
+  async DebugStudent(@Req() req: Request) {
+    return this.StudentService.debugStudent(req.user as JwtUser);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Post('upload-avatar')
   @UseInterceptors(FileInterceptor('avatar', {
     storage: diskStorage({
@@ -28,8 +34,8 @@ export class StudentController {
       },
     }),
     fileFilter: (req, file, cb) => {
-      if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
-        return cb(new Error('Only image files are allowed!'), false);
+      if (!file.originalname.match(/\.(jpg|jpeg|png)$/i)) {
+        return cb(new Error('Chỉ cho phép file jpg, jpeg, png'), false);
       }
       cb(null, true);
     },
@@ -39,5 +45,11 @@ export class StudentController {
   }))
   async uploadAvatar(@UploadedFile() file: Express.Multer.File, @Req() req: Request) {
     return this.StudentService.updateAvatar(req.user as JwtUser, file.filename);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('update-profile')
+  async updateProfile(@Body() profileData: any, @Req() req: Request) {
+    return this.StudentService.updateProfile(req.user as JwtUser, profileData);
   }
 }

@@ -3,6 +3,7 @@ import classNames from "classnames/bind";
 import styles from "./ApplicationHistory.module.scss";
 import translations from '~/component/Translation';
 import { AuthContext } from '~/context/AuthContext';
+import ApplicationDetailModal from './ApplicationDetailModal';
 
 const cx = classNames.bind(styles);
 
@@ -11,6 +12,8 @@ function ApplicationHistory({ language = 'vi' }) {
     const [personalInfo, setPersonalInfo] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [selectedApplication, setSelectedApplication] = useState(null);
+    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const { api, user } = useContext(AuthContext);
 
     const t = translations[language];
@@ -51,6 +54,16 @@ function ApplicationHistory({ language = 'vi' }) {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleViewDetails = (application) => {
+        setSelectedApplication(application);
+        setIsDetailModalOpen(true);
+    };
+
+    const handleCloseDetailModal = () => {
+        setIsDetailModalOpen(false);
+        setSelectedApplication(null);
     };
 
     if (loading) return <div className={cx("loading")}>Đang tải...</div>;
@@ -122,6 +135,8 @@ function ApplicationHistory({ language = 'vi' }) {
                                         <td data-label={t.tableDetails}>
                                             <span 
                                                 className={cx("history-btn", "btn-details")}
+                                                onClick={() => handleViewDetails(application)}
+                                                style={{cursor: 'pointer'}}
                                             >
                                                 {t.viewMore}
                                             </span>
@@ -139,6 +154,13 @@ function ApplicationHistory({ language = 'vi' }) {
                     </tbody>
                 </table>
             </div>
+
+            <ApplicationDetailModal
+                isOpen={isDetailModalOpen}
+                onClose={handleCloseDetailModal}
+                application={selectedApplication}
+                language={language}
+            />
         </div>
     );
 }

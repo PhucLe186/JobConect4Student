@@ -11,8 +11,23 @@ export class job_applications {
   @Prop({ type: Types.ObjectId, ref: 'Student', required: true })
   student_id: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: 'CV', required: true })
+  @Prop({ type: Types.ObjectId, ref: 'CV' })
   cv_id?: Types.ObjectId;
+
+  @Prop({ type: String })
+  cv_file_path?: string;
+
+  @Prop({ type: String, required: true })
+  full_name: string;
+
+  @Prop({ type: String, required: true })
+  email: string;
+
+  @Prop({ type: String, required: true })
+  phone: string;
+
+  @Prop({ type: String })
+  cover_letter?: string;
 
   @Prop({ enum: ['sent', 'viewed', 'rejected', 'accepted'], default: 'sent' })
   status: string;

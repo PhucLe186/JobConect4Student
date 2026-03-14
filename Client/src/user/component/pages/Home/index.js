@@ -14,21 +14,46 @@ const Homepage = () => {
     const {api, language } = useContext(AuthContext);
     const [salaryValue, setSalaryValue] = useState(50);
     const [allJobData, setAllJobData]= useState([])
+    const [searchKeyword, setSearchKeyword] = useState('');
     const [experience, setExperience] = useState('');
     const [location, setLocation] = useState('');
     const [jobType, setJobType] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const JobPerPages = 9;
 
-    const totalJob= allJobData.length
+    const filteredJobs = allJobData.filter(job => {
+        const keyword = searchKeyword.toLowerCase();
+        const matchKeyword = !keyword ||
+            job.title?.toLowerCase().includes(keyword) ||
+            job.company_name?.toLowerCase().includes(keyword) ||
+            job.industry?.toLowerCase().includes(keyword);
+        const matchLocation = !location || job.location?.toLowerCase().includes(location.toLowerCase());
+        const matchJobType = !jobType || job.job_type === jobType;
+        const matchExperience = !experience || job.experience === experience;
+        const matchSalary = !job.min_salary || Number(job.min_salary) / 1000000 <= salaryValue;
+        return matchKeyword && matchLocation && matchJobType && matchExperience && matchSalary;
+    });
+
+    const totalJob= filteredJobs.length
     const totalPages=Math.ceil(totalJob/JobPerPages)
     const startIndex=(currentPage-1)*JobPerPages
     const EndIndex=startIndex+JobPerPages
-    const finalJobPage=allJobData.slice(startIndex, EndIndex)
+    const finalJobPage=filteredJobs.slice(startIndex, EndIndex)
 
     const t = translations[language|| 'vi'];
     const updateSalary = (value) => {
         setSalaryValue(value);
+        setCurrentPage(1);
+    };
+
+    const handleSearch = (e) => {
+        setSearchKeyword(e.target.value);
+        setCurrentPage(1);
+    };
+
+    const handleFilterChange = (setter) => (e) => {
+        setter(e.target.value);
+        setCurrentPage(1);
     };
     
     useEffect(()=> {
@@ -61,7 +86,13 @@ const Homepage = () => {
                         </div>
                         <h1 className={cx('hero-title')}>{t.findJob}</h1>
                         <div className={cx('search-box')}>
-                            <input type="text" className={cx('search-input')} placeholder={t.searchPlaceholder} />
+                            <input
+                                type="text"
+                                className={cx('search-input')}
+                                placeholder={t.searchPlaceholder}
+                                value={searchKeyword}
+                                onChange={handleSearch}
+                            />
                         </div>
                     </div>
                 </div>
@@ -92,13 +123,16 @@ const Homepage = () => {
                             <select
                                 className={cx('filter-select')}
                                 value={experience}
-                                onChange={(e) => setExperience(e.target.value)}
+                                onChange={handleFilterChange(setExperience)}
                             >
                                 <option value="">{t.chooseExp}</option>
-                                <option>{t.noExp}</option>
-                                <option>1 - 2 {language === 'vi' ? 'năm' : 'years'}</option>
-                                <option>3 - 4 {language === 'vi' ? 'năm' : 'years'}</option>
-                                <option>4 - 5 {language === 'vi' ? 'năm' : 'years'}</option>
+                                <option value="không yêu cầu">{t.noExp}</option>
+                                <option value="dưới 1 năm">{language === 'vi' ? 'Dưới 1 năm' : 'Under 1 year'}</option>
+                                <option value="1 năm">1 {language === 'vi' ? 'năm' : 'year'}</option>
+                                <option value="2 năm">2 {language === 'vi' ? 'năm' : 'years'}</option>
+                                <option value="3 năm">3 {language === 'vi' ? 'năm' : 'years'}</option>
+                                <option value="4 năm">4 {language === 'vi' ? 'năm' : 'years'}</option>
+                                <option value="4 năm trở lên">{language === 'vi' ? '4 năm trở lên' : '4+ years'}</option>
                             </select>
                         </div>
                         <div className={cx('filter-item')}>
@@ -106,7 +140,7 @@ const Homepage = () => {
                             <select 
                                 className={cx('filter-select')} 
                                 value={location}
-                                onChange={(e) => setLocation(e.target.value)}
+                                onChange={handleFilterChange(setLocation)}
                             >
                                 <option value="">{t.chooseLocation}</option>
                                 <option>{language === 'vi' ? 'Hà Nội' : 'Hanoi'}</option>
@@ -121,12 +155,12 @@ const Homepage = () => {
                             <select 
                                 className={cx('filter-select')} 
                                 value={jobType}
-                                onChange={(e) => setJobType(e.target.value)}
+                                onChange={handleFilterChange(setJobType)}
                             >
                                 <option value="">{t.chooseJobType}</option>
-                                <option>Full-time</option>
-                                <option>Part-time</option>
-                                <option>{language === 'vi' ? 'Thực tập' : 'Internship'}</option>
+                                <option value="full-time">Full-time</option>
+                                <option value="part-time">Part-time</option>
+                                <option value="internship">{language === 'vi' ? 'Thực tập' : 'Internship'}</option>
                             </select>
                         </div>
                     </div>
@@ -136,6 +170,11 @@ const Homepage = () => {
             {/* Jobs Grid */}
             <div className={cx('jobs-section')}>
                 <div className={cx('container')}>
+                    {filteredJobs.length === 0 && allJobData.length > 0 && (
+                        <p style={{textAlign:'center', padding:'20px', color:'#888'}}>
+                            {language === 'vi' ? 'Không tìm thấy việc làm phù hợp.' : 'No jobs found.'}
+                        </p>
+                    )}
                     <div className={cx('jobs-grid')}>
                         {finalJobPage.map((job, index) => (
                             <div className={cx('job-card')} key={index}>

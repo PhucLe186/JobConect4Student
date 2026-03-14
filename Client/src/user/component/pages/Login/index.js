@@ -5,6 +5,7 @@ import classNames from 'classnames/bind';
 import style from './Login.module.scss';
 import routesconfig from '~/routes/routes';
 import { AuthContext } from '~/context/AuthContext';
+import { socialAuthService } from '~/Lib/socialAuth';
 
 const cx = classNames.bind(style);
 
@@ -15,10 +16,54 @@ const Login = () => {
         email:'',
         password:''
     })
+    const [socialLoading, setSocialLoading] = useState({
+        google: false,
+        facebook: false
+    });
 
     const handleLogin = async(e) => {
         e.preventDefault();
         login(Data)
+    };
+
+    const handleGoogleLogin = async () => {
+        setSocialLoading(prev => ({ ...prev, google: true }));
+        
+        const result = await socialAuthService.signInWithGoogle();
+        
+        if (result.success) {
+            // Chuyển đến trang chọn role với thông tin user
+            navigate(routesconfig.socialRoleSelection, {
+                state: {
+                    userInfo: result.userInfo,
+                    provider: result.provider
+                }
+            });
+        } else {
+            alert('Đăng nhập Google thất bại: ' + result.error);
+        }
+        
+        setSocialLoading(prev => ({ ...prev, google: false }));
+    };
+
+    const handleFacebookLogin = async () => {
+        setSocialLoading(prev => ({ ...prev, facebook: true }));
+        
+        const result = await socialAuthService.signInWithFacebook();
+        
+        if (result.success) {
+            // Chuyển đến trang chọn role với thông tin user
+            navigate(routesconfig.socialRoleSelection, {
+                state: {
+                    userInfo: result.userInfo,
+                    provider: result.provider
+                }
+            });
+        } else {
+            alert('Đăng nhập Facebook thất bại: ' + result.error);
+        }
+        
+        setSocialLoading(prev => ({ ...prev, facebook: false }));
     };
 
 
@@ -35,7 +80,7 @@ const Login = () => {
                     <div className={cx('welcome-panel')}>
                         <h2>Hello, Welcome!</h2>
                         <p>Don't have an account? Sign up now!</p>
-                        <Link to={routesconfig.register} className={cx('register-btn')}>
+                        <Link to={routesconfig.role} className={cx('register-btn')}>
                             REGISTER
                         </Link>
                     </div>
@@ -59,19 +104,37 @@ const Login = () => {
                                 <i className={cx('fa-solid fa-lock')}></i>
                             </div>
                             <div className={cx('forgot-link')}>
-                                <a href="#">Forgot Password?</a>
+                                <Link to={routesconfig.forgotPassword}>Forgot Password?</Link>
                             </div>
                             <button type="button" className={cx('btn')} onClick={handleLogin}>
                                 Login
                             </button>
                             <div className={cx('social-text')}>or Login with social platforms</div>
                             <div className={cx('social-icons')}>
-                                <a href="#">
-                                    <i className={cx('fa-brands fa-google')}></i>
-                                </a>
-                                <a href="#">
-                                    <i className={cx('fa-brands fa-facebook')}></i>
-                                </a>
+                                <button 
+                                    type="button"
+                                    onClick={handleGoogleLogin}
+                                    disabled={socialLoading.google || socialLoading.facebook}
+                                    className={cx('social-btn', { loading: socialLoading.google })}
+                                >
+                                    {socialLoading.google ? (
+                                        <i className={cx('fa-solid fa-spinner fa-spin')}></i>
+                                    ) : (
+                                        <i className={cx('fa-brands fa-google')}></i>
+                                    )}
+                                </button>
+                                <button 
+                                    type="button"
+                                    onClick={handleFacebookLogin}
+                                    disabled={socialLoading.google || socialLoading.facebook}
+                                    className={cx('social-btn', { loading: socialLoading.facebook })}
+                                >
+                                    {socialLoading.facebook ? (
+                                        <i className={cx('fa-solid fa-spinner fa-spin')}></i>
+                                    ) : (
+                                        <i className={cx('fa-brands fa-facebook')}></i>
+                                    )}
+                                </button>
                             </div>
                         </form>
                     </div>

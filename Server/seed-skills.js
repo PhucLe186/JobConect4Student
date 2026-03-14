@@ -1,0 +1,35 @@
+// Script để thêm skills vào database
+// Chạy trong MongoDB shell hoặc MongoDB Compass
+
+db.skills.insertMany([
+  { name: "JavaScript" },
+  { name: "React" },
+  { name: "Node.js" },
+  { name: "Python" },
+  { name: "Java" },
+  { name: "C/C++" },
+  { name: "SQL" },
+  { name: "UI/UX" },
+  { name: "Git" },
+  { name: "Communication" },
+  { name: "Teamwork" },
+  { name: "Problem Solving" },
+  { name: "HTML/CSS" },
+  { name: "TypeScript" },
+  { name: "Vue.js" },
+  { name: "Angular" },
+  { name: "PHP" },
+  { name: "C#" },
+  { name: "MongoDB" },
+  { name: "MySQL" },
+  { name: "PostgreSQL" },
+  { name: "Docker" },
+  { name: "AWS" },
+  { name: "Azure" },
+  { name: "Google Cloud" },
+  { name: "Machine Learning" },
+  { name: "Data Analysis" },
+  { name: "Project Management" },
+  { name: "Agile/Scrum" },
+  { name: "DevOps" }
+]);

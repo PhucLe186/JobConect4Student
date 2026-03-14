@@ -22,6 +22,16 @@ export class AuthService {
 
   async Register(registerDto: RegisterDto): Promise<User> {
     const { name, email, password, dateOfbirth, gender, role } = registerDto;
+    
+    console.log('Register DTO received:', {
+      name,
+      email,
+      password: '***',
+      dateOfbirth,
+      gender,
+      role,
+      roleType: typeof role
+    });
 
     const existingEmail = await this.userModel.findOne({ email });
     if (existingEmail) {

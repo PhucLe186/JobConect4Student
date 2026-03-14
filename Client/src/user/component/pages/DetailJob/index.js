@@ -7,6 +7,7 @@ import translations from '~/component/Translation';
 import { AuthContext } from '~/context/AuthContext';
 import { useParams } from 'react-router-dom';
 import classNames from 'classnames/bind';
+import ApplicationModal from './ApplicationModal';
 
 const cx= classNames.bind(styles)
 
@@ -22,24 +23,22 @@ const Job = ({ onBack, onPageChange }) => {
     const {api, language} = useContext(AuthContext);
     const [favorites, setFavorites] = useState({});
     const [JobData, setJobData]= useState([])
+    const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
     const t = translations[language];
     const {id}= useParams()
 
-    const HandleApplications=async(id)=> {
-        try{
-            const res= await api.post('applications', {id: id})
-            if(res.data.status) {
-                alert(res.data.status)
-            }
-        }catch(error) {
-            if(error.response) {
-                alert(error.response?.data?.message)
-            }
-            else {
-                alert('lỗi kết nối tới server')
-            }
-        }
-    }
+    const handleOpenApplicationModal = () => {
+        setIsApplicationModalOpen(true);
+    };
+
+    const handleCloseApplicationModal = () => {
+        setIsApplicationModalOpen(false);
+    };
+
+    const handleApplicationSubmit = () => {
+        // Có thể thêm logic refresh data hoặc thông báo thành công
+        console.log('Application submitted successfully');
+    };
 
     useEffect(()=> {
         const fetchData=async()=> {
@@ -95,7 +94,7 @@ const Job = ({ onBack, onPageChange }) => {
                         <div className={cx('buttons')}>
                             <button 
                                 className={cx('applyBtn')}
-                                onClick={() => HandleApplications(JobData._id)}
+                                onClick={handleOpenApplicationModal}
                             >
                                 {t.applyNow}
                             </button>
@@ -246,6 +245,13 @@ const Job = ({ onBack, onPageChange }) => {
                     </div>
                 </div>
             </div>
+
+            <ApplicationModal
+                isOpen={isApplicationModalOpen}
+                onClose={handleCloseApplicationModal}
+                jobData={JobData}
+                onSubmit={handleApplicationSubmit}
+            />
         </div>
     );
 };

@@ -5,6 +5,8 @@ const Routes = {
     home: '/',
     login: '/login',
     register: '/register',
+    forgotPassword: '/forgot-password',
+    socialRoleSelection: '/social-role-selection',
     community: '/community',
     company: '/company',
     contact: '/contact',
