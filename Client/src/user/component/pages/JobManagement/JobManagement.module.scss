@@ -25,6 +25,60 @@
     line-height: 1.6;
 }
 
+/* BANNER SECTION */
+.jobs__banner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: var(--card-radius);
+    padding: 2rem;
+    margin-bottom: 1.925rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: white;
+    box-shadow: var(--box-shadow);
+}
+
+.jobs__banner-content {
+    flex: 1;
+}
+
+.jobs__banner-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+}
+
+.jobs__banner-desc {
+    font-size: 1.1rem;
+    margin: 0 0 1.5rem 0;
+    opacity: 0.9;
+    line-height: 1.5;
+}
+
+.jobs__banner-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--input-radius);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+}
+
+.jobs__banner-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-2px);
+}
+
+.jobs__banner-icon {
+    font-size: 4rem;
+    opacity: 0.7;
+    margin-left: 2rem;
+}
+
 .jobs__header {
     display: flex;
     align-items: center;
@@ -476,6 +530,26 @@
         height: 38px;
         padding: 0 8px;
         font-size: 0.9rem;
+    }
+
+    .jobs__banner {
+        flex-direction: column;
+        text-align: center;
+        padding: 1.5rem;
+    }
+
+    .jobs__banner-icon {
+        margin-left: 0;
+        margin-top: 1rem;
+        font-size: 3rem;
+    }
+
+    .jobs__banner-title {
+        font-size: 1.5rem;
+    }
+
+    .jobs__banner-desc {
+        font-size: 1rem;
     }
     
     /* Table responsive */

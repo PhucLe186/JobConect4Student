@@ -5,11 +5,11 @@ import MBLogo from '~/asset/img/MB.png';
 import MicrosoftLogo from '~/asset/img/Microsoft.png';
 import translations from '~/component/Translation';
 import { AuthContext } from '~/context/AuthContext';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import classNames from 'classnames/bind';
 import ApplicationModal from './ApplicationModal';
 
-const cx= classNames.bind(styles)
+const cx = classNames.bind(styles);
 
 // Thêm FontAwesome
 if (!document.querySelector('link[href*="fontawesome"]')) {
@@ -20,64 +20,111 @@ if (!document.querySelector('link[href*="fontawesome"]')) {
 }
 
 const Job = ({ onBack, onPageChange }) => {
-    const {api, language} = useContext(AuthContext);
-    const [favorites, setFavorites] = useState({});
-    const [JobData, setJobData]= useState([])
-    const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
+    const { api, language } = useContext(AuthContext);
+    const [favorites] = useState({});
+    const [JobData, setJobData] = useState([]);
+    const [showApplyPopup, setShowApplyPopup] = useState(false);
+    const [cvOption, setCvOption] = useState(''); // 'upload' or 'create'
+    const [uploadedCV, setUploadedCV] = useState(null);
+    const [coverLetter, setCoverLetter] = useState('');
+    const navigate = useNavigate();
     const t = translations[language];
-    const {id}= useParams()
+    const { id } = useParams();
 
-    const handleOpenApplicationModal = () => {
-        setIsApplicationModalOpen(true);
+    const HandleApplications = async (id) => {
+        setShowApplyPopup(true);
     };
 
-    const handleCloseApplicationModal = () => {
-        setIsApplicationModalOpen(false);
-    };
-
-    const handleApplicationSubmit = () => {
-        // Có thể thêm logic refresh data hoặc thông báo thành công
-        console.log('Application submitted successfully');
-    };
-
-    useEffect(()=> {
-        const fetchData=async()=> {
-            try{
-                const res= await api.get(`jobs/${id}`)
-                if(res.data) {
-                    setJobData(res.data)
-                }
-            }catch(error) {
-                if(error.response) {
-                    alert(error.response?.data?.message)
-                }
-                else {
-                    alert('lỗi kết nối tới server')
-                }
+    const handleFileUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const allowedTypes = [
+                'application/pdf',
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            ];
+            if (allowedTypes.includes(file.type)) {
+                setUploadedCV(file);
+            } else {
+                alert(
+                    language === 'vi' ? 'Chỉ chấp nhận file PDF, DOC, DOCX' : 'Only PDF, DOC, DOCX files are allowed',
+                );
             }
         }
-        fetchData()
-    }, [])
-    
+    };
+
+    const handleCreateCV = () => {
+        navigate('/cv_builder');
+        setShowApplyPopup(false);
+    };
+
+    const handleApplySubmit = async () => {
+        if (cvOption === 'upload' && !uploadedCV) {
+            alert(language === 'vi' ? 'Vui lòng tải lên CV' : 'Please upload your CV');
+            return;
+        }
+        if (cvOption === 'create') {
+            handleCreateCV();
+            return;
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('id', JobData._id);
+            formData.append('cv', uploadedCV);
+            formData.append('coverLetter', coverLetter);
+
+            const res = await api.post('applications', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+
+            if (res.data.status) {
+                alert(res.data.status);
+                setShowApplyPopup(false);
+                setCvOption('');
+                setUploadedCV(null);
+                setCoverLetter('');
+            }
+        } catch (error) {
+            if (error.response) {
+                alert(error.response?.data?.message);
+            } else {
+                alert('lỗi kết nối tới server');
+            }
+        }
+    };
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const res = await api.get(`jobs/${id}`);
+                if (res.data) {
+                    setJobData(res.data);
+                }
+            } catch (error) {
+                if (error.response) {
+                    alert(error.response?.data?.message);
+                } else {
+                    alert('lỗi kết nối tới server');
+                }
+            }
+        };
+        fetchData();
+    }, [api, id]);
 
     return (
         <div className={cx('container')}>
             <div className={cx('jobHeader')}>
                 <div className={cx('headerContent')}>
                     <div className={cx('logoContainer')}>
-                        <img
-                            src={JobData.logo}
-                            alt="LG Logo"
-                        />
+                        <img src={JobData.logo} alt="LG Logo" />
                     </div>
                     <div className={cx('jobInfo')}>
                         <h1>{JobData.title}</h1>
                         <p className={cx('companyName')}>{JobData.company_name}</p>
                         <div className={cx('jobDetail')}>
                             <i className="fas fa-map-marker-alt"></i>
-                            <span>
-                               {JobData.location}
-                            </span>
+                            <span>{JobData.location}</span>
                         </div>
                         <div className={cx('jobDetail')}>
                             <i className="fas fa-briefcase"></i>
@@ -89,18 +136,16 @@ const Job = ({ onBack, onPageChange }) => {
                         </div>
                         <div className={cx('jobDetail')}>
                             <i className="fas fa-calendar-alt"></i>
-                            <span>{t.from} {new Date(JobData.createdAt).toLocaleDateString("vi-VN")} {t.to} {new Date(JobData.deadline).toLocaleDateString("vi-VN")} </span>
+                            <span>
+                                {t.from} {new Date(JobData.createdAt).toLocaleDateString('vi-VN')} {t.to}{' '}
+                                {new Date(JobData.deadline).toLocaleDateString('vi-VN')}{' '}
+                            </span>
                         </div>
                         <div className={cx('buttons')}>
-                            <button 
-                                className={cx('applyBtn')}
-                                onClick={handleOpenApplicationModal}
-                            >
+                            <button className={cx('applyBtn')} onClick={handleOpenApplicationModal}>
                                 {t.applyNow}
                             </button>
-                            <button className={cx('saveBtn')}>
-                                {t.save}
-                            </button>
+                            <button className={cx('saveBtn')}>{t.save}</button>
                         </div>
                     </div>
                 </div>
@@ -108,15 +153,12 @@ const Job = ({ onBack, onPageChange }) => {
 
             <div className={cx('mainContent')}>
                 <div className={cx('contentMain')}>
-
                     <div className={cx('contentSection')}>
                         <h2>{t.jobDescription}</h2>
                         <p>
                             <strong>{JobData.title}</strong>
                         </p>
-                        <p>
-                           {JobData.description}
-                        </p>
+                        <p>{JobData.description}</p>
                     </div>
                     <div className={cx('contentSection')}>
                         <h2>{t.requirements}</h2>
@@ -166,15 +208,14 @@ const Job = ({ onBack, onPageChange }) => {
                             Email: <a href="mailto:vanchisencm2022@gmail.com">{JobData.email}</a>
                         </p>
                         <p>
-                            {t.phone}: <a>{JobData.phone}</a>
+                            {t.phone}: <span>{JobData.phone}</span>
                         </p>
                         <p>
-                            {t.address}: <a>{JobData.location}</a>
+                            {t.address}: <span>{JobData.location}</span>
                         </p>
                         <p>
-                            {t.workingHours}: <a>{JobData.workingHours}</a>
+                            {t.workingHours}: <span>{JobData.workingHours}</span>
                         </p>
-                    
                     </div>
                 </div>
 
@@ -188,70 +229,188 @@ const Job = ({ onBack, onPageChange }) => {
                         </div>
 
                         <div className={cx('jobsList')}>
-                        {[
-                            {
-                                id: 1,
-                                logo: NaverLogo,
-                                title: 'Dev',
-                                company: language === 'vi' ? 'Công Ty công nghệ NAVER' : 'NAVER Technology Company',
-                                location: language === 'vi' ? 'Hà Nội' : 'Hanoi',
-                                salary: language === 'vi' ? '20 triệu - 40 triệu' : '20M - 40M VND',
-                            },
-                            {
-                                id: 2,
-                                logo: MBLogo,
-                                title: 'Software Engineer',
-                                company: language === 'vi' ? 'Ngân Hàng Quân Đội MB Bank' : 'Military Bank MB Bank',
-                                location: language === 'vi' ? 'Thành Phố Hồ Chí Minh' : 'Ho Chi Minh City',
-                                salary: language === 'vi' ? '11 triệu - 15 triệu' : '11M - 15M VND',
-                            },
-                            {
-                                id: 3,
-                                logo: MicrosoftLogo,
-                                title: 'Cloud Developer',
-                                company:
-                                    language === 'vi'
-                                        ? 'Công Ty phần mềm và hỗ trợ Microsoft'
-                                        : 'Microsoft Software and Support Company',
-                                location: language === 'vi' ? 'Hồ Chí Minh' : 'Ho Chi Minh City',
-                                salary: language === 'vi' ? '10 triệu - 15 triệu' : '10M - 15M VND',
-                            },
-                        ].map((job, index) => (
-                            <div key={job.id} className={cx('jobItem')}>
-                                <div className={cx('jobLogo')}>
-                                    <img src={job.logo} alt="logo" />
-                                </div>
-                                <div className={cx('jobDetails')}>
-                                    <div className={cx('jobTitle')}>{job.title}</div>
-                                    <div className={cx('jobCompany')}>{job.company}</div>
-                                    <div className={cx('jobLocation')}>
-                                        <i className="fa-solid fa-location-dot"></i>
-                                        {job.location}
+                            {[
+                                {
+                                    id: 1,
+                                    logo: NaverLogo,
+                                    title: 'Dev',
+                                    company: language === 'vi' ? 'Công Ty công nghệ NAVER' : 'NAVER Technology Company',
+                                    location: language === 'vi' ? 'Hà Nội' : 'Hanoi',
+                                    salary: language === 'vi' ? '20 triệu - 40 triệu' : '20M - 40M VND',
+                                },
+                                {
+                                    id: 2,
+                                    logo: MBLogo,
+                                    title: 'Software Engineer',
+                                    company: language === 'vi' ? 'Ngân Hàng Quân Đội MB Bank' : 'Military Bank MB Bank',
+                                    location: language === 'vi' ? 'Thành Phố Hồ Chí Minh' : 'Ho Chi Minh City',
+                                    salary: language === 'vi' ? '11 triệu - 15 triệu' : '11M - 15M VND',
+                                },
+                                {
+                                    id: 3,
+                                    logo: MicrosoftLogo,
+                                    title: 'Cloud Developer',
+                                    company:
+                                        language === 'vi'
+                                            ? 'Công Ty phần mềm và hỗ trợ Microsoft'
+                                            : 'Microsoft Software and Support Company',
+                                    location: language === 'vi' ? 'Hồ Chí Minh' : 'Ho Chi Minh City',
+                                    salary: language === 'vi' ? '10 triệu - 15 triệu' : '10M - 15M VND',
+                                },
+                            ].map((job, index) => (
+                                <div key={job.id} className={cx('jobItem')}>
+                                    <div className={cx('jobLogo')}>
+                                        <img src={job.logo} alt="logo" />
                                     </div>
-                                    <div className={cx('jobSalary')}>
-                                        <i className="fa-solid fa-dollar-sign"></i>
-                                        {job.salary}
+                                    <div className={cx('jobDetails')}>
+                                        <div className={cx('jobTitle')}>{job.title}</div>
+                                        <div className={cx('jobCompany')}>{job.company}</div>
+                                        <div className={cx('jobLocation')}>
+                                            <i className="fa-solid fa-location-dot"></i>
+                                            {job.location}
+                                        </div>
+                                        <div className={cx('jobSalary')}>
+                                            <i className="fa-solid fa-dollar-sign"></i>
+                                            {job.salary}
+                                        </div>
+                                    </div>
+                                    <div
+                                        className={`${styles.heartIcon} ${favorites[job.id] ? styles.active : styles.inactive}`}
+                                    >
+                                        <i
+                                            className={favorites[job.id] ? 'fa-solid fa-heart' : 'fa-regular fa-heart'}
+                                        ></i>
                                     </div>
                                 </div>
-                                <div
-                                    className={`${styles.heartIcon} ${favorites[job.id] ? styles.active : styles.inactive}`}
-                                   
-                                >
-                                    <i className={favorites[job.id] ? 'fa-solid fa-heart' : 'fa-regular fa-heart'}></i>
-                                </div>
-                            </div>
-                        ))}
+                            ))}
                         </div>
                     </div>
                 </div>
             </div>
 
-            <ApplicationModal
-                isOpen={isApplicationModalOpen}
-                onClose={handleCloseApplicationModal}
-                jobData={JobData}
-                onSubmit={handleApplicationSubmit}
-            />
+            {/* Apply Popup */}
+            {showApplyPopup && (
+                <div className={cx('popup-overlay')} onClick={() => setShowApplyPopup(false)}>
+                    <div className={cx('popup-content')} onClick={(e) => e.stopPropagation()}>
+                        <div className={cx('popup-header')}>
+                            <h3>{language === 'vi' ? 'Ứng tuyển việc làm' : 'Apply for Job'}</h3>
+                            <button className={cx('popup-close')} onClick={() => setShowApplyPopup(false)}>
+                                ×
+                            </button>
+                        </div>
+
+                        <div className={cx('popup-body')}>
+                            <div className={cx('job-info')}>
+                                <h4>{JobData.title}</h4>
+                                <p>{JobData.company_name}</p>
+                            </div>
+
+                            <div className={cx('popup-field')}>
+                                <label className={cx('popup-label')}>
+                                    {language === 'vi' ? 'Chọn tùy chọn CV' : 'Choose CV Option'}{' '}
+                                    <span className={cx('required')}>*</span>
+                                </label>
+                                <div className={cx('cv-options')}>
+                                    <label className={cx('cv-option')}>
+                                        <input
+                                            type="radio"
+                                            name="cvOption"
+                                            value="upload"
+                                            checked={cvOption === 'upload'}
+                                            onChange={(e) => setCvOption(e.target.value)}
+                                        />
+                                        <span>{language === 'vi' ? 'Tải lên CV có sẵn' : 'Upload existing CV'}</span>
+                                    </label>
+                                    <label className={cx('cv-option')}>
+                                        <input
+                                            type="radio"
+                                            name="cvOption"
+                                            value="create"
+                                            checked={cvOption === 'create'}
+                                            onChange={(e) => setCvOption(e.target.value)}
+                                        />
+                                        <span>{language === 'vi' ? 'Tạo CV mới' : 'Create new CV'}</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            {cvOption === 'upload' && (
+                                <div className={cx('popup-field')}>
+                                    <label className={cx('popup-label')}>
+                                        {language === 'vi'
+                                            ? 'Tải lên file CV (PDF, DOC, DOCX)'
+                                            : 'Upload CV file (PDF, DOC, DOCX)'}
+                                    </label>
+                                    <input
+                                        type="file"
+                                        className={cx('popup-file-input')}
+                                        accept=".pdf,.doc,.docx"
+                                        onChange={handleFileUpload}
+                                    />
+                                    {uploadedCV && (
+                                        <div className={cx('uploaded-file')}>
+                                            <i className="fas fa-file"></i>
+                                            <span>{uploadedCV.name}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {cvOption === 'create' && (
+                                <div className={cx('popup-field')}>
+                                    <div className={cx('create-cv-info')}>
+                                        <i className="fas fa-info-circle"></i>
+                                        <span>
+                                            {language === 'vi'
+                                                ? 'Bạn sẽ được chuyển đến trang tạo CV'
+                                                : 'You will be redirected to CV builder page'}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className={cx('popup-field')}>
+                                <label className={cx('popup-label')}>
+                                    {language === 'vi' ? 'Thư xin việc (tùy chọn)' : 'Cover Letter (optional)'}
+                                </label>
+                                <textarea
+                                    className={cx('popup-textarea')}
+                                    rows={6}
+                                    placeholder={
+                                        language === 'vi'
+                                            ? 'Viết thư xin việc để tăng cơ hội được tuyển dụng...'
+                                            : 'Write a cover letter to increase your chances...'
+                                    }
+                                    value={coverLetter}
+                                    onChange={(e) => setCoverLetter(e.target.value)}
+                                />
+                            </div>
+                        </div>
+
+                        <div className={cx('popup-actions')}>
+                            <button
+                                className={cx('popup-btn', 'popup-btn--cancel')}
+                                onClick={() => setShowApplyPopup(false)}
+                            >
+                                {language === 'vi' ? 'Hủy' : 'Cancel'}
+                            </button>
+                            <button
+                                className={cx('popup-btn', 'popup-btn--submit')}
+                                onClick={handleApplySubmit}
+                                disabled={!cvOption}
+                            >
+                                {cvOption === 'create'
+                                    ? language === 'vi'
+                                        ? 'Đi đến tạo CV'
+                                        : 'Go to CV Builder'
+                                    : language === 'vi'
+                                      ? 'Gửi ứng tuyển'
+                                      : 'Submit Application'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

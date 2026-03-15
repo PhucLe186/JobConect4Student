@@ -1,6 +1,3 @@
-import Dashboard from '~/Admin/Component/Page/Dashboard/Dashboard';
-import NewJob from '~/user/component/pages/NewJob/NewJob';
-
 const Routes = {
     home: '/',
     login: '/login',
@@ -15,6 +12,7 @@ const Routes = {
     role: '/role',
     companyDetail: '/company/:id',
     cvBuilder: '/cv_builder',
+    jobSuggestions: '/job-suggestions',
     studentprofile: '/studentprofile',
     applicationhistory: '/applicationhistory',
     ///////////////Admin PAge///////////////////////////////

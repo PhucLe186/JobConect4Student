@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useContext } from "react";
+import React, { useMemo, useState, useEffect, useContext, useCallback } from "react";
 import classNames from "classnames/bind";
 import styles from "./StudentProfile.module.scss";
 import translations from "~/component/Translation";
@@ -32,14 +32,7 @@ function StudentProfile({ language = 'vi' }) {
 
     const t = translations[language];
 
-    useEffect(() => {
-        console.log('useEffect triggered, user:', user);
-        fetchProfileData();
-        fetchAvailableSkills();
-        // fetchStudentSkills(); // Không cần gọi riêng vì skills đã có trong profile
-    }, [user]);
-
-    const fetchProfileData = async () => {
+    const fetchProfileData = useCallback(async () => {
         try {
             if (!user) {
                 console.log('No user found, skipping profile fetch');
@@ -85,7 +78,12 @@ function StudentProfile({ language = 'vi' }) {
         } finally {
             setLoading(false);
         }
-    };
+    }, [api, user]);
+
+    useEffect(() => {
+        fetchProfileData();
+        fetchAvailableSkills();
+    }, [fetchProfileData]);
 
     const fetchAvailableSkills = async () => {
         try {
@@ -98,11 +96,6 @@ function StudentProfile({ language = 'vi' }) {
         } catch (err) {
             console.error('❌ Lỗi khi tải danh sách skills:', err);
         }
-    };
-
-    const fetchStudentSkills = async () => {
-        // Skills sẽ được load từ fetchProfileData, không cần gọi API riêng
-        console.log('Skills will be loaded from profile data');
     };
 
     // Lấy danh sách skills chưa được thêm

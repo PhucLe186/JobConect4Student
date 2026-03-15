@@ -3,8 +3,47 @@ import { useNavigate } from 'react-router-dom';
 import styles from './NewJob.module.scss';
 import classNames from 'classnames/bind';
 
-// 1. Import file dịch
-import trans__newJob from "../../../../component/Translation/NewJob"
+// 1. Translation object
+const trans__newJob = {
+  vi: {
+    pageTitle: 'Đăng tin tuyển dụng mới',
+    sectionBasic: 'Thông tin cơ bản',
+    labelTitle: 'Tiêu đề công việc',
+    ph_Title: 'Ví dụ: Senior React Developer',
+    labelDesc: 'Mô tả chi tiết',
+    ph_Desc: 'Mô tả công việc, yêu cầu, quyền lợi...',
+    sectionDetail: 'Chi tiết công việc',
+    labelType: 'Loại công việc',
+    ph_Type: 'Ví dụ: Full-time, Part-time, Remote...',
+    labelSalary: 'Mức lương',
+    ph_Salary: 'Ví dụ: 15 - 20 Triệu',
+    labelLocation: 'Địa điểm',
+    ph_Location: 'Ví dụ: Hà Nội, Hồ Chí Minh',
+    labelDeadline: 'Hạn ứng tuyển',
+    btnBack: 'Quay lại',
+    btnSubmit: 'Đăng tin',
+    alertSuccess: 'Đã gửi biểu mẫu thành công!'
+  },
+  en: {
+    pageTitle: 'Post New Job',
+    sectionBasic: 'Basic Information',
+    labelTitle: 'Job Title',
+    ph_Title: 'Ex: Senior React Developer',
+    labelDesc: 'Job Description',
+    ph_Desc: 'Job description, requirements, benefits...',
+    sectionDetail: 'Job Details',
+    labelType: 'Job Type',
+    ph_Type: 'Ex: Full-time, Part-time, Remote...',
+    labelSalary: 'Salary Range',
+    ph_Salary: 'Ex: $1000 - $2000',
+    labelLocation: 'Location',
+    ph_Location: 'Ex: Hanoi, Ho Chi Minh City',
+    labelDeadline: 'Application Deadline',
+    btnBack: 'Back',
+    btnSubmit: 'Post Job',
+    alertSuccess: 'Form submitted successfully!'
+  }
+};
 
 const cx = classNames.bind(styles);
 
@@ -23,7 +62,7 @@ function NewJob({ language = 'vi' }) {
   const navigate = useNavigate();
 
   // 3. Lấy từ điển
-  const t = trans__newJob[language];
+  const t = trans__newJob[language] || trans__newJob.vi;
 
   // Dữ liệu quận/huyện theo tỉnh thành
   const districtsByProvince = {
@@ -50,6 +89,8 @@ function NewJob({ language = 'vi' }) {
     // 4. Dịch cả thông báo alert
     alert(t.alertSuccess);
   };
+
+
 
   const onBack = () => {
     navigate(-1);
@@ -213,6 +254,8 @@ function NewJob({ language = 'vi' }) {
           </button>
         </div>
       </form>
+
+
     </div>
   );
 }

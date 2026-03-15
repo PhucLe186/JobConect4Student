@@ -76,10 +76,6 @@ const CompanyDetail = ({onPageChange}) => {
                                 <p>{data.size}</p>
                             </div>
                             <div className={cx('infoItem')}>
-                                <span>{t.headquarters}</span>
-                                <p>{data.headquarters}</p>
-                            </div>
-                            <div className={cx('infoItem')}>
                                 <span>{t.website}</span>
                                 <p>
                                     <a href="https://www.samsung.com/vn" target="_blank" rel="noopener noreferrer">
@@ -96,15 +92,44 @@ const CompanyDetail = ({onPageChange}) => {
                     </div>
 
                     <div className={cx('contentSection')}>
-                        <h2>{t.workEnvironment}</h2>
-                        <p>{data.environment}</p>
-                    </div>
-
-                    <div className={cx('contentSection')}>
-                        <h2>{t.contactInfo}</h2>
-                        <p><strong>{t.phone}:</strong> {data.phone}</p>
-                        <p><strong>{t.address}:</strong> {data.address}</p>
-                        <p><strong>{t.workingHours}:</strong> {data.workingHours}</p>
+                        <h2>{language === 'vi' ? 'Các vị trí tuyển dụng' : 'Job Openings'}</h2>
+                        <div className={cx('jobsList')}>
+                            {[
+                                {
+                                    title: language === 'vi' ? 'Kỹ sư phần mềm' : 'Software Engineer',
+                                    department: language === 'vi' ? 'Phòng IT' : 'IT Department',
+                                    location: language === 'vi' ? 'Hồ Chí Minh' : 'Ho Chi Minh City',
+                                    type: 'Full-time'
+                                },
+                                {
+                                    title: language === 'vi' ? 'Chuyên viên Marketing' : 'Marketing Specialist',
+                                    department: language === 'vi' ? 'Phòng Marketing' : 'Marketing Department',
+                                    location: language === 'vi' ? 'Hà Nội' : 'Hanoi',
+                                    type: 'Full-time'
+                                },
+                                {
+                                    title: language === 'vi' ? 'Nhân viên kinh doanh' : 'Sales Executive',
+                                    department: language === 'vi' ? 'Phòng kinh doanh' : 'Sales Department',
+                                    location: language === 'vi' ? 'Đà Nẵng' : 'Da Nang',
+                                    type: 'Full-time'
+                                }
+                            ].map((job, index) => (
+                                <div key={index} className={cx('jobItem')}>
+                                    <div className={cx('jobHeader')}>
+                                        <h3 className={cx('jobTitle')}>{job.title}</h3>
+                                        <span className={cx('jobType')}>{job.type}</span>
+                                    </div>
+                                    <p className={cx('jobDepartment')}>{job.department}</p>
+                                    <p className={cx('jobLocation')}>
+                                        <i className="fas fa-map-marker-alt"></i>
+                                        {job.location}
+                                    </p>
+                                    <button className={cx('applyBtn')}>
+                                        {language === 'vi' ? 'Ứng tuyển' : 'Apply Now'}
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
 
