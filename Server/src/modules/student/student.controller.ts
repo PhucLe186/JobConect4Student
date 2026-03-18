@@ -5,7 +5,6 @@ import type { Request } from 'express';
 import { JwtUser } from '../auth/interface/jwt-user.interface';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { diskStorage } from 'multer';
-import type { File } from 'multer';
 import { extname } from 'path';
 
 @Controller('student')
@@ -44,7 +43,7 @@ export class StudentController {
       fileSize: 5 * 1024 * 1024, // 5MB
     },
   }))
-  async uploadAvatar(@UploadedFile() file: File, @Req() req: Request) {
+  async uploadAvatar(@UploadedFile() file: Express.Multer.File, @Req() req: Request) {
     return this.StudentService.updateAvatar(req.user as JwtUser, file.filename);
   }
 

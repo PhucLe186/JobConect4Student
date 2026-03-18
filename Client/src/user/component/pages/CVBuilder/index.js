@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import styles from './CVBuilder.module.scss';
 
 function App() {
@@ -28,14 +30,20 @@ function App() {
                 company: 'ĐH Công nghệ',
                 time: '2018 - 2022',
                 role: 'Kỹ sư CNTT',
+                gpa: '3.5 / 4.0',
             },
         ],
     });
     const [avatar, setAvatar] = useState(null);
+    const [exporting, setExporting] = useState(false);
     const avatarInputRef = useRef(null);
+    const cvRef = useRef(null);
 
     useEffect(() => {
-        document.documentElement.style.setProperty('--brand', brandColor);
+        if (cvRef.current) {
+            const left = cvRef.current.querySelector(`.${styles.cvLeft}`);
+            if (left) left.style.backgroundColor = brandColor;
+        }
     }, [brandColor]);
 
     const handleAvatarChange = (e) => {
@@ -86,6 +94,26 @@ function App() {
         }));
     };
 
+    const addTask = (id) => {
+        setCvData((prev) => ({
+            ...prev,
+            experience: prev.experience.map((exp) =>
+                exp.id === id ? { ...exp, tasks: [...exp.tasks, 'Thành tựu / nhiệm vụ mới'] } : exp
+            ),
+        }));
+    };
+
+    const updateTask = (id, index, value) => {
+        setCvData((prev) => ({
+            ...prev,
+            experience: prev.experience.map((exp) =>
+                exp.id === id
+                    ? { ...exp, tasks: exp.tasks.map((t, i) => (i === index ? value : t)) }
+                    : exp
+            ),
+        }));
+    };
+
     const removeExperience = (id) => {
         setCvData((prev) => ({
             ...prev,
@@ -99,6 +127,7 @@ function App() {
             company: 'Trường mới',
             time: 'YYYY - YYYY',
             role: 'Ngành / Bằng cấp',
+            gpa: '',
         };
         setCvData((prev) => ({
             ...prev,
@@ -120,12 +149,35 @@ function App() {
         }));
     };
 
-    const handlePrint = () => {
-        document.body.classList.add('exporting-pdf');
-        setTimeout(() => {
-            window.print();
-            document.body.classList.remove('exporting-pdf');
-        }, 100);
+    const handleExportPDF = async () => {
+        if (!cvRef.current || exporting) return;
+        setExporting(true);
+        const el = cvRef.current;
+        // Ẩn các nút edit trước khi chụp
+        const editBtns = el.querySelectorAll('button');
+        editBtns.forEach((btn) => (btn.style.display = 'none'));
+        // Xóa outline của contenteditable
+        const editables = el.querySelectorAll('[contenteditable]');
+        editables.forEach((e) => (e.style.outline = 'none'));
+        try {
+            const canvas = await html2canvas(el, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#ffffff',
+                logging: false,
+            });
+            const imgData = canvas.toDataURL('image/jpeg', 1.0);
+            const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+            const pdfW = pdf.internal.pageSize.getWidth();
+            const pdfH = (canvas.height * pdfW) / canvas.width;
+            pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, pdfH);
+            pdf.save(`${cvData.fullname || 'CV'}.pdf`);
+        } finally {
+            // Khôi phục các nút
+            editBtns.forEach((btn) => (btn.style.display = ''));
+            editables.forEach((e) => (e.style.outline = ''));
+            setExporting(false);
+        }
     };
 
     return (
@@ -143,14 +195,14 @@ function App() {
                     />
                     <button onClick={addExperience}>+ Kinh nghiệm</button>
                     <button onClick={addEducation}>+ Học vấn</button>
-                    <button id="printBtn" onClick={handlePrint}>
-                        Tải xuống PDF
+                    <button id="printBtn" onClick={handleExportPDF} disabled={exporting}>
+                        {exporting ? 'Đang xuất...' : '⬇ Tải xuống PDF'}
                     </button>
                 </div>
             </header>
 
             <main className={styles.workspace}>
-                <section className={`${styles.cvPaper} ${styles.A4}`}>
+                <section className={`${styles.cvPaper} ${styles.A4}`} ref={cvRef}>
                     <aside className={styles.cvLeft}>
                         <div className={styles.avatarWrap}>
                             <input
@@ -301,11 +353,19 @@ function App() {
                                         </div>
                                         <ul className={styles.editableList}>
                                             {exp.tasks.map((task, index) => (
-                                                <li key={index} contentEditable suppressContentEditableWarning>
+                                                <li
+                                                    key={index}
+                                                    contentEditable
+                                                    suppressContentEditableWarning
+                                                    onBlur={(e) => updateTask(exp.id, index, e.target.textContent)}
+                                                >
                                                     {task}
                                                 </li>
                                             ))}
                                         </ul>
+                                        <button className={styles.small} onClick={() => addTask(exp.id)}>
+                                            + Thêm thành tựu
+                                        </button>
                                         <button
                                             className={`${styles.small} ${styles.danger} ${styles.removeItem}`}
                                             onClick={() => removeExperience(exp.id)}
@@ -347,6 +407,16 @@ function App() {
                                             onBlur={(e) => updateEducation(edu.id, 'role', e.target.textContent)}
                                         >
                                             {edu.role}
+                                        </div>
+                                        <div className={styles.gpaRow}>
+                                            <strong>GPA:</strong>
+                                            <span
+                                                contentEditable
+                                                suppressContentEditableWarning
+                                                onBlur={(e) => updateEducation(edu.id, 'gpa', e.target.textContent)}
+                                            >
+                                                {edu.gpa}
+                                            </span>
                                         </div>
                                         <button
                                             className={`${styles.small} ${styles.danger} ${styles.removeItem}`}

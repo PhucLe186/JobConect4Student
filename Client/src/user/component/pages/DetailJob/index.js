@@ -1,8 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
 import styles from './Job.module.scss';
-import NaverLogo from '~/asset/img/Naver.png';
-import MBLogo from '~/asset/img/MB.png';
-import MicrosoftLogo from '~/asset/img/Microsoft.png';
 import translations from '~/component/Translation';
 import { AuthContext } from '~/context/AuthContext';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -20,9 +17,10 @@ if (!document.querySelector('link[href*="fontawesome"]')) {
 }
 
 const Job = ({ onBack, onPageChange }) => {
-    const { api, language } = useContext(AuthContext);
-    const [favorites] = useState({});
+    const { api, language, user } = useContext(AuthContext);
+    const [favorites, setFavorites] = useState({});
     const [JobData, setJobData] = useState([]);
+    const [suggestedJobs, setSuggestedJobs] = useState([]);
     const [showApplyPopup, setShowApplyPopup] = useState(false);
     const [cvOption, setCvOption] = useState(''); // 'upload' or 'create'
     const [uploadedCV, setUploadedCV] = useState(null);
@@ -98,19 +96,27 @@ const Job = ({ onBack, onPageChange }) => {
         const fetchData = async () => {
             try {
                 const res = await api.get(`jobs/${id}`);
-                if (res.data) {
-                    setJobData(res.data);
-                }
+                if (res.data) setJobData(res.data);
             } catch (error) {
-                if (error.response) {
-                    alert(error.response?.data?.message);
-                } else {
-                    alert('lỗi kết nối tới server');
-                }
+                if (error.response) alert(error.response?.data?.message);
+                else alert('lỗi kết nối tới server');
+            }
+        };
+        const fetchSuggestedJobs = async () => {
+            try {
+                const endpoint = user ? 'jobs/suggestions' : 'jobs';
+                const res = await api.get(endpoint);
+                if (res.data) setSuggestedJobs(res.data.slice(0, 3));
+            } catch {
+                try {
+                    const res = await api.get('jobs');
+                    if (res.data) setSuggestedJobs(res.data.slice(0, 3));
+                } catch {}
             }
         };
         fetchData();
-    }, [api, id]);
+        fetchSuggestedJobs();
+    }, [api, id, user]);
 
     return (
         <div className={cx('container')}>
@@ -142,7 +148,7 @@ const Job = ({ onBack, onPageChange }) => {
                             </span>
                         </div>
                         <div className={cx('buttons')}>
-                            <button className={cx('applyBtn')} onClick={handleOpenApplicationModal}>
+                            <button className={cx('applyBtn')} onClick={HandleApplications}>
                                 {t.applyNow}
                             </button>
                             <button className={cx('saveBtn')}>{t.save}</button>
@@ -222,67 +228,47 @@ const Job = ({ onBack, onPageChange }) => {
                 <div className={cx('sidebar')}>
                     <div className={cx('suggestionCard')}>
                         <div className={cx('suggestionButton')}>
-                            <div className={cx('btn} onClick={handleJobSuggestionClick')}>
+                            <div className={cx('btn')} onClick={() => navigate('/job-suggestions')}>
                                 <i className="fa-solid fa-bell"></i>
                                 {t.jobSuggestions}
                             </div>
                         </div>
 
                         <div className={cx('jobsList')}>
-                            {[
-                                {
-                                    id: 1,
-                                    logo: NaverLogo,
-                                    title: 'Dev',
-                                    company: language === 'vi' ? 'Công Ty công nghệ NAVER' : 'NAVER Technology Company',
-                                    location: language === 'vi' ? 'Hà Nội' : 'Hanoi',
-                                    salary: language === 'vi' ? '20 triệu - 40 triệu' : '20M - 40M VND',
-                                },
-                                {
-                                    id: 2,
-                                    logo: MBLogo,
-                                    title: 'Software Engineer',
-                                    company: language === 'vi' ? 'Ngân Hàng Quân Đội MB Bank' : 'Military Bank MB Bank',
-                                    location: language === 'vi' ? 'Thành Phố Hồ Chí Minh' : 'Ho Chi Minh City',
-                                    salary: language === 'vi' ? '11 triệu - 15 triệu' : '11M - 15M VND',
-                                },
-                                {
-                                    id: 3,
-                                    logo: MicrosoftLogo,
-                                    title: 'Cloud Developer',
-                                    company:
-                                        language === 'vi'
-                                            ? 'Công Ty phần mềm và hỗ trợ Microsoft'
-                                            : 'Microsoft Software and Support Company',
-                                    location: language === 'vi' ? 'Hồ Chí Minh' : 'Ho Chi Minh City',
-                                    salary: language === 'vi' ? '10 triệu - 15 triệu' : '10M - 15M VND',
-                                },
-                            ].map((job, index) => (
-                                <div key={job.id} className={cx('jobItem')}>
+                            {suggestedJobs.map((job) => (
+                                <div
+                                    key={job.id}
+                                    className={cx('jobItem')}
+                                    style={{ cursor: 'pointer' }}
+                                    onClick={() => navigate(`/job/${job.id}`)}
+                                >
                                     <div className={cx('jobLogo')}>
-                                        <img src={job.logo} alt="logo" />
+                                        <img
+                                            src={job.logo}
+                                            alt={job.company_name}
+                                            onError={(e) => { e.target.src = 'https://via.placeholder.com/40x40?text=Co'; }}
+                                        />
                                     </div>
                                     <div className={cx('jobDetails')}>
                                         <div className={cx('jobTitle')}>{job.title}</div>
-                                        <div className={cx('jobCompany')}>{job.company}</div>
-                                        <div className={cx('jobLocation')}>
-                                            <i className="fa-solid fa-location-dot"></i>
-                                            {job.location}
-                                        </div>
-                                        <div className={cx('jobSalary')}>
-                                            <i className="fa-solid fa-dollar-sign"></i>
-                                            {job.salary}
-                                        </div>
+                                        <div className={cx('jobCompany')}>{job.company_name}</div>
                                     </div>
                                     <div
                                         className={`${styles.heartIcon} ${favorites[job.id] ? styles.active : styles.inactive}`}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setFavorites((prev) => ({ ...prev, [job.id]: !prev[job.id] }));
+                                        }}
                                     >
-                                        <i
-                                            className={favorites[job.id] ? 'fa-solid fa-heart' : 'fa-regular fa-heart'}
-                                        ></i>
+                                        <i className={favorites[job.id] ? 'fa-solid fa-heart' : 'fa-regular fa-heart'}></i>
                                     </div>
                                 </div>
                             ))}
+                            {suggestedJobs.length === 0 && (
+                                <p style={{ textAlign: 'center', color: '#888', padding: '12px', fontSize: '13px' }}>
+                                    {language === 'vi' ? 'Đang tải...' : 'Loading...'}
+                                </p>
+                            )}
                         </div>
                     </div>
                 </div>

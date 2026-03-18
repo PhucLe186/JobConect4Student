@@ -17,14 +17,28 @@ const Homepage = () => {
     const [experience, setExperience] = useState('');
     const [location, setLocation] = useState('');
     const [jobType, setJobType] = useState('');
+    const [searchKeyword, setSearchKeyword] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const JobPerPages = 9;
 
-    const totalJob = allJobData.length;
+    const filteredJobs = allJobData.filter((job) => {
+        const keyword = searchKeyword.toLowerCase();
+        const matchesKeyword =
+            !keyword ||
+            job.title?.toLowerCase().includes(keyword) ||
+            job.company_name?.toLowerCase().includes(keyword);
+        const matchesExperience = !experience || job.experience === experience;
+        const matchesLocation = !location || job.location?.includes(location);
+        const matchesJobType = !jobType || job.job_type?.toLowerCase() === jobType;
+        const matchesSalary = !job.salary || Number(job.salary) <= salaryValue * 1_000_000;
+        return matchesKeyword && matchesExperience && matchesLocation && matchesJobType && matchesSalary;
+    });
+
+    const totalJob = filteredJobs.length;
     const totalPages = Math.ceil(totalJob / JobPerPages);
     const startIndex = (currentPage - 1) * JobPerPages;
     const EndIndex = startIndex + JobPerPages;
-    const finalJobPage = allJobData.slice(startIndex, EndIndex);
+    const finalJobPage = filteredJobs.slice(startIndex, EndIndex);
 
     const t = translations[language || 'vi'];
     const updateSalary = (value) => {

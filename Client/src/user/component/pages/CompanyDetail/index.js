@@ -1,34 +1,55 @@
 import React, { useContext, useEffect, useState } from 'react';
 import styles from './CompanyDetail.module.scss';
 import classNames from 'classnames/bind';
-import SamsungLogo from '~/asset/img/Samsung.png';
 import translations from '~/component/Translation';
 import { AuthContext } from '~/context/AuthContext';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
-
-
-const cx= classNames.bind(styles)
-const CompanyDetail = ({onPageChange}) => {
-    const {api,language}= useContext(AuthContext);
-    const [data, setData]= useState([])
-    const { id }= useParams()
+const cx = classNames.bind(styles);
+const CompanyDetail = ({ onPageChange }) => {
+    const { api, language } = useContext(AuthContext);
+    const [data, setData] = useState([]);
+    const [suggestedCompanies, setSuggestedCompanies] = useState([]);
+    const [companyJobs, setCompanyJobs] = useState([]);
+    const { id } = useParams();
+    const navigate = useNavigate();
     const t = translations[language];
-    
 
-    useEffect(()=> {
-        const fetchData=async ()=> {
-            try{
-                const res= await api.get(`employer/${id}`)
-                if(res.data) {
-                    setData(res.data)
-                }
-            }catch(error) {
-                console.error(error)
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const res = await api.get(`employer/${id}`);
+                if (res.data) setData(res.data);
+            } catch (error) {
+                console.error(error);
             }
-        }
-        fetchData()
-    }, [])
+        };
+        const fetchSuggestedCompanies = async () => {
+            try {
+                const res = await api.get('employer');
+                if (res.data) {
+                    // Loại bỏ công ty hiện tại khỏi danh sách gợi ý
+                    setSuggestedCompanies(res.data.filter((c) => c._id !== id).slice(0, 3));
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        };
+        const fetchCompanyJobs = async () => {
+            try {
+                const res = await api.get('jobs');
+                if (res.data) {
+                    // Lấy jobs của công ty hiện tại (sẽ lọc sau khi có data)
+                    setCompanyJobs(res.data.slice(0, 3));
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        };
+        fetchData();
+        fetchSuggestedCompanies();
+        fetchCompanyJobs();
+    }, [api, id]);
 
 
     return (
@@ -94,69 +115,66 @@ const CompanyDetail = ({onPageChange}) => {
                     <div className={cx('contentSection')}>
                         <h2>{language === 'vi' ? 'Các vị trí tuyển dụng' : 'Job Openings'}</h2>
                         <div className={cx('jobsList')}>
-                            {[
-                                {
-                                    title: language === 'vi' ? 'Kỹ sư phần mềm' : 'Software Engineer',
-                                    department: language === 'vi' ? 'Phòng IT' : 'IT Department',
-                                    location: language === 'vi' ? 'Hồ Chí Minh' : 'Ho Chi Minh City',
-                                    type: 'Full-time'
-                                },
-                                {
-                                    title: language === 'vi' ? 'Chuyên viên Marketing' : 'Marketing Specialist',
-                                    department: language === 'vi' ? 'Phòng Marketing' : 'Marketing Department',
-                                    location: language === 'vi' ? 'Hà Nội' : 'Hanoi',
-                                    type: 'Full-time'
-                                },
-                                {
-                                    title: language === 'vi' ? 'Nhân viên kinh doanh' : 'Sales Executive',
-                                    department: language === 'vi' ? 'Phòng kinh doanh' : 'Sales Department',
-                                    location: language === 'vi' ? 'Đà Nẵng' : 'Da Nang',
-                                    type: 'Full-time'
-                                }
-                            ].map((job, index) => (
+                            {companyJobs.length > 0 ? companyJobs.map((job, index) => (
                                 <div key={index} className={cx('jobItem')}>
                                     <div className={cx('jobHeader')}>
                                         <h3 className={cx('jobTitle')}>{job.title}</h3>
-                                        <span className={cx('jobType')}>{job.type}</span>
+                                        <span className={cx('jobType')}>{job.job_type}</span>
                                     </div>
-                                    <p className={cx('jobDepartment')}>{job.department}</p>
                                     <p className={cx('jobLocation')}>
                                         <i className="fas fa-map-marker-alt"></i>
                                         {job.location}
                                     </p>
-                                    <button className={cx('applyBtn')}>
+                                    <button
+                                        className={cx('applyBtn')}
+                                        onClick={() => navigate(`/job/${job.id}`)}
+                                    >
                                         {language === 'vi' ? 'Ứng tuyển' : 'Apply Now'}
                                     </button>
                                 </div>
-                            ))}
+                            )) : (
+                                <p style={{ color: '#888', fontSize: '14px' }}>
+                                    {language === 'vi' ? 'Chưa có vị trí tuyển dụng.' : 'No job openings.'}
+                                </p>
+                            )}
                         </div>
                     </div>
                 </div>
 
                 <div className={cx('sidebar')}>
                     <div className={cx('suggestionButton')}>
-                        <div className={cx('btn')} onClick={() => alert(t.alertMessage)}>
+                        <div className={cx('btn')} onClick={() => navigate('/company')}>
                             <i className="fa-solid fa-building"></i>
                             {t.companySuggestions}
                         </div>
                     </div>
 
                     <div className={cx('companiesList')}>
-                        {[
-                            { logo: 'https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg', name: language === 'vi' ? 'Google Việt Nam' : 'Google Vietnam' },
-                            { logo: 'https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg', name: language === 'vi' ? 'Microsoft Việt Nam' : 'Microsoft Vietnam' },
-                            { logo: 'https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg', name: language === 'vi' ? 'Apple Việt Nam' : 'Apple Vietnam' }
-                        ].map((company, index) => (
-                            <div key={index} className={cx('companyItem')}>
+                        {suggestedCompanies.map((company) => (
+                            <div
+                                key={company._id}
+                                className={cx('companyItem')}
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => navigate(`/company/${company._id}`)}
+                            >
                                 <div className={cx('companyLogo')}>
-                                    <img src={company.logo} alt="logo" onError={(e) => { e.target.src = 'https://via.placeholder.com/24x24?text=Logo'; }} />
+                                    <img
+                                        src={company.logo}
+                                        alt={company.company_name}
+                                        onError={(e) => { e.target.src = 'https://via.placeholder.com/24x24?text=Co'; }}
+                                    />
                                 </div>
-                                <div className={cx('companyName')}>{company.name}</div>
-                                <div className={cx('heartIcon')} onClick={() => alert(t.alertMessage)}>
+                                <div className={cx('companyName')}>{company.company_name}</div>
+                                <div className={cx('heartIcon')}>
                                     <i className="fa-regular fa-heart"></i>
                                 </div>
                             </div>
                         ))}
+                        {suggestedCompanies.length === 0 && (
+                            <p style={{ textAlign: 'center', color: '#888', padding: '12px', fontSize: '13px' }}>
+                                {language === 'vi' ? 'Đang tải...' : 'Loading...'}
+                            </p>
+                        )}
                     </div>
                 </div>
             </div>

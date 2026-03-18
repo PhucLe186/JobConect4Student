@@ -455,10 +455,15 @@ function StudentProfile({ language = 'vi' }) {
                                 className={cx("form-group__input")} 
                                 id="desired_salary" 
                                 name="desired_salary" 
-                                type="number" 
-                                placeholder="15000000" 
-                                value={profileData.desired_salary}
-                                onChange={(e) => setProfileData({...profileData, desired_salary: e.target.value})}
+                                type="text"
+                                placeholder="15.000.000" 
+                                value={profileData.desired_salary
+                                    ? Number(String(profileData.desired_salary).replace(/\./g, '')).toLocaleString('vi-VN')
+                                    : ''}
+                                onChange={(e) => {
+                                    const raw = e.target.value.replace(/\./g, '');
+                                    if (/^\d*$/.test(raw)) setProfileData({...profileData, desired_salary: raw});
+                                }}
                             />
                         </div>
                         <div className={cx("form-group", "form-group--full-col")}>

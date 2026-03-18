@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import classNames from 'classnames/bind';
 import style from './Community.module.scss';
+import { AuthContext } from '~/context/AuthContext';
+import translations from '~/component/Translation';
 const cx = classNames.bind(style);
 
 const Community = ({ onPageChange }) => {
-    const [language, setLanguage] = useState('vi');
+    const { language } = useContext(AuthContext);
+    const t = translations[language || 'vi'];
     const [posts, setPosts] = useState([
         {
             id: 1,
@@ -37,47 +40,6 @@ const Community = ({ onPageChange }) => {
     ]);
     const [newPost, setNewPost] = useState('');
     const [newComment, setNewComment] = useState({});
-
-    const translations = {
-        vi: {
-            community: 'Cộng đồng',
-            jobs: 'Việc làm',
-            company: 'Công ty',
-            contact: 'Liên hệ',
-            signIn: 'Đăng nhập',
-            signUp: 'Đăng ký',
-            forum: 'Diễn đàn',
-            forumName: 'JobConnect4Students',
-            createPost: 'Tạo bài viết mới',
-            postPlaceholder: 'Chia sẻ suy nghĩ của bạn...',
-            post: 'Đăng bài',
-            like: 'Thích',
-            comment: 'Bình luận',
-            share: 'Chia sẻ',
-            writeComment: 'Viết bình luận...',
-            send: 'Gửi',
-        },
-        en: {
-            community: 'Community',
-            jobs: 'Jobs',
-            company: 'Company',
-            contact: 'Contact',
-            signIn: 'Log In',
-            signUp: 'Sign Up',
-            forum: 'Forum',
-            forumName: 'JobConnect4Students',
-            createPost: 'Create New Post',
-            postPlaceholder: 'Share your thoughts...',
-            post: 'Post',
-            like: 'Like',
-            comment: 'Comment',
-            share: 'Share',
-            writeComment: 'Write a comment...',
-            send: 'Send',
-        },
-    };
-
-    const t = translations[language];
 
     const handleLogin = () => {
         window.location.href = 'http://localhost:3002?mode=login';
@@ -143,7 +105,7 @@ const Community = ({ onPageChange }) => {
         <div className={cx('community-page')}>
             <div className={cx('container mt-4')}>
                 <h2 className={cx('forum-title')}>
-                    {t.forum} <span style={{ color: '#007bff' }}>JobConnect</span><span style={{ color: '#28a745' }}>4Students</span>
+                    {t.forumTitle} <span style={{ color: '#007bff' }}>JobConnect</span><span style={{ color: '#28a745' }}>4Students</span>
                 </h2>
 
                 <div className={cx('create-post-section')}>
@@ -181,7 +143,7 @@ const Community = ({ onPageChange }) => {
                                     <i className={cx('fa-regular fa-heart')}></i> {t.like} ({post.likes})
                                 </button>
                                 <button className={cx('action-btn')}>
-                                    <i className={cx('fa-regular fa-comment')}></i> {t.comment} ({post.comments.length})
+                                    <i className={cx('fa-regular fa-comment')}></i> {t.commentBtn} ({post.comments.length})
                                 </button>
                                 <button className={cx('action-btn')}>
                                     <i className={cx('fa-regular fa-share-from-square')}></i> {t.share}

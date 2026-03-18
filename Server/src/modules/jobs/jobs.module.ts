@@ -5,11 +5,19 @@ import { JobsController } from './jobs.controller';
 import { JobsService } from './jobs.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { User, UserSchema } from '../auth/schema/auth.schema';
+import { Student, StudentSchema } from '../student/student.schema';
+import { StudentSkills, StudentSkillSchema } from '../skills/schema/StudentSkill.schema';
+import { Skills, SkillSchema } from '../skills/schema/skills.schema';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Jobs.name, schema: JobsSchema }]),
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    MongooseModule.forFeature([
+      { name: Jobs.name, schema: JobsSchema },
+      { name: User.name, schema: UserSchema },
+      { name: Student.name, schema: StudentSchema },
+      { name: StudentSkills.name, schema: StudentSkillSchema },
+      { name: Skills.name, schema: SkillSchema },
+    ]),
   ],
   controllers: [JobsController],
   providers: [JobsService, JwtAuthGuard],
