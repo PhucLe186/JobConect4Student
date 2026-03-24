@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import styles from './CompanyDetail.module.scss';
 import classNames from 'classnames/bind';
 import translations from '~/component/Translation';
@@ -6,77 +6,93 @@ import { AuthContext } from '~/context/AuthContext';
 import { useParams, useNavigate } from 'react-router-dom';
 
 const cx = classNames.bind(styles);
-const CompanyDetail = ({ onPageChange }) => {
+
+const CompanyDetail = () => {
     const { api, language } = useContext(AuthContext);
-    const [data, setData] = useState([]);
+    const [data, setData] = useState({});
     const [suggestedCompanies, setSuggestedCompanies] = useState([]);
     const [companyJobs, setCompanyJobs] = useState([]);
     const { id } = useParams();
     const navigate = useNavigate();
+    const jobsSectionRef = useRef(null);
     const t = translations[language];
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await api.get(`employer/${id}`);
-                if (res.data) setData(res.data);
-            } catch (error) {
-                console.error(error);
-            }
-        };
-        const fetchSuggestedCompanies = async () => {
-            try {
-                const res = await api.get('employer');
-                if (res.data) {
-                    // Loại bỏ công ty hiện tại khỏi danh sách gợi ý
-                    setSuggestedCompanies(res.data.filter((c) => c._id !== id).slice(0, 3));
+                const [companyRes, companiesRes, jobsRes] = await Promise.all([
+                    api.get(`employer/${id}`),
+                    api.get('employer'),
+                    api.get('jobs'),
+                ]);
+
+                const company = companyRes.data || {};
+                setData(company);
+
+                if (companiesRes.data) {
+                    setSuggestedCompanies(
+                        companiesRes.data.filter((c) => c._id !== id).slice(0, 3),
+                    );
+                }
+
+                if (jobsRes.data) {
+                    const filteredJobs = jobsRes.data.filter(
+                        (job) =>
+                            job.company_name &&
+                            company.company_name &&
+                            job.company_name.trim().toLowerCase() ===
+                                company.company_name.trim().toLowerCase(),
+                    );
+                    setCompanyJobs(filteredJobs);
                 }
             } catch (error) {
                 console.error(error);
             }
         };
-        const fetchCompanyJobs = async () => {
-            try {
-                const res = await api.get('jobs');
-                if (res.data) {
-                    // Lấy jobs của công ty hiện tại (sẽ lọc sau khi có data)
-                    setCompanyJobs(res.data.slice(0, 3));
-                }
-            } catch (error) {
-                console.error(error);
-            }
-        };
+
         fetchData();
-        fetchSuggestedCompanies();
-        fetchCompanyJobs();
     }, [api, id]);
 
+    const handleViewJobs = () => {
+        if (jobsSectionRef.current) {
+            jobsSectionRef.current.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start',
+            });
+        }
+    };
 
     return (
         <div>
             <div className={cx('banner')}>
                 <div className={cx('bannerContent')}>
                     <div className={cx('logoContainer')}>
-                        <img src={data.logo} alt="Samsung Logo" />
+                        <img src={data.logo} alt={data.company_name || 'Company Logo'} />
                     </div>
                     <div className={cx('companyInfo')}>
-                        <h1>{data.name}</h1>
+                        <h1>{data.company_name}</h1>
                         <p className={cx('industry')}>{data.industry}</p>
                         <div className={cx('details')}>
-                            <p>
-                                <i className="fas fa-map-marker-alt"></i>
-                                {data.address}
-                            </p>
-                            <p>
-                                <i className="fas fa-users"></i>
-                                {data.size}
-                            </p>
-                            <p>
-                                <i className="fas fa-calendar-alt"></i>
-                                {t.founded}: {data.founded}
-                            </p>
+                            {data.address && (
+                                <p>
+                                    <i className="fas fa-map-marker-alt"></i>
+                                    {data.address}
+                                </p>
+                            )}
+                            {data.size && (
+                                <p>
+                                    <i className="fas fa-users"></i>
+                                    {data.size}
+                                </p>
+                            )}
+                            {data.founded && (
+                                <p>
+                                    <i className="fas fa-calendar-alt"></i>
+                                    {t.founded}: {data.founded}
+                                </p>
+                            )}
                         </div>
-                        <button className={cx('viewJobsBtn')} onClick={() => onPageChange(1, 'samsung')}>
+                        <button className={cx('viewJobsBtn')} onClick={handleViewJobs}>
                             {t.viewJobs}
                         </button>
                     </div>
@@ -99,9 +115,17 @@ const CompanyDetail = ({ onPageChange }) => {
                             <div className={cx('infoItem')}>
                                 <span>{t.website}</span>
                                 <p>
-                                    <a href="https://www.samsung.com/vn" target="_blank" rel="noopener noreferrer">
-                                        {data.website}
-                                    </a>
+                                    {data.website ? (
+                                        <a
+                                            href={data.website}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            {data.website}
+                                        </a>
+                                    ) : (
+                                        '-'
+                                    )}
                                 </p>
                             </div>
                         </div>
@@ -112,29 +136,33 @@ const CompanyDetail = ({ onPageChange }) => {
                         <p>{data.description}</p>
                     </div>
 
-                    <div className={cx('contentSection')}>
+                    <div className={cx('contentSection')} ref={jobsSectionRef}>
                         <h2>{language === 'vi' ? 'Các vị trí tuyển dụng' : 'Job Openings'}</h2>
                         <div className={cx('jobsList')}>
-                            {companyJobs.length > 0 ? companyJobs.map((job, index) => (
-                                <div key={index} className={cx('jobItem')}>
-                                    <div className={cx('jobHeader')}>
-                                        <h3 className={cx('jobTitle')}>{job.title}</h3>
-                                        <span className={cx('jobType')}>{job.job_type}</span>
+                            {companyJobs.length > 0 ? (
+                                companyJobs.map((job) => (
+                                    <div key={job.id} className={cx('jobItem')}>
+                                        <div className={cx('jobHeader')}>
+                                            <h3 className={cx('jobTitle')}>{job.title}</h3>
+                                            <span className={cx('jobType')}>{job.job_type}</span>
+                                        </div>
+                                        <p className={cx('jobLocation')}>
+                                            <i className="fas fa-map-marker-alt"></i>
+                                            {job.location}
+                                        </p>
+                                        <button
+                                            className={cx('applyBtn')}
+                                            onClick={() => navigate(`/job/${job.id}`)}
+                                        >
+                                            {language === 'vi' ? 'Ứng tuyển' : 'Apply Now'}
+                                        </button>
                                     </div>
-                                    <p className={cx('jobLocation')}>
-                                        <i className="fas fa-map-marker-alt"></i>
-                                        {job.location}
-                                    </p>
-                                    <button
-                                        className={cx('applyBtn')}
-                                        onClick={() => navigate(`/job/${job.id}`)}
-                                    >
-                                        {language === 'vi' ? 'Ứng tuyển' : 'Apply Now'}
-                                    </button>
-                                </div>
-                            )) : (
+                                ))
+                            ) : (
                                 <p style={{ color: '#888', fontSize: '14px' }}>
-                                    {language === 'vi' ? 'Chưa có vị trí tuyển dụng.' : 'No job openings.'}
+                                    {language === 'vi'
+                                        ? 'Chưa có vị trí tuyển dụng.'
+                                        : 'No job openings.'}
                                 </p>
                             )}
                         </div>
@@ -161,17 +189,29 @@ const CompanyDetail = ({ onPageChange }) => {
                                     <img
                                         src={company.logo}
                                         alt={company.company_name}
-                                        onError={(e) => { e.target.src = 'https://via.placeholder.com/24x24?text=Co'; }}
+                                        onError={(e) => {
+                                            e.target.src =
+                                                'https://via.placeholder.com/24x24?text=Co';
+                                        }}
                                     />
                                 </div>
-                                <div className={cx('companyName')}>{company.company_name}</div>
+                                <div className={cx('companyName')}>
+                                    {company.company_name}
+                                </div>
                                 <div className={cx('heartIcon')}>
                                     <i className="fa-regular fa-heart"></i>
                                 </div>
                             </div>
                         ))}
                         {suggestedCompanies.length === 0 && (
-                            <p style={{ textAlign: 'center', color: '#888', padding: '12px', fontSize: '13px' }}>
+                            <p
+                                style={{
+                                    textAlign: 'center',
+                                    color: '#888',
+                                    padding: '12px',
+                                    fontSize: '13px',
+                                }}
+                            >
                                 {language === 'vi' ? 'Đang tải...' : 'Loading...'}
                             </p>
                         )}

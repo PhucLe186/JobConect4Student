@@ -23,7 +23,7 @@ export class JobsService {
   async Jobs(): Promise<JobsDto[]> {
     const jobs = await this.jobsModel
       .find()
-      .select('title employer_id')
+      .select('title employer_id min_salary max_salary location job_type experience')
       .populate({
         path: 'Employer',
         select: 'company_name logo',
@@ -37,6 +37,11 @@ export class JobsService {
         title: job.title,
         company_name: employer?.company_name || '',
         logo: employer?.logo || '',
+        min_salary: job.min_salary || '',
+        max_salary: job.max_salary || '',
+        location: job.location || '',
+        job_type: job.job_type || '',
+        experience: job.experience || '',
       };
     });
   }
@@ -85,7 +90,7 @@ export class JobsService {
 
     const allJobs = await this.jobsModel
       .find()
-      .select('title employer_id industry')
+      .select('title employer_id industry min_salary max_salary location job_type experience')
       .populate({ path: 'Employer', select: 'company_name logo' })
       .lean();
 
@@ -103,6 +108,11 @@ export class JobsService {
         title: job.title,
         company_name: employer?.company_name || '',
         logo: employer?.logo || '',
+        min_salary: job.min_salary || '',
+        max_salary: job.max_salary || '',
+        location: job.location || '',
+        job_type: job.job_type || '',
+        experience: job.experience || '',
       };
     });
   }

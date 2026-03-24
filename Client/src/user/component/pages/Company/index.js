@@ -158,6 +158,10 @@ const Company = () => {
                                 <option value="Hà Nội">{language === 'vi' ? 'Hà Nội' : 'Hanoi'}</option>
                                 <option value="Hồ Chí Minh">{language === 'vi' ? 'Hồ Chí Minh' : 'Ho Chi Minh City'}</option>
                                 <option value="Đà Nẵng">{language === 'vi' ? 'Đà Nẵng' : 'Da Nang'}</option>
+                                <option value="Cần Thơ">{language === 'vi' ? 'Cần Thơ' : 'Can Tho'}</option>
+                                <option value="Hải Phòng">{language === 'vi' ? 'Hải Phòng' : 'Hai Phong'}</option>
+                                <option value="Bình Dương">{language === 'vi' ? 'Bình Dương' : 'Binh Duong'}</option>
+                                <option value="Đồng Nai">{language === 'vi' ? 'Đồng Nai' : 'Dong Nai'}</option>
                             </select>
                         </div>
                         <div className={cx('filter-item')}>

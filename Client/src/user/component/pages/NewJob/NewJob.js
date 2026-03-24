@@ -20,6 +20,7 @@ const trans__newJob = {
     labelLocation: 'Địa điểm',
     ph_Location: 'Ví dụ: Hà Nội, Hồ Chí Minh',
     labelDeadline: 'Hạn ứng tuyển',
+    labelExperience: 'Kinh nghiệm',
     btnBack: 'Quay lại',
     btnSubmit: 'Đăng tin',
     alertSuccess: 'Đã gửi biểu mẫu thành công!'
@@ -39,6 +40,7 @@ const trans__newJob = {
     labelLocation: 'Location',
     ph_Location: 'Ex: Hanoi, Ho Chi Minh City',
     labelDeadline: 'Application Deadline',
+    labelExperience: 'Experience',
     btnBack: 'Back',
     btnSubmit: 'Post Job',
     alertSuccess: 'Form submitted successfully!'
@@ -52,7 +54,8 @@ function NewJob({ language = 'vi' }) {
   const [form, setForm] = useState({
     title: '',
     description: '',
-    job_type: '', 
+    job_type: '',
+    experience: '',
     salary_range: '',
     province: '',
     district: '',
@@ -216,6 +219,31 @@ function NewJob({ language = 'vi' }) {
                   {form.province && districtsByProvince[form.province]?.map(district => (
                     <option key={district} value={district}>{district}</option>
                   ))}
+                </select>
+                <span className={cx('newjob__select-caret')}>▾</span>
+              </div>
+            </div>
+
+            <div className={cx('newjob__field')}>
+              <label className={cx('newjob__label')}>
+                {t.labelExperience} <span className={cx('newjob__req')}>*</span>
+              </label>
+              <div className={cx('newjob__select')}>
+                <select
+                  className={cx('newjob__select-native')}
+                  name="experience"
+                  value={form.experience}
+                  onChange={onChange}
+                  required
+                >
+                  <option value="">{language === 'vi' ? 'Chọn kinh nghiệm' : 'Select experience'}</option>
+                  <option value="không yêu cầu">{language === 'vi' ? 'Không yêu cầu' : 'No experience required'}</option>
+                  <option value="dưới 1 năm">{language === 'vi' ? 'Dưới 1 năm' : 'Under 1 year'}</option>
+                  <option value="1 năm">{language === 'vi' ? '1 năm' : '1 year'}</option>
+                  <option value="2 năm">{language === 'vi' ? '2 năm' : '2 years'}</option>
+                  <option value="3 năm">{language === 'vi' ? '3 năm' : '3 years'}</option>
+                  <option value="4 năm">{language === 'vi' ? '4 năm' : '4 years'}</option>
+                  <option value="4 năm trở lên">{language === 'vi' ? '4 năm trở lên' : '4+ years'}</option>
                 </select>
                 <span className={cx('newjob__select-caret')}>▾</span>
               </div>

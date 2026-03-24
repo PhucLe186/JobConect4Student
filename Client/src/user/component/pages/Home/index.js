@@ -30,7 +30,7 @@ const Homepage = () => {
         const matchesExperience = !experience || job.experience === experience;
         const matchesLocation = !location || job.location?.includes(location);
         const matchesJobType = !jobType || job.job_type?.toLowerCase() === jobType;
-        const matchesSalary = !job.salary || Number(job.salary) <= salaryValue * 1_000_000;
+        const matchesSalary = salaryValue >= 50 || !job.min_salary || Number(job.min_salary) <= salaryValue;
         return matchesKeyword && matchesExperience && matchesLocation && matchesJobType && matchesSalary;
     });
 
@@ -144,11 +144,11 @@ const Homepage = () => {
                                 onChange={handleFilterChange(setLocation)}
                             >
                                 <option value="">{t.chooseLocation}</option>
-                                <option>{language === 'vi' ? 'Hà Nội' : 'Hanoi'}</option>
-                                <option>{language === 'vi' ? 'Hồ Chí Minh' : 'Ho Chi Minh City'}</option>
-                                <option>{language === 'vi' ? 'Đà Nẵng' : 'Da Nang'}</option>
-                                <option>{language === 'vi' ? 'Cần Thơ' : 'Can Tho'}</option>
-                                <option>{language === 'vi' ? 'Hải Phòng' : 'Hai Phong'}</option>
+                                <option value="Hà Nội">{language === 'vi' ? 'Hà Nội' : 'Hanoi'}</option>
+                                <option value="Hồ Chí Minh">{language === 'vi' ? 'Hồ Chí Minh' : 'Ho Chi Minh City'}</option>
+                                <option value="Đà Nẵng">{language === 'vi' ? 'Đà Nẵng' : 'Da Nang'}</option>
+                                <option value="Cần Thơ">{language === 'vi' ? 'Cần Thơ' : 'Can Tho'}</option>
+                                <option value="Hải Phòng">{language === 'vi' ? 'Hải Phòng' : 'Hai Phong'}</option>
                             </select>
                         </div>
                         <div className={cx('filter-item')}>
@@ -180,17 +180,32 @@ const Homepage = () => {
                         {finalJobPage.map((job, index) => (
                             <div className={cx('job-card')} key={index}>
                                 <div className={cx('job-header')}>
-                                    <img src={job.logo} alt={job.company} className={cx('company-logo')} />
+                                    <img src={job.logo} alt={job.company_name} className={cx('company-logo')} />
                                     <div className={cx('job-info')}>
                                         <h3 className={cx('job-title')}>{job.title}</h3>
                                         <p className={cx('company-name')}>{job.company_name}</p>
+                                        {job.location && (
+                                            <p className={cx('job-meta')}>
+                                                <i className="fas fa-map-marker-alt" style={{ color: '#007bff', marginRight: 4 }}></i>
+                                                {job.location}
+                                            </p>
+                                        )}
+                                        {(job.min_salary || job.max_salary) && (
+                                            <p className={cx('job-meta')}>
+                                                <i className="fas fa-dollar-sign" style={{ color: '#28a745', marginRight: 4 }}></i>
+                                                {job.min_salary && job.max_salary
+                                                    ? `${job.min_salary} triệu - ${job.max_salary} triệu`
+                                                    : job.min_salary
+                                                      ? `${job.min_salary} triệu`
+                                                      : `${job.max_salary} triệu`
+                                                }
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
                                 <button
                                     className={cx('apply-btn')}
-                                    onClick={() => {
-                                        navigate(`/job/${job.id}`);
-                                    }}
+                                    onClick={() => navigate(`/job/${job.id}`)}
                                 >
                                     {t.seeMore}
                                 </button>

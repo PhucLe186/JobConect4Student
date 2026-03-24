@@ -14,14 +14,26 @@ export class Employer {
   @Prop({ trim: true, default: '' })
   description: string;
 
-  @Prop({ type: Number })
-  size: number;
+  @Prop({ type: Number, default: null })
+  size: number | null;
 
   @Prop({ type: String, trim: true, index: true })
   industry: string;
 
   @Prop({ type: String, trim: true, default: '' })
   address: string;
+
+  @Prop({
+    type: String,
+    trim: true,
+    lowercase: true,
+    validate: {
+      validator: (v: string) => !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),
+      message: (props) => `${props.value} is not a valid email`,
+    },
+    default: '',
+  })
+  email: string;
 
   @Prop({
     type: String,

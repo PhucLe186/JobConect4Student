@@ -25,16 +25,44 @@ const RegisterForm = () => {
         dateOfbirth:'',
         role: role || '',
     })
+    const [errors, setErrors] = useState({});
     const [socialLoading, setSocialLoading] = useState({
         google: false,
         facebook: false
     });
 
+    const validate = () => {
+        const newErrors = {};
+        if (!Data.name.trim()) newErrors.name = 'Vui lòng nhập họ tên.';
+        else if (/^[0-9]+$/.test(Data.name.trim())) newErrors.name = 'Họ tên không hợp lệ.';
+
+        if (!Data.email) newErrors.email = 'Vui lòng nhập email.';
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(Data.email)) newErrors.email = 'Email không hợp lệ.';
+
+        if (!Data.password) newErrors.password = 'Vui lòng nhập mật khẩu.';
+        else if (Data.password.length < 6) newErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự.';
+        else if (!/(?=.*[A-Z])|(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/.test(Data.password))
+            newErrors.password = 'Mật khẩu phải có ít nhất 1 chữ hoa hoặc 1 ký tự đặc biệt.';
+
+        if (!Data.Confirm_Password) newErrors.Confirm_Password = 'Vui lòng xác nhận mật khẩu.';
+        else if (Data.password !== Data.Confirm_Password) newErrors.Confirm_Password = 'Mật khẩu xác nhận không khớp.';
+
+        if (!Data.dateOfbirth) newErrors.dateOfbirth = 'Vui lòng chọn ngày sinh.';
+        if (!Data.gender) newErrors.gender = 'Vui lòng chọn giới tính.';
+        if (!Data.role) newErrors.role = 'Vui lòng chọn vai trò.';
+
+        return newErrors;
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
-        const submitData = {
-            ...Data
-        };
+        const newErrors = validate();
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+        setErrors({});
+        const submitData = { ...Data };
         delete submitData.Confirm_Password;
         register(submitData);
     };
@@ -94,65 +122,65 @@ const RegisterForm = () => {
                                 type="text"
                                 placeholder="Name" 
                                 value={Data.name} 
-                                onChange={e=> setData({...Data, name: e.target.value} )} 
-                                required />
+                                onChange={e=> { setData({...Data, name: e.target.value}); setErrors(prev => ({...prev, name: ''})); }} />
                             <i className={cx('fa-solid fa-user')}></i>
+                            {errors.name && <span className={cx('error-msg')}>{errors.name}</span>}
                         </div>
                         <div className={cx('input-box')}>
                             <input 
-                            type="email" 
-                            placeholder="Email" 
-                            required
-                            value={Data.email} 
-                            onChange={e=>setData({...Data, email: e.target.value} )}
-                            />
+                                type="email" 
+                                placeholder="Email" 
+                                value={Data.email} 
+                                onChange={e=> { setData({...Data, email: e.target.value}); setErrors(prev => ({...prev, email: ''})); }} />
                             <i className={cx('fa-solid fa-envelope')}></i>
+                            {errors.email && <span className={cx('error-msg')}>{errors.email}</span>}
                         </div>
                         <div className={cx('input-box')}>
                             <input 
                                 type="password"
-                                placeholder="Password" 
-                                required
+                                placeholder="Password (≥6 ký tự, có chữ hoa hoặc ký tự đặc biệt)" 
                                 value={Data.password} 
-                                onChange={e=> setData({...Data, password: e.target.value} )}  />
+                                onChange={e=> { setData({...Data, password: e.target.value}); setErrors(prev => ({...prev, password: ''})); }} />
                             <i className={cx('fa-solid fa-lock')}></i>
+                            {errors.password && <span className={cx('error-msg')}>{errors.password}</span>}
                         </div>
                         <div className={cx('input-box')}>
                             <input 
-                            type="password" 
-                            placeholder="Confirm Password"
-                            value={Data.Confirm_Password} 
-                            onChange={e=> setData({...Data, Confirm_Password: e.target.value} )} 
-                            required />
+                                type="password" 
+                                placeholder="Confirm Password"
+                                value={Data.Confirm_Password} 
+                                onChange={e=> { setData({...Data, Confirm_Password: e.target.value}); setErrors(prev => ({...prev, Confirm_Password: ''})); }} />
                             <i className={cx('fa-solid fa-lock')}></i>
+                            {errors.Confirm_Password && <span className={cx('error-msg')}>{errors.Confirm_Password}</span>}
                         </div>
                         <div className={cx('input-row')}>
                             <div className={cx('input-box', 'half-width')}>
                                 <input 
-                                type="date" 
-                                placeholder="mm/dd/yyyy" 
-                                 value={Data.dateOfbirth} 
-                                onChange={e=> setData({...Data, dateOfbirth: e.target.value} )} 
-                                required />
+                                    type="date" 
+                                    value={Data.dateOfbirth} 
+                                    onChange={e=> { setData({...Data, dateOfbirth: e.target.value}); setErrors(prev => ({...prev, dateOfbirth: ''})); }} />
                                 <i className={cx('fa-solid fa-calendar')}></i>
+                                {errors.dateOfbirth && <span className={cx('error-msg')}>{errors.dateOfbirth}</span>}
                             </div>
                             <div className={cx('input-box', 'half-width')}>
-                                <select required value={Data.gender} onChange={(e) => setData({...Data, gender: e.target.value})}>
+                                <select value={Data.gender} onChange={(e) => { setData({...Data, gender: e.target.value}); setErrors(prev => ({...prev, gender: ''})); }}>
                                     <option value="">Gender</option>
                                     <option value="male">Male</option>
                                     <option value="female">Female</option>
                                     <option value="other">Other</option>
                                 </select>
                                 {!genderSelected && <i className={cx('fa-solid fa-venus-mars')}></i>}
+                                {errors.gender && <span className={cx('error-msg')}>{errors.gender}</span>}
                             </div>
                         </div>
                         <div className={cx('input-box')}>
-                            <select required value={Data.role} onChange={(e) => setData({...Data, role: e.target.value})}>
+                            <select value={Data.role} onChange={(e) => { setData({...Data, role: e.target.value}); setErrors(prev => ({...prev, role: ''})); }}>
                                 <option value="">Select Role</option>
                                 <option value="student">Student</option>
                                 <option value="employer">Employer</option>
                             </select>
                             <i className={cx('fa-solid fa-user-tag')}></i>
+                            {errors.role && <span className={cx('error-msg')}>{errors.role}</span>}
                         </div>
                         <button type="submit" className={cx('register-btn')}>
                             Register
