@@ -21,21 +21,79 @@ export class ApplicationsService {
     @InjectModel(Employer.name) private employerModel: Model<EmployerDocument>,
   ) {}
 
-  async applyJobs(jobid: string, user: JwtUser): Promise<{ status: string }> {
+  private async getApplicantProfile(userId: string) {
+    const [userInfo, studentInfo] = await Promise.all([
+      this.userModel.findById(userId).lean(),
+      this.studentModel.findOne({ user_id: new Types.ObjectId(userId) }).lean(),
+    ]);
+
+    if (!userInfo) {
+      throw new Error('Không tìm thấy thông tin người dùng');
+    }
+
+    return {
+      fullName: userInfo.name || 'Chưa cập nhật',
+      email: userInfo.email || 'Chưa cập nhật',
+      phone: studentInfo?.phone || 'Chưa cập nhật',
+    };
+  }
+
+  private async ensureNotApplied(jobId: string, userId: string) {
+    const existingApplication = await this.jobApplyModel.findOne({
+      job_id: new Types.ObjectId(jobId),
+      student_id: new Types.ObjectId(userId),
+    });
+
+    if (existingApplication) {
+      throw new Error('Bạn đã ứng tuyển vị trí này rồi!');
+    }
+  }
+
+  async applyJobs(
+    jobid: string,
+    user: JwtUser,
+    options?: { cvFile?: Express.Multer.File; coverLetter?: string },
+  ): Promise<{ status: string }> {
     const { userId } = user;
+    const { cvFile, coverLetter } = options || {};
+
+    await this.ensureNotApplied(jobid, userId);
+    const applicantProfile = await this.getApplicantProfile(userId);
+
+    if (cvFile) {
+      await this.jobApplyModel.create({
+        job_id: new Types.ObjectId(jobid),
+        student_id: new Types.ObjectId(userId),
+        cv_file_path: cvFile.path,
+        full_name: applicantProfile.fullName,
+        email: applicantProfile.email,
+        phone: applicantProfile.phone,
+        cover_letter: coverLetter || '',
+        applied_at: new Date(),
+      });
+
+      return { status: 'Ứng tuyển thành công!' };
+    }
 
     const cv = await this.CVModel.findOne({
       student_id: new Types.ObjectId(userId),
     });
-    console.log(cv);
+
+    if (!cv) {
+      throw new Error('Vui lòng tải CV lên hoặc tạo CV trước khi ứng tuyển');
+    }
 
     await this.jobApplyModel.create({
-      job_id: jobid,
-      student_id: userId,
+      job_id: new Types.ObjectId(jobid),
+      student_id: new Types.ObjectId(userId),
       cv_id: (cv as any)._id,
+      full_name: applicantProfile.fullName,
+      email: applicantProfile.email,
+      phone: applicantProfile.phone,
+      cover_letter: coverLetter || '',
       applied_at: new Date(),
     });
-    return { status: 'apply thành công' };
+    return { status: 'Ứng tuyển thành công!' };
   }
 
   async applyWithDetails(
@@ -51,25 +109,21 @@ export class ApplicationsService {
   ): Promise<{ status: string }> {
     const { userId } = user;
     const { jobId, fullName, email, phone, coverLetter } = applicationData;
+    const applicantProfile = await this.getApplicantProfile(userId);
 
-    // Kiểm tra xem đã ứng tuyển chưa
-    const existingApplication = await this.jobApplyModel.findOne({
-      job_id: new Types.ObjectId(jobId),
-      student_id: new Types.ObjectId(userId)
-    });
+    await this.ensureNotApplied(jobId, userId);
 
-    if (existingApplication) {
-      throw new Error('Bạn đã ứng tuyển vị trí này rồi!');
+    if (!cvFile) {
+      throw new Error('Vui lòng tải lên CV trước khi ứng tuyển');
     }
 
-    // Tạo đơn ứng tuyển mới
     await this.jobApplyModel.create({
       job_id: new Types.ObjectId(jobId),
       student_id: new Types.ObjectId(userId),
       cv_file_path: cvFile.path,
-      full_name: fullName,
-      email: email,
-      phone: phone,
+      full_name: fullName || applicantProfile.fullName,
+      email: email || applicantProfile.email,
+      phone: phone || applicantProfile.phone,
       cover_letter: coverLetter || '',
       applied_at: new Date(),
     });

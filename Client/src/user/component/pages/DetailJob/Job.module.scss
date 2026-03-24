@@ -19,15 +19,16 @@
     .logoContainer {
       width: 80px;
       height: 80px;
-      background-color: #e8e8e8;
-      border-radius: 50%;
+      background-color: #fff;
+      border-radius: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
+      border: 1px solid #e5e7eb;
 
       img {
-        width: 50px;
-        height: 50px;
+        width: 60px;
+        height: 60px;
         object-fit: contain;
       }
     }
@@ -535,6 +536,138 @@
     font-size: 0.9rem;
     font-weight: 500;
   }
+}
+
+/* CV Match Result */
+.match-card {
+  margin-top: 0.875rem;
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid #dbe6f3;
+  background: linear-gradient(180deg, #f9fbff 0%, #f2f7ff 100%);
+}
+
+.match-card--strong {
+  border-color: #9adbb1;
+  background: linear-gradient(180deg, #f3fff7 0%, #ebfff2 100%);
+}
+
+.match-card--good {
+  border-color: #b8d8ff;
+  background: linear-gradient(180deg, #f4f9ff 0%, #edf5ff 100%);
+}
+
+.match-card--medium {
+  border-color: #f5d082;
+  background: linear-gradient(180deg, #fffaf0 0%, #fff5e1 100%);
+}
+
+.match-card--low {
+  border-color: #f0c2c2;
+  background: linear-gradient(180deg, #fff7f7 0%, #fff1f1 100%);
+}
+
+.match-card--loading {
+  border-style: dashed;
+}
+
+.match-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+
+  strong {
+    display: block;
+    color: #1f2937;
+    line-height: 1.45;
+  }
+}
+
+.match-label {
+  display: inline-block;
+  margin-bottom: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #2563eb;
+}
+
+.match-score {
+  min-width: 72px;
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  text-align: center;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #0f172a;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.12);
+}
+
+.match-score--loading {
+  font-size: 1rem;
+}
+
+.match-progress {
+  margin: 0.9rem 0 0.75rem;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.12);
+  overflow: hidden;
+
+  span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #3b82f6 0%, #22c55e 100%);
+  }
+}
+
+.match-note {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: #4b5563;
+}
+
+.match-keywords {
+  margin-top: 0.9rem;
+}
+
+.match-keywords-title {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #374151;
+}
+
+.match-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.match-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.match-chip--positive {
+  color: #166534;
+  background-color: #dcfce7;
+}
+
+.match-chip--neutral {
+  color: #92400e;
+  background-color: #fef3c7;
 }
 
 /* Create CV Info */

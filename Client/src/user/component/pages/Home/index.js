@@ -1,13 +1,20 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import classNames from 'classnames/bind';
 import style from './Home.module.scss';
 import LookJobsImg from '~/asset/img/LookJobs.png';
-// Import company logos
 import translations from '~/component/Translation';
 import { AuthContext } from '~/context/AuthContext';
+import { createCompanyPlaceholder, mergeJobs } from '~/user/component/shared/companyData';
 
 const cx = classNames.bind(style);
+
+if (!document.querySelector('link[href*="fontawesome"]')) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css';
+    document.head.appendChild(link);
+}
 
 const Homepage = () => {
     const navigate = useNavigate();
@@ -19,28 +26,35 @@ const Homepage = () => {
     const [jobType, setJobType] = useState('');
     const [searchKeyword, setSearchKeyword] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const JobPerPages = 9;
+    const jobsPerPage = 9;
+    const t = translations[language || 'vi'];
+
+    const locationOptions = useMemo(
+        () => Array.from(new Set(allJobData.map((job) => job.location).filter(Boolean))).slice(0, 10),
+        [allJobData],
+    );
 
     const filteredJobs = allJobData.filter((job) => {
-        const keyword = searchKeyword.toLowerCase();
+        const keyword = searchKeyword.trim().toLowerCase();
         const matchesKeyword =
             !keyword ||
             job.title?.toLowerCase().includes(keyword) ||
-            job.company_name?.toLowerCase().includes(keyword);
+            job.company_name?.toLowerCase().includes(keyword) ||
+            job.industry?.toLowerCase().includes(keyword);
         const matchesExperience = !experience || job.experience === experience;
         const matchesLocation = !location || job.location?.includes(location);
         const matchesJobType = !jobType || job.job_type?.toLowerCase() === jobType;
-        const matchesSalary = !job.salary || Number(job.salary) <= salaryValue * 1_000_000;
+        const maxSalary = Number(job.max_salary || job.min_salary || 0);
+        const matchesSalary = !maxSalary || maxSalary <= salaryValue * 1_000_000;
+
         return matchesKeyword && matchesExperience && matchesLocation && matchesJobType && matchesSalary;
     });
 
-    const totalJob = filteredJobs.length;
-    const totalPages = Math.ceil(totalJob / JobPerPages);
-    const startIndex = (currentPage - 1) * JobPerPages;
-    const EndIndex = startIndex + JobPerPages;
-    const finalJobPage = filteredJobs.slice(startIndex, EndIndex);
+    const totalJobs = filteredJobs.length;
+    const totalPages = Math.ceil(totalJobs / jobsPerPage);
+    const startIndex = (currentPage - 1) * jobsPerPage;
+    const finalJobPage = filteredJobs.slice(startIndex, startIndex + jobsPerPage);
 
-    const t = translations[language || 'vi'];
     const updateSalary = (value) => {
         setSalaryValue(value);
         setCurrentPage(1);
@@ -60,23 +74,22 @@ const Homepage = () => {
         const fetchData = async () => {
             try {
                 const res = await api.get('jobs');
-                if (res.data) {
-                    setAllJobData(res.data);
-                }
+                setAllJobData(mergeJobs(res.data || []));
             } catch (error) {
                 if (error.response) {
                     alert(error.response?.data?.message);
                 } else {
-                    alert('lỗi kết nối tới server');
+                    alert(language === 'vi' ? 'Lỗi kết nối tới server' : 'Server connection error');
                 }
+                setAllJobData(mergeJobs([]));
             }
         };
+
         fetchData();
-    }, [api]);
+    }, [api, language]);
 
     return (
         <div className={cx('home-page')}>
-            {/* Hero Section */}
             <div className={cx('hero-section')}>
                 <div className={cx('container')}>
                     <div className={cx('hero-content')}>
@@ -97,7 +110,6 @@ const Homepage = () => {
                 </div>
             </div>
 
-            {/* Filter Section */}
             <div className={cx('filter-section')}>
                 <div className={cx('container')}>
                     <div className={cx('filter-row')}>
@@ -144,11 +156,11 @@ const Homepage = () => {
                                 onChange={handleFilterChange(setLocation)}
                             >
                                 <option value="">{t.chooseLocation}</option>
-                                <option>{language === 'vi' ? 'Hà Nội' : 'Hanoi'}</option>
-                                <option>{language === 'vi' ? 'Hồ Chí Minh' : 'Ho Chi Minh City'}</option>
-                                <option>{language === 'vi' ? 'Đà Nẵng' : 'Da Nang'}</option>
-                                <option>{language === 'vi' ? 'Cần Thơ' : 'Can Tho'}</option>
-                                <option>{language === 'vi' ? 'Hải Phòng' : 'Hai Phong'}</option>
+                                {locationOptions.map((item) => (
+                                    <option key={item} value={item}>
+                                        {item}
+                                    </option>
+                                ))}
                             </select>
                         </div>
                         <div className={cx('filter-item')}>
@@ -168,7 +180,6 @@ const Homepage = () => {
                 </div>
             </div>
 
-            {/* Jobs Grid */}
             <div className={cx('jobs-section')}>
                 <div className={cx('container')}>
                     {filteredJobs.length === 0 && allJobData.length > 0 && (
@@ -177,15 +188,51 @@ const Homepage = () => {
                         </p>
                     )}
                     <div className={cx('jobs-grid')}>
-                        {finalJobPage.map((job, index) => (
-                            <div className={cx('job-card')} key={index}>
+                        {finalJobPage.map((job) => (
+                            <div className={cx('job-card')} key={job.id}>
                                 <div className={cx('job-header')}>
-                                    <img src={job.logo} alt={job.company} className={cx('company-logo')} />
+                                    <img
+                                        src={job.logo}
+                                        alt={job.company_name}
+                                        className={cx('company-logo')}
+                                        onError={(e) => {
+                                            e.currentTarget.src = createCompanyPlaceholder(job.company_name);
+                                        }}
+                                    />
                                     <div className={cx('job-info')}>
                                         <h3 className={cx('job-title')}>{job.title}</h3>
                                         <p className={cx('company-name')}>{job.company_name}</p>
+                                        <span className={cx('job-industry')}>{job.industry}</span>
                                     </div>
                                 </div>
+
+                                <div className={cx('job-meta-list')}>
+                                    <div className={cx('job-meta-item')}>
+                                        <i className="fas fa-location-dot"></i>
+                                        <span>{job.location}</span>
+                                    </div>
+                                    <div className={cx('job-meta-item')}>
+                                        <i className="fas fa-money-bill-wave"></i>
+                                        <span>{job.salaryLabel}</span>
+                                    </div>
+                                    <div className={cx('job-meta-item')}>
+                                        <i className="fas fa-briefcase"></i>
+                                        <span>{job.experience}</span>
+                                    </div>
+                                    <div className={cx('job-meta-item')}>
+                                        <i className="fas fa-clock"></i>
+                                        <span>{job.typeLabel}</span>
+                                    </div>
+                                    <div className={cx('job-meta-item')}>
+                                        <i className="fas fa-calendar-check"></i>
+                                        <span>
+                                            {language === 'vi' ? 'Hạn nộp:' : 'Deadline:'} {job.deadlineLabel}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <p className={cx('job-description')}>{job.description}</p>
+
                                 <button
                                     className={cx('apply-btn')}
                                     onClick={() => {
@@ -198,7 +245,6 @@ const Homepage = () => {
                         ))}
                     </div>
 
-                    {/* Pagination */}
                     <div className={cx('pagination-wrapper')}>
                         <button
                             className={cx('page-btn')}
@@ -207,7 +253,7 @@ const Homepage = () => {
                         >
                             {t.previous}
                         </button>
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
                             <button
                                 key={page}
                                 className={cx('page-btn', { active: currentPage === page })}
@@ -219,7 +265,7 @@ const Homepage = () => {
                         <button
                             className={cx('page-btn')}
                             onClick={() => setCurrentPage(currentPage + 1)}
-                            disabled={currentPage === totalPages}
+                            disabled={currentPage === totalPages || totalPages === 0}
                         >
                             {t.next}
                         </button>

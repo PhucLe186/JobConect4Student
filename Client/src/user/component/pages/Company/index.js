@@ -1,50 +1,71 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import classNames from 'classnames/bind';
 import style from './Company.module.scss';
 import LookJobsImg from '~/asset/img/LookJobs.png';
 import translations from '~/component/Translation';
 import { AuthContext } from '~/context/AuthContext';
-
+import { createCompanyPlaceholder, mergeCompanies } from '~/user/component/shared/companyData';
 
 const cx = classNames.bind(style);
 
+if (!document.querySelector('link[href*="fontawesome"]')) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css';
+    document.head.appendChild(link);
+}
+
 const Company = () => {
     const navigate = useNavigate();
-    const {api, language}= useContext(AuthContext)
+    const { api, language } = useContext(AuthContext);
     const [currentPage, setCurrentPage] = useState(1);
-    const [companyData, setCompanyData]= useState([])
+    const [companyData, setCompanyData] = useState([]);
     const [searchKeyword, setSearchKeyword] = useState('');
     const [filterSize, setFilterSize] = useState('');
     const [filterIndustry, setFilterIndustry] = useState('');
     const [filterLocation, setFilterLocation] = useState('');
+    const companiesPerPage = 9;
+    const t = translations[language];
 
-    const companyPages = 9;
+    const industryOptions = useMemo(
+        () => Array.from(new Set(companyData.map((company) => company.industry).filter(Boolean))).slice(0, 12),
+        [companyData],
+    );
 
-    const filteredCompanies = companyData.filter(company => {
-        const keyword = searchKeyword.toLowerCase();
-        const matchKeyword = !keyword ||
+    const locationOptions = useMemo(
+        () => Array.from(new Set(companyData.map((company) => company.address).filter(Boolean))).slice(0, 12),
+        [companyData],
+    );
+
+    const filteredCompanies = companyData.filter((company) => {
+        const keyword = searchKeyword.trim().toLowerCase();
+        const matchKeyword =
+            !keyword ||
             company.company_name?.toLowerCase().includes(keyword) ||
             company.industry?.toLowerCase().includes(keyword) ||
-            company.description?.toLowerCase().includes(keyword);
-        const matchIndustry = !filterIndustry || company.industry?.toLowerCase().includes(filterIndustry.toLowerCase());
-        const matchLocation = !filterLocation || company.address?.toLowerCase().includes(filterLocation.toLowerCase());
-        const matchSize = !filterSize || (() => {
-            const s = Number(company.size);
-            if (filterSize === '1-50') return s >= 1 && s <= 50;
-            if (filterSize === '50-200') return s > 50 && s <= 200;
-            if (filterSize === '201-1000') return s > 200 && s <= 1000;
-            if (filterSize === '1000+') return s > 1000;
-            return true;
-        })();
+            company.description?.toLowerCase().includes(keyword) ||
+            company.address?.toLowerCase().includes(keyword);
+        const matchIndustry = !filterIndustry || company.industry === filterIndustry;
+        const matchLocation = !filterLocation || company.address === filterLocation;
+        const matchSize =
+            !filterSize ||
+            (() => {
+                const size = Number(company.size);
+                if (filterSize === '1-50') return size >= 1 && size <= 50;
+                if (filterSize === '50-200') return size > 50 && size <= 200;
+                if (filterSize === '201-1000') return size > 200 && size <= 1000;
+                if (filterSize === '1000+') return size > 1000;
+                return true;
+            })();
+
         return matchKeyword && matchIndustry && matchLocation && matchSize;
     });
 
-    const totalCompany = filteredCompanies.length
-    const totalPages=Math.ceil(totalCompany/companyPages)
-    const startIndex=(currentPage-1)*companyPages
-    const endIndex=(startIndex+companyPages)
-    const currentCompanypage=filteredCompanies.slice(startIndex, endIndex)
+    const totalCompanies = filteredCompanies.length;
+    const totalPages = Math.ceil(totalCompanies / companiesPerPage);
+    const startIndex = (currentPage - 1) * companiesPerPage;
+    const currentCompanyPage = filteredCompanies.slice(startIndex, startIndex + companiesPerPage);
 
     const handleSearch = (e) => {
         setSearchKeyword(e.target.value);
@@ -56,59 +77,30 @@ const Company = () => {
         setCurrentPage(1);
     };
 
-    // Function để tạo hình ảnh cố định cho mỗi công ty
-    const getCompanyImage = (company, index) => {
-        if (company.logo && company.logo !== '') {
-            return company.logo;
-        }
-        
-        // Danh sách hình ảnh cố định
-        const defaultImages = [
-            'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=60&h=60&fit=crop&crop=center',
-            'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=60&h=60&fit=crop&crop=center',
-            'https://images.unsplash.com/photo-1497366216548-37526070297c?w=60&h=60&fit=crop&crop=center',
-            'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=60&h=60&fit=crop&crop=center',
-            'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=60&h=60&fit=crop&crop=center',
-            'https://images.unsplash.com/photo-1541746972996-4e0b0f93e586?w=60&h=60&fit=crop&crop=center',
-            'https://images.unsplash.com/photo-1560472355-536de3962603?w=60&h=60&fit=crop&crop=center',
-            'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=60&h=60&fit=crop&crop=center'
-        ];
-        
-        // Tạo hash từ tên công ty để chọn hình ảnh cố định
-        const companyName = company.company_name || company._id || '';
-        const hash = companyName.split('').reduce((a, b) => {
-            a = ((a << 5) - a) + b.charCodeAt(0);
-            return a & a;
-        }, 0);
-        
-        const imageIndex = Math.abs(hash) % defaultImages.length;
-        return defaultImages[imageIndex];
-    };
-
-
-    console.log(currentCompanypage)
-    useEffect(()=>{
-        const fetchCompany=async()=> {
-            const res= await api.get('employer')
-            if(res.data) {
-                setCompanyData(res.data)
+    useEffect(() => {
+        const fetchCompany = async () => {
+            try {
+                const res = await api.get('employer');
+                setCompanyData(mergeCompanies(res.data || []));
+            } catch (error) {
+                console.error('API Error:', error);
+                setCompanyData(mergeCompanies([]));
             }
-        }
-        fetchCompany()
-    }, [])
+        };
 
-    const t = translations[language];
-    const size= [
-        {lable: t.choose_size, value: '' },
-        {lable: '1-50 '+ t.employees, value: '1-50' },
-        {lable: '50-200 '+ t.employees, value: '50-200' },
-        {lable: '201-1000 '+ t.employees, value: '201-1000' },
-        {lable: '1000+ '+ t.employees, value: '1000+' },
-    ]
+        fetchCompany();
+    }, [api]);
+
+    const sizeOptions = [
+        { label: t.choose_size, value: '' },
+        { label: `1-50 ${t.employees}`, value: '1-50' },
+        { label: `50-200 ${t.employees}`, value: '50-200' },
+        { label: `201-1000 ${t.employees}`, value: '201-1000' },
+        { label: `1000+ ${t.employees}`, value: '1000+' },
+    ];
 
     return (
         <div className={cx('home-page')}>
-            {/* Hero Section */}
             <div className={cx('hero-section')}>
                 <div className={cx('container')}>
                     <div className={cx('hero-content')}>
@@ -129,72 +121,102 @@ const Company = () => {
                 </div>
             </div>
 
-            {/* Filter Section */}
             <div className={cx('filter-section')}>
                 <div className={cx('container')}>
                     <div className={cx('filter-row')}>
                         <div className={cx('filter-item')}>
                             <label>{language === 'vi' ? 'Quy mô công ty' : 'Company Size'}</label>
                             <select className={cx('filter-select')} value={filterSize} onChange={handleFilterChange(setFilterSize)}>
-                                {size.map((item, idx)=> (
-                                    <option key={idx} value={item.value || ''}>{item.lable}</option>
+                                {sizeOptions.map((item) => (
+                                    <option key={item.value || 'all'} value={item.value}>
+                                        {item.label}
+                                    </option>
                                 ))}
                             </select>
                         </div>
                         <div className={cx('filter-item')}>
                             <label>{language === 'vi' ? 'Ngành nghề' : 'Industry'}</label>
-                            <select className={cx('filter-select')} value={filterIndustry} onChange={handleFilterChange(setFilterIndustry)}>
+                            <select
+                                className={cx('filter-select')}
+                                value={filterIndustry}
+                                onChange={handleFilterChange(setFilterIndustry)}
+                            >
                                 <option value="">{language === 'vi' ? 'Chọn ngành nghề' : 'Choose industry'}</option>
-                                <option value="Công nghệ">{language === 'vi' ? 'Công nghệ' : 'Technology'}</option>
-                                <option value="Tài chính">{language === 'vi' ? 'Tài chính' : 'Finance'}</option>
-                                <option value="Y tế">{language === 'vi' ? 'Y tế' : 'Healthcare'}</option>
-                                <option value="Giáo dục">{language === 'vi' ? 'Giáo dục' : 'Education'}</option>
+                                {industryOptions.map((item) => (
+                                    <option key={item} value={item}>
+                                        {item}
+                                    </option>
+                                ))}
                             </select>
                         </div>
                         <div className={cx('filter-item')}>
                             <label>{language === 'vi' ? 'Địa điểm' : 'Location'}</label>
-                            <select className={cx('filter-select')} value={filterLocation} onChange={handleFilterChange(setFilterLocation)}>
+                            <select
+                                className={cx('filter-select')}
+                                value={filterLocation}
+                                onChange={handleFilterChange(setFilterLocation)}
+                            >
                                 <option value="">{language === 'vi' ? 'Chọn địa điểm' : 'Choose location'}</option>
-                                <option value="Hà Nội">{language === 'vi' ? 'Hà Nội' : 'Hanoi'}</option>
-                                <option value="Hồ Chí Minh">{language === 'vi' ? 'Hồ Chí Minh' : 'Ho Chi Minh City'}</option>
-                                <option value="Đà Nẵng">{language === 'vi' ? 'Đà Nẵng' : 'Da Nang'}</option>
+                                {locationOptions.map((item) => (
+                                    <option key={item} value={item}>
+                                        {item}
+                                    </option>
+                                ))}
                             </select>
                         </div>
                         <div className={cx('filter-item')}>
-                            <label>{language === 'vi' ? 'Loại hình' : 'Company Type'}</label>
-                            <select className={cx('filter-select')}>
-                                <option>{language === 'vi' ? 'Chọn loại hình' : 'Choose type'}</option>
-                                <option>{language === 'vi' ? 'Công ty tư nhân' : 'Private Company'}</option>
-                                <option>{language === 'vi' ? 'Công ty đại chúng' : 'Public Company'}</option>
-                                <option>{language === 'vi' ? 'Startup' : 'Startup'}</option>
-                            </select>
+                            <label>{language === 'vi' ? 'Tổng công ty' : 'Total companies'}</label>
+                            <div className={cx('summary-box')}>
+                                <strong>{totalCompanies}</strong>
+                                <span>{language === 'vi' ? 'công ty đang hiển thị' : 'companies shown'}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Companies Grid */}
             <div className={cx('jobs-section')}>
                 <div className={cx('container')}>
                     {filteredCompanies.length === 0 && companyData.length > 0 && (
-                        <p style={{textAlign:'center', padding:'20px', color:'#888'}}>
+                        <p style={{ textAlign: 'center', padding: '20px', color: '#888' }}>
                             {language === 'vi' ? 'Không tìm thấy công ty phù hợp.' : 'No companies found.'}
                         </p>
                     )}
                     <div className={cx('jobs-grid')}>
-                        {currentCompanypage.map((company, index) => (
-                            <div className={cx('job-card')} key={index}>
+                        {currentCompanyPage.map((company) => (
+                            <div className={cx('job-card')} key={company._id}>
                                 <div className={cx('job-header')}>
                                     <img
-                                        src={getCompanyImage(company, index)}
+                                        src={company.logo}
                                         alt={company.company_name}
                                         className={cx('company-logo')}
+                                        onError={(e) => {
+                                            e.currentTarget.src = createCompanyPlaceholder(company.company_name);
+                                        }}
                                     />
                                     <div className={cx('job-info')}>
                                         <h3 className={cx('job-title')}>{company.company_name}</h3>
                                         <p className={cx('company-name')}>{company.industry}</p>
                                     </div>
                                 </div>
+
+                                <p className={cx('company-description')}>{company.shortDescription}</p>
+
+                                <div className={cx('company-meta-list')}>
+                                    <div className={cx('company-meta-item')}>
+                                        <i className="fas fa-location-dot"></i>
+                                        <span>{company.address}</span>
+                                    </div>
+                                    <div className={cx('company-meta-item')}>
+                                        <i className="fas fa-users"></i>
+                                        <span>{company.sizeLabel}</span>
+                                    </div>
+                                    <div className={cx('company-meta-item')}>
+                                        <i className="fas fa-globe"></i>
+                                        <span>{company.website || (language === 'vi' ? 'Đang cập nhật website' : 'Website updating')}</span>
+                                    </div>
+                                </div>
+
                                 <button
                                     className={cx('apply-btn')}
                                     onClick={() => {
@@ -207,7 +229,6 @@ const Company = () => {
                         ))}
                     </div>
 
-                    {/* Pagination */}
                     <div className={cx('pagination-wrapper')}>
                         <button
                             className={cx('page-btn')}
@@ -216,7 +237,7 @@ const Company = () => {
                         >
                             {t.previous}
                         </button>
-                        {Array.from({length: totalPages}, (_, i)=> i+1).map((page) => (
+                        {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
                             <button
                                 key={page}
                                 className={cx('page-btn', { active: currentPage === page })}
@@ -228,7 +249,7 @@ const Company = () => {
                         <button
                             className={cx('page-btn')}
                             onClick={() => setCurrentPage(currentPage + 1)}
-                            disabled={currentPage === totalPages}
+                            disabled={currentPage === totalPages || totalPages === 0}
                         >
                             {t.next}
                         </button>

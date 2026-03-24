@@ -1,14 +1,14 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import styles from './Job.module.scss';
 import translations from '~/component/Translation';
 import { AuthContext } from '~/context/AuthContext';
 import { useParams, useNavigate } from 'react-router-dom';
 import classNames from 'classnames/bind';
-import ApplicationModal from './ApplicationModal';
+import { analyzeCvMatch } from './cvMatchUtils';
+import { createCompanyPlaceholder, mergeJobs, normalizeJob } from '~/user/component/shared/companyData';
 
 const cx = classNames.bind(styles);
 
-// Thêm FontAwesome
 if (!document.querySelector('link[href*="fontawesome"]')) {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
@@ -16,44 +16,138 @@ if (!document.querySelector('link[href*="fontawesome"]')) {
     document.head.appendChild(link);
 }
 
-const Job = ({ onBack, onPageChange }) => {
+const Job = () => {
     const { api, language, user } = useContext(AuthContext);
     const [favorites, setFavorites] = useState({});
-    const [JobData, setJobData] = useState([]);
+    const [JobData, setJobData] = useState({});
     const [suggestedJobs, setSuggestedJobs] = useState([]);
     const [showApplyPopup, setShowApplyPopup] = useState(false);
-    const [cvOption, setCvOption] = useState(''); // 'upload' or 'create'
+    const [cvOption, setCvOption] = useState('');
     const [uploadedCV, setUploadedCV] = useState(null);
     const [coverLetter, setCoverLetter] = useState('');
+    const [cvMatchResult, setCvMatchResult] = useState(null);
+    const [cvMatchError, setCvMatchError] = useState('');
+    const [isAnalyzingCv, setIsAnalyzingCv] = useState(false);
     const navigate = useNavigate();
     const t = translations[language];
     const { id } = useParams();
+    const analysisRequestRef = useRef(0);
+    const formatJobDate = (value) => (value ? new Date(value).toLocaleDateString('vi-VN') : '--');
+    const isMockJob = String(JobData.id || JobData._id || '').startsWith('mock-job-');
 
-    const HandleApplications = async (id) => {
+    const resetCvAnalysis = () => {
+        analysisRequestRef.current += 1;
+        setUploadedCV(null);
+        setCvMatchResult(null);
+        setCvMatchError('');
+        setIsAnalyzingCv(false);
+    };
+
+    const closeApplyPopup = () => {
+        resetCvAnalysis();
+        setShowApplyPopup(false);
+        setCvOption('');
+        setCoverLetter('');
+    };
+
+    const getMatchHeadline = (score) => {
+        if (language === 'vi') {
+            if (score >= 80) return 'CV của bạn rất phù hợp với công việc này';
+            if (score >= 60) return 'CV của bạn khá phù hợp với công việc này';
+            if (score >= 40) return 'CV của bạn phù hợp ở mức trung bình với công việc này';
+            return 'CV của bạn chưa phù hợp cao với công việc này';
+        }
+
+        if (score >= 80) return 'Your CV is a strong match for this job';
+        if (score >= 60) return 'Your CV is a good match for this job';
+        if (score >= 40) return 'Your CV is a moderate match for this job';
+        return 'Your CV is not a strong match for this job yet';
+    };
+
+    const getMatchNote = (result) => {
+        if (language === 'vi') {
+            return result?.isLimitedContent
+                ? 'Hệ thống chỉ đọc được một phần nội dung của CV, nên đây là mức phù hợp ước tính.'
+                : 'Kết quả được ước tính từ nội dung CV và mô tả công việc hiện tại.';
+        }
+
+        return result?.isLimitedContent
+            ? 'Only part of the CV content could be read, so this is a basic estimate.'
+            : 'This score is estimated from the CV content and the current job description.';
+    };
+
+    const handleApplications = () => {
         setShowApplyPopup(true);
     };
 
-    const handleFileUpload = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const allowedTypes = [
-                'application/pdf',
-                'application/msword',
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            ];
-            if (allowedTypes.includes(file.type)) {
-                setUploadedCV(file);
-            } else {
-                alert(
-                    language === 'vi' ? 'Chỉ chấp nhận file PDF, DOC, DOCX' : 'Only PDF, DOC, DOCX files are allowed',
-                );
+    const handleCvOptionChange = (value) => {
+        setCvOption(value);
+        if (value !== 'upload') {
+            resetCvAnalysis();
+        }
+    };
+
+    const handleFileUpload = async (e) => {
+        const file = e.target.files?.[0];
+
+        if (!file) {
+            resetCvAnalysis();
+            return;
+        }
+
+        const allowedTypes = [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ];
+
+        if (!allowedTypes.includes(file.type)) {
+            alert(language === 'vi' ? 'Chỉ chấp nhận file PDF, DOC, DOCX' : 'Only PDF, DOC, DOCX files are allowed');
+            e.target.value = '';
+            resetCvAnalysis();
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            alert(language === 'vi' ? 'File không được vượt quá 5MB' : 'File size must be under 5MB');
+            e.target.value = '';
+            resetCvAnalysis();
+            return;
+        }
+
+        const requestId = analysisRequestRef.current + 1;
+        analysisRequestRef.current = requestId;
+        setUploadedCV(file);
+        setCvMatchResult(null);
+        setCvMatchError('');
+        setIsAnalyzingCv(true);
+
+        try {
+            const analysisResult = await analyzeCvMatch(file, JobData);
+            if (requestId !== analysisRequestRef.current) {
+                return;
+            }
+            setCvMatchResult(analysisResult);
+        } catch (error) {
+            console.error('CV analysis failed:', error);
+            if (requestId !== analysisRequestRef.current) {
+                return;
+            }
+            setCvMatchError(
+                language === 'vi'
+                    ? 'Không thể phân tích CV này. Bạn vẫn có thể nộp hồ sơ, nhưng chưa hiển thị được mức độ phù hợp.'
+                    : 'This CV could not be analyzed. You can still submit it, but the match score is unavailable.',
+            );
+        } finally {
+            if (requestId === analysisRequestRef.current) {
+                setIsAnalyzingCv(false);
             }
         }
     };
 
     const handleCreateCV = () => {
         navigate('/cv_builder');
-        setShowApplyPopup(false);
+        closeApplyPopup();
     };
 
     const handleApplySubmit = async () => {
@@ -61,12 +155,27 @@ const Job = ({ onBack, onPageChange }) => {
             alert(language === 'vi' ? 'Vui lòng tải lên CV' : 'Please upload your CV');
             return;
         }
+
+        if (cvOption === 'upload' && isAnalyzingCv) {
+            alert(language === 'vi' ? 'Hệ thống đang phân tích CV, vui lòng đợi một chút' : 'Your CV is being analyzed, please wait');
+            return;
+        }
+
         if (cvOption === 'create') {
             handleCreateCV();
             return;
         }
 
         try {
+            if (isMockJob) {
+                alert(
+                    language === 'vi'
+                        ? 'Tin tuyển dụng mẫu này chỉ dùng để hiển thị giao diện, chưa thể nộp hồ sơ trực tiếp.'
+                        : 'This sample job is for display only and cannot accept applications yet.',
+                );
+                return;
+            }
+
             const formData = new FormData();
             formData.append('id', JobData._id);
             formData.append('cv', uploadedCV);
@@ -78,16 +187,13 @@ const Job = ({ onBack, onPageChange }) => {
 
             if (res.data.status) {
                 alert(res.data.status);
-                setShowApplyPopup(false);
-                setCvOption('');
-                setUploadedCV(null);
-                setCoverLetter('');
+                closeApplyPopup();
             }
         } catch (error) {
             if (error.response) {
                 alert(error.response?.data?.message);
             } else {
-                alert('lỗi kết nối tới server');
+                alert(language === 'vi' ? 'Lỗi kết nối tới server' : 'Server connection error');
             }
         }
     };
@@ -96,34 +202,58 @@ const Job = ({ onBack, onPageChange }) => {
         const fetchData = async () => {
             try {
                 const res = await api.get(`jobs/${id}`);
-                if (res.data) setJobData(res.data);
+                if (res.data) {
+                    setJobData(normalizeJob(res.data));
+                    return;
+                }
+
+                const fallbackJob = mergeJobs([]).find((job) => job.id === id);
+                if (fallbackJob) {
+                    setJobData(fallbackJob);
+                }
             } catch (error) {
+                const fallbackJob = mergeJobs([]).find((job) => job.id === id);
+                if (fallbackJob) {
+                    setJobData(fallbackJob);
+                    return;
+                }
+
                 if (error.response) alert(error.response?.data?.message);
-                else alert('lỗi kết nối tới server');
+                else alert(language === 'vi' ? 'Lỗi kết nối tới server' : 'Server connection error');
             }
         };
+
         const fetchSuggestedJobs = async () => {
             try {
                 const endpoint = user ? 'jobs/suggestions' : 'jobs';
                 const res = await api.get(endpoint);
-                if (res.data) setSuggestedJobs(res.data.slice(0, 3));
+                if (res.data) setSuggestedJobs(mergeJobs(res.data).filter((job) => job.id !== id).slice(0, 3));
             } catch {
                 try {
                     const res = await api.get('jobs');
-                    if (res.data) setSuggestedJobs(res.data.slice(0, 3));
-                } catch {}
+                    if (res.data) setSuggestedJobs(mergeJobs(res.data).filter((job) => job.id !== id).slice(0, 3));
+                } catch {
+                    setSuggestedJobs(mergeJobs([]).filter((job) => job.id !== id).slice(0, 3));
+                }
             }
         };
+
         fetchData();
         fetchSuggestedJobs();
-    }, [api, id, user]);
+    }, [api, id, language, user]);
 
     return (
         <div className={cx('container')}>
             <div className={cx('jobHeader')}>
                 <div className={cx('headerContent')}>
                     <div className={cx('logoContainer')}>
-                        <img src={JobData.logo} alt="LG Logo" />
+                        <img
+                            src={JobData.logo}
+                            alt="Company Logo"
+                            onError={(e) => {
+                                e.currentTarget.src = createCompanyPlaceholder(JobData.company_name || JobData.title);
+                            }}
+                        />
                     </div>
                     <div className={cx('jobInfo')}>
                         <h1>{JobData.title}</h1>
@@ -143,12 +273,12 @@ const Job = ({ onBack, onPageChange }) => {
                         <div className={cx('jobDetail')}>
                             <i className="fas fa-calendar-alt"></i>
                             <span>
-                                {t.from} {new Date(JobData.createdAt).toLocaleDateString('vi-VN')} {t.to}{' '}
-                                {new Date(JobData.deadline).toLocaleDateString('vi-VN')}{' '}
+                                {t.from} {formatJobDate(JobData.createdAt || JobData.created_at)} {t.to}{' '}
+                                {formatJobDate(JobData.deadline)}{' '}
                             </span>
                         </div>
                         <div className={cx('buttons')}>
-                            <button className={cx('applyBtn')} onClick={HandleApplications}>
+                            <button className={cx('applyBtn')} onClick={handleApplications}>
                                 {t.applyNow}
                             </button>
                             <button className={cx('saveBtn')}>{t.save}</button>
@@ -211,7 +341,7 @@ const Job = ({ onBack, onPageChange }) => {
                             <strong>{t.applicationContact}</strong>
                         </p>
                         <p>
-                            Email: <a href="mailto:vanchisencm2022@gmail.com">{JobData.email}</a>
+                            Email: <a href={`mailto:${JobData.email || ''}`}>{JobData.email || '--'}</a>
                         </p>
                         <p>
                             {t.phone}: <span>{JobData.phone}</span>
@@ -246,7 +376,9 @@ const Job = ({ onBack, onPageChange }) => {
                                         <img
                                             src={job.logo}
                                             alt={job.company_name}
-                                            onError={(e) => { e.target.src = 'https://via.placeholder.com/40x40?text=Co'; }}
+                                            onError={(e) => {
+                                                e.currentTarget.src = createCompanyPlaceholder(job.company_name);
+                                            }}
                                         />
                                     </div>
                                     <div className={cx('jobDetails')}>
@@ -274,13 +406,12 @@ const Job = ({ onBack, onPageChange }) => {
                 </div>
             </div>
 
-            {/* Apply Popup */}
             {showApplyPopup && (
-                <div className={cx('popup-overlay')} onClick={() => setShowApplyPopup(false)}>
+                <div className={cx('popup-overlay')} onClick={closeApplyPopup}>
                     <div className={cx('popup-content')} onClick={(e) => e.stopPropagation()}>
                         <div className={cx('popup-header')}>
                             <h3>{language === 'vi' ? 'Ứng tuyển việc làm' : 'Apply for Job'}</h3>
-                            <button className={cx('popup-close')} onClick={() => setShowApplyPopup(false)}>
+                            <button className={cx('popup-close')} onClick={closeApplyPopup}>
                                 ×
                             </button>
                         </div>
@@ -303,7 +434,7 @@ const Job = ({ onBack, onPageChange }) => {
                                             name="cvOption"
                                             value="upload"
                                             checked={cvOption === 'upload'}
-                                            onChange={(e) => setCvOption(e.target.value)}
+                                            onChange={(e) => handleCvOptionChange(e.target.value)}
                                         />
                                         <span>{language === 'vi' ? 'Tải lên CV có sẵn' : 'Upload existing CV'}</span>
                                     </label>
@@ -313,7 +444,7 @@ const Job = ({ onBack, onPageChange }) => {
                                             name="cvOption"
                                             value="create"
                                             checked={cvOption === 'create'}
-                                            onChange={(e) => setCvOption(e.target.value)}
+                                            onChange={(e) => handleCvOptionChange(e.target.value)}
                                         />
                                         <span>{language === 'vi' ? 'Tạo CV mới' : 'Create new CV'}</span>
                                     </label>
@@ -337,6 +468,92 @@ const Job = ({ onBack, onPageChange }) => {
                                         <div className={cx('uploaded-file')}>
                                             <i className="fas fa-file"></i>
                                             <span>{uploadedCV.name}</span>
+                                        </div>
+                                    )}
+
+                                    {isAnalyzingCv && (
+                                        <div className={cx('match-card', 'match-card--loading')}>
+                                            <div className={cx('match-card-header')}>
+                                                <div>
+                                                    <span className={cx('match-label')}>
+                                                        {language === 'vi' ? 'Mức độ phù hợp CV' : 'CV match score'}
+                                                    </span>
+                                                    <strong>{language === 'vi' ? 'Đang phân tích CV...' : 'Analyzing CV...'}</strong>
+                                                </div>
+                                                <div className={cx('match-score', 'match-score--loading')}>
+                                                    <i className="fas fa-spinner fa-spin"></i>
+                                                </div>
+                                            </div>
+                                            <p className={cx('match-note')}>
+                                                {language === 'vi'
+                                                    ? 'Hệ thống đang đối chiếu nội dung CV với mô tả công việc.'
+                                                    : 'The system is comparing your CV with the job description.'}
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {cvMatchError && !isAnalyzingCv && (
+                                        <div className={cx('match-card', 'match-card--low')}>
+                                            <div className={cx('match-card-header')}>
+                                                <div>
+                                                    <span className={cx('match-label')}>
+                                                        {language === 'vi' ? 'Mức độ phù hợp CV' : 'CV match score'}
+                                                    </span>
+                                                    <strong>{language === 'vi' ? 'Chưa phân tích được CV' : 'CV analysis unavailable'}</strong>
+                                                </div>
+                                                <div className={cx('match-score')}>--</div>
+                                            </div>
+                                            <p className={cx('match-note')}>{cvMatchError}</p>
+                                        </div>
+                                    )}
+
+                                    {cvMatchResult && !isAnalyzingCv && (
+                                        <div className={cx('match-card', `match-card--${cvMatchResult.tone}`)}>
+                                            <div className={cx('match-card-header')}>
+                                                <div>
+                                                    <span className={cx('match-label')}>
+                                                        {language === 'vi' ? 'Mức độ phù hợp CV' : 'CV match score'}
+                                                    </span>
+                                                    <strong>{getMatchHeadline(cvMatchResult.score)}</strong>
+                                                </div>
+                                                <div className={cx('match-score')}>{cvMatchResult.score}%</div>
+                                            </div>
+
+                                            <div className={cx('match-progress')}>
+                                                <span style={{ width: `${cvMatchResult.score}%` }}></span>
+                                            </div>
+
+                                            <p className={cx('match-note')}>{getMatchNote(cvMatchResult)}</p>
+
+                                            {cvMatchResult.matchedKeywords.length > 0 && (
+                                                <div className={cx('match-keywords')}>
+                                                    <span className={cx('match-keywords-title')}>
+                                                        {language === 'vi' ? 'Điểm mạnh khớp' : 'Matching strengths'}
+                                                    </span>
+                                                    <div className={cx('match-chip-list')}>
+                                                        {cvMatchResult.matchedKeywords.map((keyword) => (
+                                                            <span key={keyword} className={cx('match-chip', 'match-chip--positive')}>
+                                                                {keyword}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {cvMatchResult.missingKeywords.length > 0 && (
+                                                <div className={cx('match-keywords')}>
+                                                    <span className={cx('match-keywords-title')}>
+                                                        {language === 'vi' ? 'Từ khóa còn thiếu' : 'Missing keywords'}
+                                                    </span>
+                                                    <div className={cx('match-chip-list')}>
+                                                        {cvMatchResult.missingKeywords.map((keyword) => (
+                                                            <span key={keyword} className={cx('match-chip', 'match-chip--neutral')}>
+                                                                {keyword}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -374,24 +591,25 @@ const Job = ({ onBack, onPageChange }) => {
                         </div>
 
                         <div className={cx('popup-actions')}>
-                            <button
-                                className={cx('popup-btn', 'popup-btn--cancel')}
-                                onClick={() => setShowApplyPopup(false)}
-                            >
+                            <button className={cx('popup-btn', 'popup-btn--cancel')} onClick={closeApplyPopup}>
                                 {language === 'vi' ? 'Hủy' : 'Cancel'}
                             </button>
                             <button
                                 className={cx('popup-btn', 'popup-btn--submit')}
                                 onClick={handleApplySubmit}
-                                disabled={!cvOption}
+                                disabled={!cvOption || isAnalyzingCv}
                             >
                                 {cvOption === 'create'
                                     ? language === 'vi'
                                         ? 'Đi đến tạo CV'
                                         : 'Go to CV Builder'
-                                    : language === 'vi'
-                                      ? 'Gửi ứng tuyển'
-                                      : 'Submit Application'}
+                                    : isAnalyzingCv
+                                      ? language === 'vi'
+                                          ? 'Đang phân tích...'
+                                          : 'Analyzing...'
+                                      : language === 'vi'
+                                        ? 'Gửi ứng tuyển'
+                                        : 'Submit Application'}
                             </button>
                         </div>
                     </div>

@@ -23,7 +23,9 @@ export class JobsService {
   async Jobs(): Promise<JobsDto[]> {
     const jobs = await this.jobsModel
       .find()
-      .select('title employer_id')
+      .select(
+        'title description employer_id job_type min_salary max_salary location deadline industry experience requirements level status',
+      )
       .populate({
         path: 'Employer',
         select: 'company_name logo',
@@ -37,6 +39,18 @@ export class JobsService {
         title: job.title,
         company_name: employer?.company_name || '',
         logo: employer?.logo || '',
+        employer_id: job.employer_id?.toString?.() || '',
+        description: job.description,
+        job_type: job.job_type,
+        min_salary: job.min_salary,
+        max_salary: job.max_salary,
+        location: job.location,
+        deadline: job.deadline,
+        industry: job.industry,
+        experience: job.experience,
+        requirements: job.requirements,
+        level: job.level,
+        status: job.status,
       };
     });
   }
@@ -54,7 +68,20 @@ export class JobsService {
       })
       .lean()
       .exec();
-    return detailJob;
+    if (!detailJob) {
+      return null;
+    }
+
+    const employer = (detailJob as any).Employer;
+    return {
+      ...detailJob,
+      id: detailJob._id?.toString?.() || id,
+      employer_id: detailJob.employer_id?.toString?.() || '',
+      company_name: employer?.company_name || '',
+      logo: employer?.logo || '',
+      email: employer?.User?.email || '',
+      employer_name: employer?.User?.name || '',
+    };
   }
 
   async CreateJob(user: JwtUser, createJobdto: CreateJobDto): Promise<{ status: any }> {

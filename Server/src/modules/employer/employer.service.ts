@@ -15,8 +15,11 @@ export class EmployerService {
       {},
       {
         company_name: 1,
+        description: 1,
         industry: 1,
         size: 1,
+        address: 1,
+        website: 1,
         logo: 1,
       },
     );

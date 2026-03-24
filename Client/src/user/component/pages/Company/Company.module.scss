@@ -200,6 +200,29 @@
   }
 }
 
+.summary-box {
+  min-height: 48px;
+  padding: 0.75rem 0.95rem;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  background: #f8fbff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  strong {
+    color: #007bff;
+    font-size: 1.15rem;
+    line-height: 1.1;
+  }
+
+  span {
+    color: #6b7280;
+    font-size: 0.8rem;
+    margin-top: 2px;
+  }
+}
+
 .salary-range {
   .salary-slider {
     width: 100%;
@@ -304,6 +327,35 @@
   line-height: 1.4;
 }
 
+.company-description {
+  color: #666;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  margin: 0 0 1rem;
+  min-height: 72px;
+}
+
+.company-meta-list {
+  display: grid;
+  gap: 0.55rem;
+  margin-bottom: 1rem;
+}
+
+.company-meta-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  color: #4b5563;
+  font-size: 0.9rem;
+  line-height: 1.5;
+
+  i {
+    color: #007bff;
+    width: 16px;
+    margin-top: 2px;
+  }
+}
+
 .apply-btn {
   background: #007bff;
   color: white;
@@ -382,5 +434,9 @@
   
   .container {
     padding: 0 15px;
+  }
+
+  .company-description {
+    min-height: unset;
   }
 }

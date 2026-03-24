@@ -7,37 +7,48 @@ import type { Request } from 'express';
 import { ApplicationsService } from './applications.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
+const cvUploadOptions = {
+  storage: diskStorage({
+    destination: './uploads/cvs',
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+      cb(null, `cv-${uniqueSuffix}${extname(file.originalname)}`);
+    },
+  }),
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.match(/\/(pdf|msword|vnd\.openxmlformats-officedocument\.wordprocessingml\.document)$/)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PDF, DOC, DOCX files are allowed!'), false);
+    }
+  },
+  limits: {
+    fileSize: 5 * 1024 * 1024,
+  },
+};
+
 @Controller('applications')
 export class ApplicationsController {
   constructor(private readonly applicationsService: ApplicationsService) {}
   
   @UseGuards(JwtAuthGuard)
   @Post('')
-  async ApplyJob(@Body('id') job_id: string, @Req() req: Request) {
-    return this.applicationsService.applyJobs(job_id, req.user as JwtUser);
+  @UseInterceptors(FileInterceptor('cv', cvUploadOptions))
+  async ApplyJob(
+    @Body('id') job_id: string,
+    @Body('coverLetter') coverLetter: string,
+    @UploadedFile() cvFile: Express.Multer.File,
+    @Req() req: Request,
+  ) {
+    return this.applicationsService.applyJobs(job_id, req.user as JwtUser, {
+      cvFile,
+      coverLetter,
+    });
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('apply-with-details')
-  @UseInterceptors(FileInterceptor('cv', {
-    storage: diskStorage({
-      destination: './uploads/cvs',
-      filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, `cv-${uniqueSuffix}${extname(file.originalname)}`);
-      },
-    }),
-    fileFilter: (req, file, cb) => {
-      if (file.mimetype.match(/\/(pdf|msword|vnd\.openxmlformats-officedocument\.wordprocessingml\.document)$/)) {
-        cb(null, true);
-      } else {
-        cb(new Error('Only PDF, DOC, DOCX files are allowed!'), false);
-      }
-    },
-    limits: {
-      fileSize: 5 * 1024 * 1024, // 5MB
-    },
-  }))
+  @UseInterceptors(FileInterceptor('cv', cvUploadOptions))
   async applyWithDetails(
     @Body() applicationData: {
       jobId: string;
