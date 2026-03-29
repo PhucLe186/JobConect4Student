@@ -40,6 +40,7 @@ const publicRoutes = [
     { path: routesconfig.companyDetail, component: CompanyDetail },
     { path: routesconfig.role, component: Role, layout: null },
     { path: routesconfig.cvBuilder, component: CVBuilder },
+    { path: routesconfig.jobSuggestions, component: JobSuggestions },
     { path: routesconfig.applicationhistory, component: ApplicationHistory, layout: Default },
     { path: routesconfig.studentprofile, component: StudentProfile, layout: Default },
     { path: routesconfig.CandidateManagement, component: CandidateManagement, layout: Default  },

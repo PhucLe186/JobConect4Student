@@ -36,10 +36,285 @@ const COMPANY_LOGO_KEYWORDS = [
     { pattern: /visa/i, logo: VisaLogo },
 ];
 
+const COMPANY_VARIANTS = [
+    {
+        suffix: 'Tech Center',
+        unit: 'tech-center',
+        sizeOffset: 0,
+        description: 'Tap trung phat trien san pham web, mobile va he thong noi bo.',
+    },
+    {
+        suffix: 'Digital Hub',
+        unit: 'digital-hub',
+        sizeOffset: 65,
+        description: 'Phat trien cac nen tang so, du lieu va tu dong hoa quy trinh van hanh.',
+    },
+    {
+        suffix: 'Innovation Lab',
+        unit: 'innovation-lab',
+        sizeOffset: 120,
+        description: 'Thu nghiem tinh nang moi, toi uu trai nghiem va xay dung prototype san pham.',
+    },
+    {
+        suffix: 'Operations Office',
+        unit: 'operations-office',
+        sizeOffset: 180,
+        description: 'Dieu phoi van hanh, giam sat chat luong dich vu va ho tro phong ban lien quan.',
+    },
+    {
+        suffix: 'Experience Studio',
+        unit: 'experience-studio',
+        sizeOffset: 240,
+        description: 'Tap trung vao customer experience, design system va tang truong nguoi dung.',
+    },
+];
+
+const JOB_TEMPLATES = [
+    {
+        title: 'Frontend React Developer',
+        job_type: 'full-time',
+        experience: '2 năm',
+        level: 'Nhân viên',
+        min_salary: 18000000,
+        max_salary: 30000000,
+        description: 'Phat trien giao dien web, dashboard va cong cu noi bo cho san pham dang tang truong.',
+        requirements: 'Thanh thao React, TypeScript, HTML, CSS, REST API va toi uu hieu nang giao dien.',
+    },
+    {
+        title: 'Backend Developer',
+        job_type: 'full-time',
+        experience: '2 năm',
+        level: 'Nhân viên',
+        min_salary: 20000000,
+        max_salary: 34000000,
+        description: 'Xay dung API, service backend va toi uu luong du lieu cho he thong van hanh.',
+        requirements: 'Node.js hoac Java, SQL, Redis, API design va kinh nghiem lam viec voi cloud.',
+    },
+    {
+        title: 'Product Designer',
+        job_type: 'full-time',
+        experience: '1 năm',
+        level: 'Nhân viên',
+        min_salary: 15000000,
+        max_salary: 26000000,
+        description: 'Thiet ke luong nguoi dung, wireframe va prototype cho san pham web va mobile.',
+        requirements: 'Figma, UX research, design system, prototype va kha nang phoi hop voi dev team.',
+    },
+    {
+        title: 'Data Analyst',
+        job_type: 'full-time',
+        experience: '1 năm',
+        level: 'Nhân viên',
+        min_salary: 16000000,
+        max_salary: 28000000,
+        description: 'Phan tich du lieu, xay dung dashboard va de xuat cai tien dua tren chi so kinh doanh.',
+        requirements: 'SQL, Excel, Power BI hoac Tableau, tu duy phan tich va trinh bay du lieu.',
+    },
+    {
+        title: 'QA Automation Engineer',
+        job_type: 'full-time',
+        experience: '1 năm',
+        level: 'Nhân viên',
+        min_salary: 17000000,
+        max_salary: 29000000,
+        description: 'Xay dung bo test automation va bao cao chat luong cho he thong san pham.',
+        requirements: 'API testing, Selenium hoac Cypress, bug tracking va quy trinh kiem thu phan mem.',
+    },
+];
+
+const COMPANY_SEEDS = [
+    {
+        brand: 'Google Vietnam',
+        industry: 'Cong nghe thong tin va nen tang so',
+        city: 'TP.HCM',
+        districts: ['Quan 1', 'Quan 3', 'Binh Thanh', 'TP. Thu Duc', 'Tan Binh'],
+        streets: ['Le Loi', 'Nguyen Hue', 'Ton Duc Thang', 'Dong Khoi', 'Vo Van Kiet'],
+        description: 'Doanh nghiep cong nghe quoc te phat trien he sinh thai tim kiem, cloud, du lieu va AI.',
+        sizeBase: 1100,
+        website: 'https://careers.google.com',
+    },
+    {
+        brand: 'Grab Vietnam',
+        industry: 'Cong nghe va van tai so',
+        city: 'TP.HCM',
+        districts: ['Quan 1', 'Quan 7', 'Phu Nhuan', 'TP. Thu Duc', 'Binh Thanh'],
+        streets: ['Nguyen Thi Minh Khai', 'Le Duan', 'Mai Chi Tho', 'Pham Viet Chanh', 'Nam Ky Khoi Nghia'],
+        description: 'He sinh thai goi xe, giao nhan va fintech voi doi ngu van hanh va san pham lon.',
+        sizeBase: 900,
+        website: 'https://www.grab.com/vn',
+    },
+    {
+        brand: 'LG Electronics Vietnam',
+        industry: 'Dien tu va thiet bi gia dung',
+        city: 'Hai Phong',
+        districts: ['Trang Due', 'Le Chan', 'Ngo Quyen', 'An Duong', 'Hong Bang'],
+        streets: ['Pham Van Dong', 'Le Hong Phong', 'Ho Sen', 'Tran Nguyen Han', 'Hai Phong Gate'],
+        description: 'Phat trien thiet bi thong minh, giai phap dien tu va he thong quan ly san xuat.',
+        sizeBase: 1500,
+        website: 'https://www.lg.com/vn',
+    },
+    {
+        brand: 'Samsung Vietnam',
+        industry: 'Dien tu, thiet bi di dong va ban dan',
+        city: 'Bac Ninh',
+        districts: ['Yen Phong', 'Tu Son', 'Tien Du', 'Que Vo', 'Bac Ninh City'],
+        streets: ['Tran Hung Dao', 'Nguyen Trai', 'Ly Anh Tong', 'Ngo Gia Tu', 'Quoc Lo 18'],
+        description: 'Tap doan cong nghe voi trung tam san xuat, R&D va doi ngu van hanh quy mo lon.',
+        sizeBase: 2500,
+        website: 'https://www.samsung.com/vn',
+    },
+    {
+        brand: 'Microsoft Vietnam',
+        industry: 'Phan mem, cloud va AI',
+        city: 'Ha Noi',
+        districts: ['Ba Dinh', 'Cau Giay', 'Dong Da', 'Nam Tu Liem', 'Hai Ba Trung'],
+        streets: ['Lieu Giai', 'Pham Hung', 'Ton That Thuyet', 'Tran Duy Hung', 'Kim Ma'],
+        description: 'Cung cap giai phap cloud, nang suat va tu dong hoa cho doanh nghiep tai Viet Nam.',
+        sizeBase: 850,
+        website: 'https://www.microsoft.com/vi-vn',
+    },
+    {
+        brand: 'Oracle Vietnam',
+        industry: 'Cloud, co so du lieu va enterprise software',
+        city: 'TP.HCM',
+        districts: ['Quan 1', 'Quan 3', 'Quan 4', 'Quan 7', 'TP. Thu Duc'],
+        streets: ['Nguyen Du', 'Hai Trieu', 'Pasteur', 'Vo Van Tan', 'Dien Bien Phu'],
+        description: 'Tap trung vao cloud infrastructure, co so du lieu va giai phap van hanh doanh nghiep.',
+        sizeBase: 760,
+        website: 'https://www.oracle.com/vn',
+    },
+    {
+        brand: 'Shopee Vietnam',
+        industry: 'Thuong mai dien tu',
+        city: 'Ha Noi',
+        districts: ['Cau Giay', 'Ba Dinh', 'Hai Ba Trung', 'Dong Da', 'Long Bien'],
+        streets: ['Dien Bien Phu', 'Xa Dan', 'Nguyen Chi Thanh', 'Minh Khai', 'Tran Hung Dao'],
+        description: 'Nen tang e-commerce lon tap trung vao van hanh seller, buyer va logistics.',
+        sizeBase: 1200,
+        website: 'https://shopee.vn',
+    },
+    {
+        brand: 'TikTok Vietnam',
+        industry: 'Mang xa hoi va noi dung so',
+        city: 'TP.HCM',
+        districts: ['Quan 1', 'Quan 2', 'Quan 4', 'Quan 7', 'TP. Thu Duc'],
+        streets: ['Pasteur', 'Nguyen Binh Khiem', 'Vo Thi Sau', 'Le Thanh Ton', 'Nguyen Huu Canh'],
+        description: 'Phat trien nen tang noi dung so, creator tools, ads va giai phap moderation.',
+        sizeBase: 980,
+        website: 'https://www.tiktok.com',
+    },
+    {
+        brand: 'Naver Vietnam',
+        industry: 'Internet service va AI',
+        city: 'Da Nang',
+        districts: ['Hai Chau', 'Thanh Khe', 'Son Tra', 'Lien Chieu', 'Ngu Hanh Son'],
+        streets: ['Nguyen Van Linh', 'Vo Nguyen Giap', 'Tran Phu', 'Bach Dang', '2 Thang 9'],
+        description: 'Doanh nghiep internet va AI voi cac doi ky thuat, du lieu va san pham quoc te.',
+        sizeBase: 640,
+        website: 'https://www.navercorp.com',
+    },
+    {
+        brand: 'NEC Vietnam',
+        industry: 'Ha tang CNTT va giai phap doanh nghiep',
+        city: 'Ha Noi',
+        districts: ['Nam Tu Liem', 'Cau Giay', 'Ba Dinh', 'Thanh Xuan', 'Tay Ho'],
+        streets: ['Pham Hung', 'Le Duc Tho', 'To Huu', 'Khuat Duy Tien', 'Nguyen Hoang'],
+        description: 'Cung cap giai phap ha tang, quan tri he thong, an ninh va chinh phu so.',
+        sizeBase: 700,
+        website: 'https://www.nec.com',
+    },
+    {
+        brand: 'IBM Vietnam',
+        industry: 'Tu van cong nghe, hybrid cloud va data',
+        city: 'TP.HCM',
+        districts: ['Quan 1', 'Quan 3', 'Binh Thanh', 'Quan 7', 'TP. Thu Duc'],
+        streets: ['Le Thanh Ton', 'Nguyen Hue', 'Cach Mang Thang 8', 'Hoang Van Thu', 'Xa Lo Ha Noi'],
+        description: 'Tap trung vao data platform, tu van doanh nghiep va giai phap tu dong hoa.',
+        sizeBase: 720,
+        website: 'https://www.ibm.com/vn-vi',
+    },
+    {
+        brand: 'MB Bank Digital',
+        industry: 'Ngan hang so va fintech',
+        city: 'Ha Noi',
+        districts: ['Cau Giay', 'Dong Da', 'Ba Dinh', 'Thanh Xuan', 'Hai Ba Trung'],
+        streets: ['Le Van Luong', 'Tran Duy Hung', 'Nguyen Tuan', 'Thai Ha', 'Lang Ha'],
+        description: 'Khoi cong nghe phat trien ung dung ngan hang so, he thong thanh toan va du lieu.',
+        sizeBase: 1300,
+        website: 'https://www.mbbank.com.vn',
+    },
+    {
+        brand: 'Techcombank Digital',
+        industry: 'Tai chinh va ngan hang',
+        city: 'Da Nang',
+        districts: ['Hai Chau', 'Son Tra', 'Thanh Khe', 'Cam Le', 'Lien Chieu'],
+        streets: ['Nguyen Hue', 'Tran Hung Dao', 'Le Duan', 'Hoang Dieu', 'Pham Van Dong'],
+        description: 'Van hanh va phat trien he thong tai chinh so, CRM va trai nghiem khach hang.',
+        sizeBase: 880,
+        website: 'https://www.techcombank.com',
+    },
+    {
+        brand: 'VNG Corporation',
+        industry: 'Cong nghe, game va digital product',
+        city: 'TP.HCM',
+        districts: ['Quan 7', 'Quan 1', 'TP. Thu Duc', 'Quan 4', 'Quan 3'],
+        streets: ['Nguyen Van Linh', 'Huynh Tan Phat', 'Ben Van Don', 'Dien Bien Phu', 'Cach Mang Thang 8'],
+        description: 'Cong ty cong nghe Viet Nam tap trung vao game, thanh toan, cloud va san pham so.',
+        sizeBase: 1400,
+        website: 'https://vng.com.vn',
+    },
+    {
+        brand: 'MoMo',
+        industry: 'Fintech va thanh toan dien tu',
+        city: 'TP.HCM',
+        districts: ['Quan 1', 'Quan 3', 'Quan 10', 'Phu Nhuan', 'TP. Thu Duc'],
+        streets: ['Pasteur', 'Nam Ky Khoi Nghia', 'Nguyen Thi Minh Khai', 'Hoang Van Thu', 'Mai Chi Tho'],
+        description: 'Nen tang vi dien tu va thanh toan so voi he thong van hanh quy mo lon.',
+        sizeBase: 980,
+        website: 'https://momo.vn',
+    },
+    {
+        brand: 'GHN - Giao Hang Nhanh',
+        industry: 'Logistics va van chuyen',
+        city: 'Hai Phong',
+        districts: ['Le Chan', 'Ngo Quyen', 'Duong Kinh', 'An Duong', 'Kien An'],
+        streets: ['Hai Phong Port', 'Lach Tray', 'To Hieu', 'Ho Sen', 'Tran Nguyen Han'],
+        description: 'Mang luoi logistics va giao nhan phat trien nhanh voi doi van hanh tren toan quoc.',
+        sizeBase: 1600,
+        website: 'https://ghn.vn',
+    },
+    {
+        brand: 'FPT Software',
+        industry: 'Phan mem va outsourcing',
+        city: 'Da Nang',
+        districts: ['Ngu Hanh Son', 'Hai Chau', 'Lien Chieu', 'Cam Le', 'Son Tra'],
+        streets: ['Vo Chi Cong', '2 Thang 9', 'Nguyen Van Linh', 'Le Duan', 'Nguyen Tat Thanh'],
+        description: 'Doanh nghiep phan mem phat trien du an offshore, san pham so va giai phap doanh nghiep.',
+        sizeBase: 2200,
+        website: 'https://fptsoftware.com',
+    },
+    {
+        brand: 'ZaloPay',
+        industry: 'Fintech va nen tang dich vu so',
+        city: 'Ha Noi',
+        districts: ['Ba Dinh', 'Cau Giay', 'Tay Ho', 'Dong Da', 'Thanh Xuan'],
+        streets: ['Kim Ma', 'Hoang Dao Thuy', 'Le Van Luong', 'Ton Duc Thang', 'Lang Ha'],
+        description: 'Nen tang thanh toan so va dich vu tai chinh gan voi he sinh thai nguoi dung lon.',
+        sizeBase: 900,
+        website: 'https://zalopay.vn',
+    },
+];
+
 const toNumber = (value, fallback = 0) => {
     const parsedValue = Number(value);
     return Number.isFinite(parsedValue) ? parsedValue : fallback;
 };
+
+const slugify = (value = '') =>
+    value
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
 
 const formatCurrency = (value) =>
     toNumber(value).toLocaleString('vi-VN', {
@@ -89,353 +364,83 @@ export const getCompanyLogo = (companyName = '', providedLogo = '') => {
     return createCompanyPlaceholder(companyName);
 };
 
-const createCompanyId = (name) =>
-    `mock-company-${name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, '')}`;
+const createCompanyId = (name) => `mock-company-${slugify(name)}`;
 
-const createJobId = (name) =>
-    `mock-job-${name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, '')}`;
+const createJobId = (name) => `mock-job-${slugify(name)}`;
 
-export const MOCK_COMPANIES = [
-    {
-        _id: createCompanyId('Google Vietnam'),
-        company_name: 'Google Vietnam',
-        industry: 'Cong nghe thong tin va nen tang so',
-        size: 1200,
-        address: 'Toa nha Deutsches Haus, Quan 1, TP.HCM',
-        website: 'https://about.google',
-        description: 'Van hanh nhieu san pham tim kiem, ban do, cloud va giai phap AI cho thi truong Viet Nam.',
-    },
-    {
-        _id: createCompanyId('Grab Vietnam'),
-        company_name: 'Grab Vietnam',
-        industry: 'Cong nghe, giao nhan va fintech',
-        size: 1800,
-        address: 'Mapletree Business Centre, TP. Thu Duc, TP.HCM',
-        website: 'https://www.grab.com/vn',
-        description: 'Phat trien he sinh thai giao thong, giao hang, thanh toan va dich vu so tai Dong Nam A.',
-    },
-    {
-        _id: createCompanyId('LG Electronics Vietnam'),
-        company_name: 'LG Electronics Vietnam',
-        industry: 'Dien tu va thiet bi gia dung',
-        size: 2400,
-        address: 'Khu cong nghiep Trang Due, Hai Phong',
-        website: 'https://www.lg.com/vn',
-        description: 'San xuat va phat trien cac dong san pham gia dung, man hinh, giai tri va thiet bi thong minh.',
-    },
-    {
-        _id: createCompanyId('Samsung Vietnam'),
-        company_name: 'Samsung Vietnam',
-        industry: 'Dien tu, thiet bi di dong va ban dan',
-        size: 5000,
-        address: 'Khu cong nghiep Yen Phong, Bac Ninh',
-        website: 'https://www.samsung.com/vn',
-        description: 'Tap doan cong nghe toan cau voi cac trung tam san xuat, R&D va van hanh quy mo lon tai Viet Nam.',
-    },
-    {
-        _id: createCompanyId('Microsoft Vietnam'),
-        company_name: 'Microsoft Vietnam',
-        industry: 'Phan mem, cloud va AI',
-        size: 950,
-        address: 'Capital Place, Ba Dinh, Ha Noi',
-        website: 'https://www.microsoft.com/vi-vn',
-        description: 'Cung cap giai phap doanh nghiep, cloud Azure va cong cu nang suat cho nhieu to chuc tai Viet Nam.',
-    },
-    {
-        _id: createCompanyId('Oracle Vietnam'),
-        company_name: 'Oracle Vietnam',
-        industry: 'Cloud, co so du lieu va enterprise software',
-        size: 700,
-        address: 'Bitexco Financial Tower, Quan 1, TP.HCM',
-        website: 'https://www.oracle.com/vn',
-        description: 'Chuyen ve co so du lieu, cloud infrastructure va cac ung dung quan tri doanh nghiep.',
-    },
-    {
-        _id: createCompanyId('Shopee Vietnam'),
-        company_name: 'Shopee Vietnam',
-        industry: 'Thuong mai dien tu',
-        size: 2200,
-        address: 'Saigon Centre, Quan 1, TP.HCM',
-        website: 'https://shopee.vn',
-        description: 'Nen tang e-commerce lon voi cac doi ngu san pham, du lieu, van hanh va marketing tang truong nhanh.',
-    },
-    {
-        _id: createCompanyId('TikTok Vietnam'),
-        company_name: 'TikTok Vietnam',
-        industry: 'Mang xa hoi va noi dung so',
-        size: 1300,
-        address: 'The Hallmark, TP. Thu Duc, TP.HCM',
-        website: 'https://www.tiktok.com',
-        description: 'Nen tang video ngan toan cau voi cac nhom creator growth, ads, moderation va engineering.',
-    },
-    {
-        _id: createCompanyId('Naver Vietnam'),
-        company_name: 'Naver Vietnam',
-        industry: 'Internet service va AI',
-        size: 650,
-        address: 'Da Nang Software Park, Da Nang',
-        website: 'https://www.navercorp.com',
-        description: 'Phat trien cac nen tang tim kiem, cloud, AI va dich vu internet cho thi truong quoc te.',
-    },
-    {
-        _id: createCompanyId('NEC Vietnam'),
-        company_name: 'NEC Vietnam',
-        industry: 'Ha tang CNTT va giai phap doanh nghiep',
-        size: 780,
-        address: 'Keangnam Landmark, Nam Tu Liem, Ha Noi',
-        website: 'https://www.nec.com',
-        description: 'Tap trung vao ha tang he thong, giai phap chinh phu so, bao mat va van hanh doanh nghiep.',
-    },
-    {
-        _id: createCompanyId('IBM Vietnam'),
-        company_name: 'IBM Vietnam',
-        industry: 'Tu van cong nghe, hybrid cloud va data',
-        size: 860,
-        address: 'The Nexus, Quan 1, TP.HCM',
-        website: 'https://www.ibm.com/vn-vi',
-        description: 'Cung cap giai phap data, automation, consulting va cloud cho doanh nghiep lon.',
-    },
-    {
-        _id: createCompanyId('MB Bank Digital'),
-        company_name: 'MB Bank Digital',
-        industry: 'Ngan hang so va fintech',
-        size: 1600,
-        address: 'Le Van Luong, Cau Giay, Ha Noi',
-        website: 'https://www.mbbank.com.vn',
-        description: 'Khoi cong nghe cua MB Bank tap trung vao mobile banking, core services, du lieu va bao mat.',
-    },
-];
+const createAddress = (seed, variantIndex) => {
+    const district = seed.districts[variantIndex % seed.districts.length];
+    const street = seed.streets[variantIndex % seed.streets.length];
+    const streetNumber = 18 + (variantIndex + 1) * 27;
 
-export const MOCK_JOBS = [
-    {
-        id: createJobId('Frontend React Developer Google Vietnam'),
-        employer_id: createCompanyId('Google Vietnam'),
-        title: 'Frontend React Developer',
-        company_name: 'Google Vietnam',
-        location: 'TP.HCM',
-        job_type: 'full-time',
-        min_salary: '22000000',
-        max_salary: '35000000',
-        experience: '2 năm',
-        industry: 'Cong nghe thong tin va nen tang so',
-        deadline: '2026-06-30',
-        description: 'Phat trien giao dien web, dashboard va cong cu noi bo cho cac san pham quy mo lon.',
-        requirements: 'Thanh thao React, TypeScript, HTML, CSS, REST API va toi uu hieu nang giao dien.',
-        level: 'Nhân viên',
-        status: 'open',
-    },
-    {
-        id: createJobId('Product Designer Grab Vietnam'),
-        employer_id: createCompanyId('Grab Vietnam'),
-        title: 'Product Designer',
-        company_name: 'Grab Vietnam',
-        location: 'TP.HCM',
-        job_type: 'full-time',
-        min_salary: '18000000',
-        max_salary: '28000000',
-        experience: '2 năm',
-        industry: 'Cong nghe, giao nhan va fintech',
-        deadline: '2026-07-05',
-        description: 'Thiet ke luong nguoi dung cho ung dung di dong va nen tang merchant.',
-        requirements: 'Figma, design system, UX research, prototype va tu duy san pham.',
-        level: 'Nhân viên',
-        status: 'open',
-    },
-    {
-        id: createJobId('QA Automation Engineer LG Electronics Vietnam'),
-        employer_id: createCompanyId('LG Electronics Vietnam'),
-        title: 'QA Automation Engineer',
-        company_name: 'LG Electronics Vietnam',
-        location: 'Hai Phong',
-        job_type: 'full-time',
-        min_salary: '16000000',
-        max_salary: '26000000',
-        experience: '1 năm',
-        industry: 'Dien tu va thiet bi gia dung',
-        deadline: '2026-06-18',
-        description: 'Xay dung bo test automation cho he thong quan ly san xuat va dashboard noi bo.',
-        requirements: 'Selenium, Cypress, API testing, SQL va bao cao chat luong.',
-        level: 'Nhân viên',
-        status: 'open',
-    },
-    {
-        id: createJobId('Android Developer Samsung Vietnam'),
-        employer_id: createCompanyId('Samsung Vietnam'),
-        title: 'Android Developer',
-        company_name: 'Samsung Vietnam',
-        location: 'Bac Ninh',
-        job_type: 'full-time',
-        min_salary: '25000000',
-        max_salary: '40000000',
-        experience: '3 năm',
-        industry: 'Dien tu, thiet bi di dong va ban dan',
-        deadline: '2026-07-12',
-        description: 'Phat trien tinh nang cho ung dung mobile va cong cu he thong noi bo.',
-        requirements: 'Kotlin, Java, clean architecture, unit test va toi uu hieu nang.',
-        level: 'Nhân viên',
-        status: 'open',
-    },
-    {
-        id: createJobId('Cloud Engineer Microsoft Vietnam'),
-        employer_id: createCompanyId('Microsoft Vietnam'),
-        title: 'Cloud Engineer',
-        company_name: 'Microsoft Vietnam',
-        location: 'Ha Noi',
-        job_type: 'full-time',
-        min_salary: '30000000',
-        max_salary: '45000000',
-        experience: '3 năm',
-        industry: 'Phan mem, cloud va AI',
-        deadline: '2026-07-20',
-        description: 'Van hanh va toi uu ha tang cloud cho cac ung dung doanh nghiep.',
-        requirements: 'Azure, Docker, Kubernetes, CI/CD, monitoring va networking.',
-        level: 'Trưởng nhóm',
-        status: 'open',
-    },
-    {
-        id: createJobId('Database Administrator Oracle Vietnam'),
-        employer_id: createCompanyId('Oracle Vietnam'),
-        title: 'Database Administrator',
-        company_name: 'Oracle Vietnam',
-        location: 'TP.HCM',
-        job_type: 'full-time',
-        min_salary: '28000000',
-        max_salary: '42000000',
-        experience: '3 năm',
-        industry: 'Cloud, co so du lieu va enterprise software',
-        deadline: '2026-08-01',
-        description: 'Quan tri he thong co so du lieu va ho tro trien khai cho khach hang doanh nghiep.',
-        requirements: 'Oracle DB, SQL, performance tuning, backup va shell scripting.',
-        level: 'Nhân viên',
-        status: 'open',
-    },
-    {
-        id: createJobId('Data Analyst Shopee Vietnam'),
-        employer_id: createCompanyId('Shopee Vietnam'),
-        title: 'Data Analyst',
-        company_name: 'Shopee Vietnam',
-        location: 'TP.HCM',
-        job_type: 'full-time',
-        min_salary: '18000000',
-        max_salary: '32000000',
-        experience: '1 năm',
-        industry: 'Thuong mai dien tu',
-        deadline: '2026-06-28',
-        description: 'Phan tich hanh vi nguoi dung, dashboard kinh doanh va chi so van hanh.',
-        requirements: 'SQL, Excel, Power BI, Python va ky nang trinh bay du lieu.',
-        level: 'Nhân viên',
-        status: 'open',
-    },
-    {
-        id: createJobId('Content Strategy Associate TikTok Vietnam'),
-        employer_id: createCompanyId('TikTok Vietnam'),
-        title: 'Content Strategy Associate',
-        company_name: 'TikTok Vietnam',
-        location: 'TP.HCM',
-        job_type: 'full-time',
-        min_salary: '15000000',
-        max_salary: '25000000',
-        experience: '1 năm',
-        industry: 'Mang xa hoi va noi dung so',
-        deadline: '2026-06-26',
-        description: 'Phan tich xu huong noi dung va toi uu chien luoc tang truong creator.',
-        requirements: 'Marketing, communication, analytics va van hanh chien dich.',
-        level: 'Nhân viên',
-        status: 'open',
-    },
-    {
-        id: createJobId('AI Research Intern Naver Vietnam'),
-        employer_id: createCompanyId('Naver Vietnam'),
-        title: 'AI Research Intern',
-        company_name: 'Naver Vietnam',
-        location: 'Da Nang',
-        job_type: 'internship',
-        min_salary: '6000000',
-        max_salary: '10000000',
-        experience: 'không yêu cầu',
-        industry: 'Internet service va AI',
-        deadline: '2026-07-10',
-        description: 'Ho tro thu nghiem mo hinh, xu ly du lieu va danh gia ket qua AI.',
-        requirements: 'Python, machine learning, data analysis va doc hieu tai lieu tieng Anh.',
-        level: 'Thực tập sinh',
-        status: 'open',
-    },
-    {
-        id: createJobId('System Engineer NEC Vietnam'),
-        employer_id: createCompanyId('NEC Vietnam'),
-        title: 'System Engineer',
-        company_name: 'NEC Vietnam',
-        location: 'Ha Noi',
-        job_type: 'full-time',
-        min_salary: '17000000',
-        max_salary: '29000000',
-        experience: '2 năm',
-        industry: 'Ha tang CNTT va giai phap doanh nghiep',
-        deadline: '2026-07-15',
-        description: 'Trien khai ha tang server, quan tri he thong va ho tro du an doanh nghiep.',
-        requirements: 'Windows Server, Linux, network, virtualization va troubleshooting.',
-        level: 'Nhân viên',
-        status: 'open',
-    },
-    {
-        id: createJobId('Business Analyst IBM Vietnam'),
-        employer_id: createCompanyId('IBM Vietnam'),
-        title: 'Business Analyst',
-        company_name: 'IBM Vietnam',
-        location: 'TP.HCM',
-        job_type: 'full-time',
-        min_salary: '20000000',
-        max_salary: '34000000',
-        experience: '2 năm',
-        industry: 'Tu van cong nghe, hybrid cloud va data',
-        deadline: '2026-07-18',
-        description: 'Lam viec voi stakeholder de mo ta quy trinh, yeu cau va giai phap so hoa.',
-        requirements: 'Documentation, stakeholder management, SQL va ky nang phan tich nghiep vu.',
-        level: 'Nhân viên',
-        status: 'open',
-    },
-    {
-        id: createJobId('Backend Developer MB Bank Digital'),
-        employer_id: createCompanyId('MB Bank Digital'),
-        title: 'Backend Developer',
-        company_name: 'MB Bank Digital',
-        location: 'Ha Noi',
-        job_type: 'full-time',
-        min_salary: '22000000',
-        max_salary: '36000000',
-        experience: '2 năm',
-        industry: 'Ngan hang so va fintech',
-        deadline: '2026-07-25',
-        description: 'Phat trien microservice cho ung dung ngan hang so va he thong thanh toan.',
-        requirements: 'Java hoặc Node.js, Spring Boot hoặc NestJS, Redis, Kafka va SQL.',
-        level: 'Nhân viên',
-        status: 'open',
-    },
-];
+    return `${streetNumber} ${street}, ${district}, ${seed.city}`;
+};
+
+const createWebsite = (seed, variant) => `${seed.website.replace(/\/$/, '')}/${variant.unit}`;
+
+const buildMockCompanies = () =>
+    COMPANY_SEEDS.flatMap((seed) =>
+        COMPANY_VARIANTS.map((variant, variantIndex) => {
+            const companyName = `${seed.brand} ${variant.suffix}`;
+
+            return {
+                _id: createCompanyId(companyName),
+                company_name: companyName,
+                industry: seed.industry,
+                size: seed.sizeBase + variant.sizeOffset,
+                address: createAddress(seed, variantIndex),
+                website: createWebsite(seed, variant),
+                description: `${seed.description} ${variant.description}`,
+                logo: getCompanyLogo(companyName),
+            };
+        }),
+    );
+
+const buildMockJobs = (companies) =>
+    companies.map((company, index) => {
+        const template = JOB_TEMPLATES[index % JOB_TEMPLATES.length];
+        const deadlineDate = new Date(2026, 4 + (index % 4), 5 + (index % 20));
+        const salaryOffset = (index % 6) * 1000000;
+
+        return {
+            id: createJobId(`${company.company_name}-${template.title}`),
+            employer_id: company._id,
+            title: template.title,
+            company_name: company.company_name,
+            location: company.address.split(',').slice(1).join(',').trim(),
+            job_type: template.job_type,
+            min_salary: String(template.min_salary + salaryOffset),
+            max_salary: String(template.max_salary + salaryOffset),
+            experience: template.experience,
+            industry: company.industry,
+            deadline: deadlineDate.toISOString().slice(0, 10),
+            description: `${template.description} Lam viec tai ${company.company_name} voi moi truong chuyen nghiep va quy trinh ro rang.`,
+            requirements: template.requirements,
+            level: template.level,
+            status: 'open',
+            logo: company.logo,
+        };
+    });
+
+export const MOCK_COMPANIES = buildMockCompanies();
+export const MOCK_JOBS = buildMockJobs(MOCK_COMPANIES);
 
 export const normalizeCompany = (company = {}) => {
     const companyName = company.company_name || company.name || 'Cong ty dang cap nhat';
     const size = toNumber(company.size, 0);
+    const description = company.description || 'Cong ty dang cap nhat thong tin gioi thieu.';
 
     return {
         ...company,
         _id: company._id || createCompanyId(companyName),
         company_name: companyName,
-        description: company.description || 'Cong ty dang cap nhat thong tin gioi thieu.',
+        description,
         industry: company.industry || 'Dang cap nhat linh vuc hoat dong',
         address: company.address || 'Dang cap nhat dia chi',
         website: company.website || '',
         size,
         sizeLabel: size > 0 ? `${size}+ nhan su` : 'Dang cap nhat quy mo',
-        shortDescription:
-            (company.description || 'Cong ty dang cap nhat thong tin gioi thieu.').slice(0, 120) +
-            ((company.description || '').length > 120 ? '...' : ''),
+        shortDescription: description.slice(0, 120) + (description.length > 120 ? '...' : ''),
         logo: getCompanyLogo(companyName, company.logo),
     };
 };

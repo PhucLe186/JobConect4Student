@@ -6,6 +6,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import classNames from 'classnames/bind';
 import { analyzeCvMatch } from './cvMatchUtils';
 import { createCompanyPlaceholder, mergeJobs, normalizeJob } from '~/user/component/shared/companyData';
+import { buildProfileSuggestionCriteria, rankJobsByCriteria } from '~/user/component/shared/jobSuggestionUtils';
 
 const cx = classNames.bind(styles);
 
@@ -223,18 +224,31 @@ const Job = () => {
             }
         };
 
+        const buildSuggestedJobs = async (jobs) => {
+            let rankedJobs = jobs;
+
+            if (user) {
+                try {
+                    const profileRes = await api.get('student');
+                    const criteria = buildProfileSuggestionCriteria(profileRes.data || {});
+                    rankedJobs = rankJobsByCriteria(jobs, criteria);
+                } catch (error) {
+                    console.error('Error fetching student profile for suggestions:', error);
+                }
+            }
+
+            return rankedJobs.filter((job) => job.id !== id).slice(0, 3);
+        };
+
         const fetchSuggestedJobs = async () => {
             try {
-                const endpoint = user ? 'jobs/suggestions' : 'jobs';
-                const res = await api.get(endpoint);
-                if (res.data) setSuggestedJobs(mergeJobs(res.data).filter((job) => job.id !== id).slice(0, 3));
-            } catch {
-                try {
-                    const res = await api.get('jobs');
-                    if (res.data) setSuggestedJobs(mergeJobs(res.data).filter((job) => job.id !== id).slice(0, 3));
-                } catch {
-                    setSuggestedJobs(mergeJobs([]).filter((job) => job.id !== id).slice(0, 3));
-                }
+                const res = await api.get('jobs');
+                const rankedSuggestions = await buildSuggestedJobs(mergeJobs(res.data || []));
+                setSuggestedJobs(rankedSuggestions);
+            } catch (error) {
+                console.error('Error fetching suggested jobs:', error);
+                const rankedSuggestions = await buildSuggestedJobs(mergeJobs([]));
+                setSuggestedJobs(rankedSuggestions);
             }
         };
 
@@ -363,6 +377,11 @@ const Job = () => {
                                 {t.jobSuggestions}
                             </div>
                         </div>
+                        <p className={cx('suggestionCaption')}>
+                            {language === 'vi'
+                                ? 'Danh sach nay duoc uu tien theo 5 tieu chi: Level, cong viec, dia chi, ky nang va GPA.'
+                                : 'This list is prioritized by level, job, address, skills, and GPA.'}
+                        </p>
 
                         <div className={cx('jobsList')}>
                             {suggestedJobs.map((job) => (
@@ -384,6 +403,11 @@ const Job = () => {
                                     <div className={cx('jobDetails')}>
                                         <div className={cx('jobTitle')}>{job.title}</div>
                                         <div className={cx('jobCompany')}>{job.company_name}</div>
+                                        {user && typeof job.suggestionScore === 'number' && (
+                                            <div className={cx('jobSuggestionScore')}>
+                                                {language === 'vi' ? 'Do phu hop' : 'Match'}: {job.suggestionScore}%
+                                            </div>
+                                        )}
                                     </div>
                                     <div
                                         className={`${styles.heartIcon} ${favorites[job.id] ? styles.active : styles.inactive}`}
