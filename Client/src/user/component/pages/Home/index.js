@@ -5,8 +5,16 @@ import style from './Home.module.scss';
 import LookJobsImg from '~/asset/img/LookJobs.png';
 import translations from '~/component/Translation';
 import { AuthContext } from '~/context/AuthContext';
+import { createCompanyPlaceholder, mergeJobs } from '~/user/component/shared/companyData';
 
 const cx = classNames.bind(style);
+
+if (!document.querySelector('link[href*="fontawesome"]')) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css';
+    document.head.appendChild(link);
+}
 
 const Homepage = () => {
     const navigate = useNavigate();
@@ -18,27 +26,58 @@ const Homepage = () => {
     const [location, setLocation] = useState('');
     const [jobType, setJobType] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const JobPerPages = 9;
+    const jobPerPages = 9;
 
-    // Filter jobs based on search and filters
-    const filteredJobs = allJobData.filter(job => {
-        const matchesSearch = !searchKeyword || 
-            job.title?.toLowerCase().includes(searchKeyword.toLowerCase()) ||
-            job.company_name?.toLowerCase().includes(searchKeyword.toLowerCase());
-        
+    const t = translations[language || 'vi'];
+
+    const getRequirementTags = (requirements = '') =>
+        String(requirements)
+            .split(',')
+            .map((item) => item.trim())
+            .filter(Boolean)
+            .slice(0, 3);
+
+    const getJobTypeLabel = (type) => {
+        if (type === 'part-time') {
+            return 'Part-time';
+        }
+
+        if (type === 'internship') {
+            return language === 'vi' ? 'Thuc tap' : 'Internship';
+        }
+
+        return 'Full-time';
+    };
+
+    const experienceOptions = Array.from(new Set(allJobData.map((job) => job.experience).filter(Boolean)));
+    const locationOptions = Array.from(new Set(allJobData.map((job) => job.location).filter(Boolean)));
+    const jobTypeOptions = Array.from(new Set(allJobData.map((job) => job.job_type).filter(Boolean)));
+
+    const filteredJobs = allJobData.filter((job) => {
+        const searchValue = searchKeyword.toLowerCase();
+        const matchesSearch =
+            !searchKeyword ||
+            job.title?.toLowerCase().includes(searchValue) ||
+            job.company_name?.toLowerCase().includes(searchValue) ||
+            job.industry?.toLowerCase().includes(searchValue) ||
+            job.location?.toLowerCase().includes(searchValue) ||
+            job.description?.toLowerCase().includes(searchValue) ||
+            job.requirements?.toLowerCase().includes(searchValue);
+
         const matchesExperience = !experience || job.experience === experience;
-        const matchesLocation = !location || job.location?.includes(location);
+        const matchesLocation = !location || job.location === location;
         const matchesJobType = !jobType || job.job_type === jobType;
-        
-        return matchesSearch && matchesExperience && matchesLocation && matchesJobType;
+        const matchesSalary =
+            !job.min_salary || Number(job.min_salary || 0) / 1000000 <= Number(salaryValue || 0);
+
+        return matchesSearch && matchesExperience && matchesLocation && matchesJobType && matchesSalary;
     });
 
     const totalJob = filteredJobs.length;
-    const totalPages = Math.ceil(totalJob / JobPerPages);
-    const startIndex = (currentPage - 1) * JobPerPages;
-    const finalJobPage = filteredJobs.slice(startIndex, startIndex + JobPerPages);
+    const totalPages = Math.max(1, Math.ceil(totalJob / jobPerPages));
+    const startIndex = (currentPage - 1) * jobPerPages;
+    const finalJobPage = filteredJobs.slice(startIndex, startIndex + jobPerPages);
 
-    const t = translations[language || 'vi'];
     const updateSalary = (value) => {
         setSalaryValue(value);
         setCurrentPage(1);
@@ -58,135 +97,18 @@ const Homepage = () => {
         const fetchData = async () => {
             try {
                 const res = await api.get('jobs');
-                if (res.data && res.data.length > 0) {
-                    setAllJobData(res.data);
-                } else {
-                    // Nếu API trả về rỗng, dùng mock data
-                    setAllJobData(getMockJobs());
-                }
+                setAllJobData(mergeJobs(res.data || []));
             } catch (error) {
                 console.error('API Error:', error);
-                // Khi API lỗi, dùng mock data thay vì hiện alert
-                setAllJobData(getMockJobs());
+                setAllJobData(mergeJobs([]));
             }
         };
+
         fetchData();
     }, [api]);
 
-    const getMockJobs = () => [
-        {
-            id: '1',
-            title: 'Frontend Developer',
-            company_name: 'FPT Software',
-            location: 'Hà Nội',
-            experience: '1-3 năm',
-            job_type: 'full-time',
-            logo: 'https://cdn.haitrieu.com/wp-content/uploads/2022/01/Logo-FPT-Software.png'
-        },
-        {
-            id: '2', 
-            title: 'Backend Developer',
-            company_name: 'Viettel Group',
-            location: 'Hồ Chí Minh',
-            experience: '2-4 năm',
-            job_type: 'full-time',
-            logo: 'https://cdn.haitrieu.com/wp-content/uploads/2021/11/Logo-Viettel.png'
-        },
-        {
-            id: '3',
-            title: 'Mobile Developer',
-            company_name: 'VNG Corporation',
-            location: 'Hồ Chí Minh',
-            experience: '1-2 năm',
-            job_type: 'full-time',
-            logo: 'https://cdn.haitrieu.com/wp-content/uploads/2022/01/Logo-VNG.png'
-        },
-        {
-            id: '4',
-            title: 'DevOps Engineer',
-            company_name: 'Shopee Vietnam',
-            location: 'Hà Nội',
-            experience: '3-5 năm',
-            job_type: 'full-time',
-            logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Shopee.svg/200px-Shopee.svg.png'
-        },
-        {
-            id: '5',
-            title: 'Data Analyst',
-            company_name: 'Grab Vietnam',
-            location: 'Hồ Chí Minh',
-            experience: '1-3 năm',
-            job_type: 'full-time',
-            logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Grab_%28application%29_logo.svg/200px-Grab_%28application%29_logo.svg.png'
-        },
-        {
-            id: '6',
-            title: 'UI/UX Designer',
-            company_name: 'Tiki',
-            location: 'Hà Nội',
-            experience: '2-4 năm',
-            job_type: 'full-time',
-            logo: 'https://cdn.haitrieu.com/wp-content/uploads/2022/01/Logo-Tiki.png'
-        },
-        {
-            id: '7',
-            title: 'Product Manager',
-            company_name: 'MoMo',
-            location: 'Hồ Chí Minh',
-            experience: '3-5 năm',
-            job_type: 'full-time',
-            logo: 'https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-MoMo-Square.png'
-        },
-        {
-            id: '8',
-            title: 'QA Engineer',
-            company_name: 'Techcombank',
-            location: 'Hà Nội',
-            experience: '1-3 năm',
-            job_type: 'full-time',
-            logo: 'https://cdn.haitrieu.com/wp-content/uploads/2022/01/Logo-Techcombank-TCB.png'
-        },
-        {
-            id: '9',
-            title: 'Business Analyst',
-            company_name: 'Vinamilk',
-            location: 'Hồ Chí Minh',
-            experience: '2-4 năm',
-            job_type: 'full-time',
-            logo: 'https://cdn.haitrieu.com/wp-content/uploads/2022/01/Logo-Vinamilk.png'
-        },
-        {
-            id: '10',
-            title: 'Software Engineer',
-            company_name: 'Samsung Vietnam',
-            location: 'Hà Nội',
-            experience: '2-5 năm',
-            job_type: 'full-time',
-            logo: 'https://logo.clearbit.com/samsung.com'
-        },
-        {
-            id: '11',
-            title: 'Marketing Specialist',
-            company_name: 'Lazada Vietnam',
-            location: 'Hồ Chí Minh',
-            experience: '1-3 năm',
-            job_type: 'full-time',
-            logo: 'https://cdn.haitrieu.com/wp-content/uploads/2022/01/Logo-Lazada.png'
-        },
-        {
-            id: '12',
-            title: 'Sales Manager',
-            company_name: 'Vingroup',
-            location: 'Hà Nội',
-            experience: '3-5 năm',
-            job_type: 'full-time',
-            logo: 'https://cdn.haitrieu.com/wp-content/uploads/2022/01/Logo-Vingroup.png'
-        }
-    ];
-
     return (
         <div className={cx('home-page')}>
-            {/* Hero Section */}
             <div className={cx('hero-section')}>
                 <div className={cx('container')}>
                     <div className={cx('hero-content')}>
@@ -207,7 +129,6 @@ const Homepage = () => {
                 </div>
             </div>
 
-            {/* Filter Section */}
             <div className={cx('filter-section')}>
                 <div className={cx('container')}>
                     <div className={cx('filter-row')}>
@@ -223,10 +144,11 @@ const Homepage = () => {
                                     onChange={(e) => updateSalary(e.target.value)}
                                 />
                                 <div className={cx('salary-display')}>
-                                    0 - {salaryValue} {language === 'vi' ? 'triệu VNĐ' : 'million VND'}
+                                    0 - {salaryValue} {language === 'vi' ? 'trieu VND' : 'million VND'}
                                 </div>
                             </div>
                         </div>
+
                         <div className={cx('filter-item')}>
                             <label>{t.experienceLevel}</label>
                             <select
@@ -235,17 +157,14 @@ const Homepage = () => {
                                 onChange={handleFilterChange(setExperience)}
                             >
                                 <option value="">{t.chooseExp}</option>
-                                <option value="không yêu cầu">{t.noExp}</option>
-                                <option value="dưới 1 năm">{language === 'vi' ? 'Dưới 1 năm' : 'Under 1 year'}</option>
-                                <option value="1 năm">1 {language === 'vi' ? 'năm' : 'year'}</option>
-                                <option value="2 năm">2 {language === 'vi' ? 'năm' : 'years'}</option>
-                                <option value="3 năm">3 {language === 'vi' ? 'năm' : 'years'}</option>
-                                <option value="4 năm">4 {language === 'vi' ? 'năm' : 'years'}</option>
-                                <option value="4 năm trở lên">
-                                    {language === 'vi' ? '4 năm trở lên' : '4+ years'}
-                                </option>
+                                {experienceOptions.map((item) => (
+                                    <option key={item} value={item}>
+                                        {item}
+                                    </option>
+                                ))}
                             </select>
                         </div>
+
                         <div className={cx('filter-item')}>
                             <label>{t.workLocation}</label>
                             <select
@@ -254,13 +173,14 @@ const Homepage = () => {
                                 onChange={handleFilterChange(setLocation)}
                             >
                                 <option value="">{t.chooseLocation}</option>
-                                <option>{language === 'vi' ? 'Hà Nội' : 'Hanoi'}</option>
-                                <option>{language === 'vi' ? 'Hồ Chí Minh' : 'Ho Chi Minh City'}</option>
-                                <option>{language === 'vi' ? 'Đà Nẵng' : 'Da Nang'}</option>
-                                <option>{language === 'vi' ? 'Cần Thơ' : 'Can Tho'}</option>
-                                <option>{language === 'vi' ? 'Hải Phòng' : 'Hai Phong'}</option>
+                                {locationOptions.map((item) => (
+                                    <option key={item} value={item}>
+                                        {item}
+                                    </option>
+                                ))}
                             </select>
                         </div>
+
                         <div className={cx('filter-item')}>
                             <label>{t.jobType}</label>
                             <select
@@ -269,40 +189,93 @@ const Homepage = () => {
                                 onChange={handleFilterChange(setJobType)}
                             >
                                 <option value="">{t.chooseJobType}</option>
-                                <option value="full-time">Full-time</option>
-                                <option value="part-time">Part-time</option>
-                                <option value="internship">{language === 'vi' ? 'Thực tập' : 'Internship'}</option>
+                                {jobTypeOptions.map((item) => (
+                                    <option key={item} value={item}>
+                                        {getJobTypeLabel(item)}
+                                    </option>
+                                ))}
                             </select>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Jobs Grid */}
             <div className={cx('jobs-section')}>
                 <div className={cx('container')}>
-                    {filteredJobs.length === 0 && searchKeyword && (
-                        <p style={{ textAlign: 'center', padding: '20px', color: '#888' }}>
-                            {language === 'vi' ? 'Không tìm thấy việc làm phù hợp.' : 'No jobs found.'}
+                    <div className={cx('jobs-summary')}>
+                        {language === 'vi'
+                            ? `${totalJob} cong viec dang hien thi`
+                            : `${totalJob} jobs currently available`}
+                    </div>
+
+                    {filteredJobs.length === 0 && (
+                        <p className={cx('empty-state')}>
+                            {language === 'vi'
+                                ? 'Khong tim thay cong viec phu hop voi bo loc hien tai.'
+                                : 'No jobs match the current filters.'}
                         </p>
                     )}
+
                     <div className={cx('jobs-grid')}>
-                        {finalJobPage.map((job, index) => (
-                            <div className={cx('job-card')} key={index}>
+                        {finalJobPage.map((job) => (
+                            <div className={cx('job-card')} key={job.id}>
                                 <div className={cx('job-header')}>
-                                    <img 
-                                        src={job.logo || 'https://via.placeholder.com/60x60?text=Logo'} 
-                                        alt={job.company} 
-                                        className={cx('company-logo')} 
+                                    <img
+                                        src={job.logo}
+                                        alt={job.company_name}
+                                        className={cx('company-logo')}
                                         onError={(e) => {
-                                            e.target.src = 'https://via.placeholder.com/60x60?text=' + (job.company_name?.charAt(0) || 'C');
+                                            e.currentTarget.src = createCompanyPlaceholder(job.company_name);
                                         }}
                                     />
+
                                     <div className={cx('job-info')}>
-                                        <h3 className={cx('job-title')}>{job.title}</h3>
+                                        <div className={cx('job-title-row')}>
+                                            <h3 className={cx('job-title')}>{job.title}</h3>
+                                            <span className={cx('job-level-badge')}>
+                                                {job.level || (language === 'vi' ? 'Cap nhat sau' : 'Updating')}
+                                            </span>
+                                        </div>
                                         <p className={cx('company-name')}>{job.company_name}</p>
+                                        <span className={cx('job-industry')}>{job.industry}</span>
                                     </div>
                                 </div>
+
+                                <div className={cx('job-meta-list')}>
+                                    <div className={cx('job-meta-item')}>
+                                        <i className="fas fa-location-dot"></i>
+                                        <span>{job.location}</span>
+                                    </div>
+                                    <div className={cx('job-meta-item')}>
+                                        <i className="fas fa-money-bill-wave"></i>
+                                        <span>{job.salaryLabel}</span>
+                                    </div>
+                                    <div className={cx('job-meta-item')}>
+                                        <i className="fas fa-briefcase"></i>
+                                        <span>{job.experience}</span>
+                                    </div>
+                                    <div className={cx('job-meta-item')}>
+                                        <i className="fas fa-clock"></i>
+                                        <span>{job.typeLabel || getJobTypeLabel(job.job_type)}</span>
+                                    </div>
+                                    <div className={cx('job-meta-item')}>
+                                        <i className="fas fa-calendar-days"></i>
+                                        <span>
+                                            {language === 'vi' ? 'Han nop' : 'Deadline'}: {job.deadlineLabel}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className={cx('job-tags')}>
+                                    {getRequirementTags(job.requirements).map((tag) => (
+                                        <span key={`${job.id}-${tag}`} className={cx('job-tag')}>
+                                            {tag}
+                                        </span>
+                                    ))}
+                                </div>
+
+                                <p className={cx('job-description')}>{job.description}</p>
+
                                 <button
                                     className={cx('apply-btn')}
                                     onClick={() => {
@@ -315,32 +288,33 @@ const Homepage = () => {
                         ))}
                     </div>
 
-                    {/* Pagination */}
-                    <div className={cx('pagination-wrapper')}>
-                        <button
-                            className={cx('page-btn')}
-                            onClick={() => setCurrentPage(currentPage - 1)}
-                            disabled={currentPage === 1}
-                        >
-                            {t.previous}
-                        </button>
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    {totalPages > 1 && (
+                        <div className={cx('pagination-wrapper')}>
                             <button
-                                key={page}
-                                className={cx('page-btn', { active: currentPage === page })}
-                                onClick={() => setCurrentPage(page)}
+                                className={cx('page-btn')}
+                                onClick={() => setCurrentPage(currentPage - 1)}
+                                disabled={currentPage === 1}
                             >
-                                {page}
+                                {t.previous}
                             </button>
-                        ))}
-                        <button
-                            className={cx('page-btn')}
-                            onClick={() => setCurrentPage(currentPage + 1)}
-                            disabled={currentPage === totalPages}
-                        >
-                            {t.next}
-                        </button>
-                    </div>
+                            {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                                <button
+                                    key={page}
+                                    className={cx('page-btn', { active: currentPage === page })}
+                                    onClick={() => setCurrentPage(page)}
+                                >
+                                    {page}
+                                </button>
+                            ))}
+                            <button
+                                className={cx('page-btn')}
+                                onClick={() => setCurrentPage(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                            >
+                                {t.next}
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
