@@ -126,7 +126,11 @@ const Company = () => {
                     <div className={cx('filter-row')}>
                         <div className={cx('filter-item')}>
                             <label>{language === 'vi' ? 'Quy mô công ty' : 'Company Size'}</label>
-                            <select className={cx('filter-select')} value={filterSize} onChange={handleFilterChange(setFilterSize)}>
+                            <select
+                                className={cx('filter-select')}
+                                value={filterSize}
+                                onChange={handleFilterChange(setFilterSize)}
+                            >
                                 {sizeOptions.map((item) => (
                                     <option key={item.value || 'all'} value={item.value}>
                                         {item.label}
@@ -162,6 +166,15 @@ const Company = () => {
                                         {item}
                                     </option>
                                 ))}
+                                <option value="Hà Nội">{language === 'vi' ? 'Hà Nội' : 'Hanoi'}</option>
+                                <option value="Hồ Chí Minh">
+                                    {language === 'vi' ? 'Hồ Chí Minh' : 'Ho Chi Minh City'}
+                                </option>
+                                <option value="Đà Nẵng">{language === 'vi' ? 'Đà Nẵng' : 'Da Nang'}</option>
+                                <option value="Cần Thơ">{language === 'vi' ? 'Cần Thơ' : 'Can Tho'}</option>
+                                <option value="Hải Phòng">{language === 'vi' ? 'Hải Phòng' : 'Hai Phong'}</option>
+                                <option value="Bình Dương">{language === 'vi' ? 'Bình Dương' : 'Binh Duong'}</option>
+                                <option value="Đồng Nai">{language === 'vi' ? 'Đồng Nai' : 'Dong Nai'}</option>
                             </select>
                         </div>
                         <div className={cx('filter-item')}>
@@ -213,7 +226,10 @@ const Company = () => {
                                     </div>
                                     <div className={cx('company-meta-item')}>
                                         <i className="fas fa-globe"></i>
-                                        <span>{company.website || (language === 'vi' ? 'Đang cập nhật website' : 'Website updating')}</span>
+                                        <span>
+                                            {company.website ||
+                                                (language === 'vi' ? 'Đang cập nhật website' : 'Website updating')}
+                                        </span>
                                     </div>
                                 </div>
 

@@ -16,6 +16,7 @@ const Login = () => {
         email:'',
         password:''
     })
+    const [errors, setErrors] = useState({});
     const [socialLoading, setSocialLoading] = useState({
         google: false,
         facebook: false
@@ -23,7 +24,13 @@ const Login = () => {
 
     const handleLogin = async(e) => {
         e.preventDefault();
-        login(Data)
+        const newErrors = {};
+        if (!Data.email) newErrors.email = 'Vui lòng nhập email.';
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(Data.email)) newErrors.email = 'Email không hợp lệ.';
+        if (!Data.password) newErrors.password = 'Vui lòng nhập mật khẩu.';
+        if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
+        setErrors({});
+        login(Data);
     };
 
     const handleGoogleLogin = async () => {
@@ -92,16 +99,18 @@ const Login = () => {
                                     type="email"
                                     placeholder="Email" 
                                     value={Data.email} 
-                                    onChange={e=> setData({...Data,email: e.target.value })} />
+                                    onChange={e=> { setData({...Data, email: e.target.value}); setErrors(prev => ({...prev, email: ''})); }} />
                                 <i className={cx('fa-solid fa-user')}></i>
+                                {errors.email && <span className={cx('error-msg')}>{errors.email}</span>}
                             </div>
                             <div className={cx('input-box')}>
                                 <input 
                                     type="password" 
                                     placeholder="Password" 
                                     value={Data.password} 
-                                    onChange={e=> setData({...Data,password: e.target.value })} />
+                                    onChange={e=> { setData({...Data, password: e.target.value}); setErrors(prev => ({...prev, password: ''})); }} />
                                 <i className={cx('fa-solid fa-lock')}></i>
+                                {errors.password && <span className={cx('error-msg')}>{errors.password}</span>}
                             </div>
                             <div className={cx('forgot-link')}>
                                 <Link to={routesconfig.forgotPassword}>Forgot Password?</Link>

@@ -1,8 +1,6 @@
 const trans__home = {
   vi: {
     pageTitle: 'Hồ sơ công ty',
-    
-    // Section 1: Thông tin công ty
     sectionInfo: 'Thông tin công ty',
     companyName: 'Tên công ty',
     ph_companyName: 'Nhập tên công ty',
@@ -10,8 +8,6 @@ const trans__home = {
     ph_companySize: 'Nhập số lượng',
     description: 'Mô tả công ty',
     ph_description: 'Mô tả chi tiết...',
-    
-    // Section 2: Liên hệ
     sectionContact: 'Thông tin liên hệ',
     address: 'Địa chỉ',
     ph_address: 'Nhập địa chỉ trụ sở',
@@ -19,15 +15,26 @@ const trans__home = {
     ph_email: 'Nhập email liên hệ',
     website: 'Website',
     ph_website: 'Nhập địa chỉ website',
-    
-    // Button & Alt
     saveBtn: 'Lưu thông tin',
     avatarAlt: 'Ảnh đại diện công ty',
+    loadingText: 'Đang tải hồ sơ công ty...',
+    loginRequired:
+      'Vui lòng đăng nhập bằng tài khoản nhà tuyển dụng để quản lý hồ sơ.',
+    saveSuccess: 'Lưu hồ sơ công ty thành công.',
+    saveError: 'Không thể lưu hồ sơ công ty. Vui lòng thử lại.',
+    loadError: 'Không thể tải hồ sơ công ty.',
+    requiredCompanyName: 'Vui lòng nhập tên công ty.',
+    savingText: 'Đang lưu...',
+    uploadLogo: 'Thêm hình công ty',
+    changeLogo: 'Đổi hình công ty',
+    uploadingLogo: 'Đang tải ảnh...',
+    uploadLogoSuccess: 'Tải ảnh công ty thành công.',
+    uploadLogoError: 'Không thể tải ảnh công ty. Vui lòng thử lại.',
+    invalidLogoFile: 'Vui lòng chọn file jpg, jpeg, png hoặc webp.',
+    logoTooLarge: 'Ảnh logo phải nhỏ hơn 5MB.',
   },
   en: {
     pageTitle: 'Company Profile',
-    
-    // Section 1: Company Info
     sectionInfo: 'Company Information',
     companyName: 'Company Name',
     ph_companyName: 'Enter company name',
@@ -35,8 +42,6 @@ const trans__home = {
     ph_companySize: 'Enter size',
     description: 'Company Description',
     ph_description: 'Detailed description...',
-    
-    // Section 2: Contact
     sectionContact: 'Contact Information',
     address: 'Address',
     ph_address: 'Enter headquarter address',
@@ -44,10 +49,23 @@ const trans__home = {
     ph_email: 'Enter contact email',
     website: 'Website',
     ph_website: 'Enter website URL',
-    
-    // Button & Alt
     saveBtn: 'Save Information',
     avatarAlt: 'Company avatar',
+    loadingText: 'Loading company profile...',
+    loginRequired:
+      'Please sign in with an employer account to manage this profile.',
+    saveSuccess: 'Company profile saved successfully.',
+    saveError: 'Unable to save the company profile. Please try again.',
+    loadError: 'Unable to load the company profile.',
+    requiredCompanyName: 'Please enter the company name.',
+    savingText: 'Saving...',
+    uploadLogo: 'Add company image',
+    changeLogo: 'Change company image',
+    uploadingLogo: 'Uploading image...',
+    uploadLogoSuccess: 'Company image uploaded successfully.',
+    uploadLogoError: 'Unable to upload the company image. Please try again.',
+    invalidLogoFile: 'Please choose a jpg, jpeg, png, or webp file.',
+    logoTooLarge: 'The logo image must be smaller than 5MB.',
   },
 };
 
