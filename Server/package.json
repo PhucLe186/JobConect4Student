@@ -8,6 +8,8 @@
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "seed:mock-data": "node seed-mock-data.js",
+    "seed:skills": "node seed-skills-node.js",
     "start:dev": "nest start",
     "start": "nest start --watch",
     "start:debug": "nest start --debug --watch",

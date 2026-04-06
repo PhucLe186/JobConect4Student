@@ -78,4 +78,10 @@ export class ApplicationsController {
   async getApplicationHistory(@Req() req: Request) {
     return this.applicationsService.getApplicationHistory(req.user as JwtUser);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('employer-candidates')
+  async getEmployerCandidates(@Req() req: Request) {
+    return this.applicationsService.getEmployerCandidates(req.user as JwtUser);
+  }
 }

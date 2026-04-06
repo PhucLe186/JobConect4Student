@@ -1,18 +1,14 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { MongooseModule } from '@nestjs/mongoose';
-import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './modules/auth/auth.module';
-import { EmployerService } from './modules/employer/employer.service';
 import { EmployerModule } from './modules/employer/employer.module';
 import { StudentModule } from './modules/student/student.module';
-import { JobsController } from './modules/jobs/jobs.controller';
-import { JobsService } from './modules/jobs/jobs.service';
 import { JobsModule } from './modules/jobs/jobs.module';
 import { ResumeModule } from './modules/resume/resume.module';
 import { SkillsModule } from './modules/skills/skills.module';
-import { ApplicationsService } from './modules/applications/applications.service';
 import { ApplicationsModule } from './modules/applications/applications.module';
 
 @Module({
@@ -20,9 +16,18 @@ import { ApplicationsModule } from './modules/applications/applications.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    MongooseModule.forRoot(
-      process.env.MONGODB_URI || 'mongodb+srv://hoangphuc1806:Phucle%401806@connect4student.dbrrwmk.mongodb.net/connect4Student?retryWrites=true&w=majority',
-    ),
+    MongooseModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        const uri = configService.get<string>('MONGODB_URI');
+
+        if (!uri) {
+          throw new Error('Missing MONGODB_URI in Server/.env');
+        }
+
+        return { uri };
+      },
+    }),
     AuthModule,
     EmployerModule,
     StudentModule,

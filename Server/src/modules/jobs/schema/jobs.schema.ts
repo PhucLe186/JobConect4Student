@@ -13,10 +13,10 @@ export class Jobs {
   @Prop({ type: Types.ObjectId, ref: 'Employer', required: true })
   employer_id: Types.ObjectId;
 
-  @Prop({ required: true })
+  @Prop({ required: true, trim: true })
   title: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, trim: true })
   description: string;
 
   @Prop({
@@ -25,23 +25,26 @@ export class Jobs {
   })
   job_type: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, trim: true })
   min_salary: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, trim: true })
   max_salary: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, trim: true })
   location: string;
 
   @Prop({ required: true, type: Date })
   deadline: Date;
 
-  @Prop({ default: Date.now(), type: Date })
+  @Prop({ default: Date.now, type: Date })
   created_at: Date;
 
-  @Prop({ required: true })
+  @Prop({ required: true, trim: true })
   industry: string;
+
+  @Prop({ required: true, trim: true })
+  department: string;
 
   @Prop({
     required: true,
@@ -57,11 +60,14 @@ export class Jobs {
   })
   experience: string;
 
-  @Prop({ default: '' })
+  @Prop({ default: '', trim: true })
   requirements: string;
 
   @Prop({
+    default: '',
+    trim: true,
     enum: [
+      '',
       'Nhân viên',
       'Trưởng nhóm',
       'Trưởng/Phó phòng',
@@ -79,6 +85,7 @@ export class Jobs {
 }
 
 export const JobsSchema = SchemaFactory.createForClass(Jobs);
+
 JobsSchema.virtual('Employer', {
   ref: 'Employer',
   localField: 'employer_id',

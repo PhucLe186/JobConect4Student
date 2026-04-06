@@ -11,8 +11,10 @@ export class JobsDto {
   location?: string;
   deadline?: Date;
   industry?: string;
+  department?: string;
   experience?: string;
   requirements?: string;
   level?: string;
   status?: string;
+  created_at?: Date;
 }

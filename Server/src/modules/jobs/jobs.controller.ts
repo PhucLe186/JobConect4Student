@@ -7,9 +7,9 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import type { Request } from 'express';
 import { JobsService } from './jobs.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import type { Request } from 'express';
 import { JwtUser } from '../auth/interface/jwt-user.interface';
 import { CreateJobDto } from './dto/CreateJob.dto';
 
@@ -21,10 +21,18 @@ export class JobsController {
   async Jobs() {
     return this.jobsService.Jobs();
   }
-  @Get('/:id')
+
+  @UseGuards(JwtAuthGuard)
+  @Get('my-jobs')
+  async MyJobs(@Req() req: Request) {
+    return this.jobsService.myJobs(req.user as JwtUser);
+  }
+
+  @Get(':id')
   async DetailJob(@Param('id') id: string) {
     return this.jobsService.detailJob(id);
   }
+
   @UseGuards(JwtAuthGuard)
   @Post('')
   async CreateJob(@Req() req: Request, @Body() createJobdto: CreateJobDto) {

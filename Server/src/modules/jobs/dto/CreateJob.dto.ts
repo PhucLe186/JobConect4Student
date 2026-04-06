@@ -1,17 +1,6 @@
-import {
-  IsString,
-  IsNotEmpty,
-  IsEnum,
-  IsOptional,
-  IsDateString,
-  IsMongoId,
-} from 'class-validator';
+import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateJobDto {
-  @IsMongoId()
-  @IsNotEmpty()
-  employer_id: string;
-
   @IsString()
   @IsNotEmpty()
   title: string;
@@ -42,6 +31,10 @@ export class CreateJobDto {
   @IsString()
   @IsNotEmpty()
   industry: string;
+
+  @IsString()
+  @IsNotEmpty()
+  department: string;
 
   @IsEnum([
     'không yêu cầu',

@@ -8,6 +8,8 @@ import { Student, StudentSchema } from '../student/student.schema';
 import { User, UserSchema } from '../auth/schema/auth.schema';
 import { Jobs, JobsSchema } from '../jobs/schema/jobs.schema';
 import { Employer, EmployerSchema } from '../employer/employer.schema';
+import { StudentSkills, StudentSkillSchema } from '../skills/schema/StudentSkill.schema';
+import { Skills, SkillSchema } from '../skills/schema/skills.schema';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { Employer, EmployerSchema } from '../employer/employer.schema';
       { name: User.name, schema: UserSchema },
       { name: Jobs.name, schema: JobsSchema },
       { name: Employer.name, schema: EmployerSchema },
+      { name: StudentSkills.name, schema: StudentSkillSchema },
+      { name: Skills.name, schema: SkillSchema },
     ]),
   ],
   providers: [ApplicationsService],
