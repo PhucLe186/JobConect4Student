@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, UseGuards, UseInterceptors, UploadedFile, Param, BadRequestException } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
@@ -6,6 +6,9 @@ import { JwtUser } from '../auth/interface/jwt-user.interface';
 import type { Request } from 'express';
 import { ApplicationsService } from './applications.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+
+// Nhớ import DTO mà chúng ta đã tạo ở bước trước (Sửa lại đường dẫn nếu cần)
+import { SubmitFinalCVDto } from './submit-application.dto';
 
 const cvUploadOptions = {
   storage: diskStorage({
@@ -16,10 +19,11 @@ const cvUploadOptions = {
     },
   }),
   fileFilter: (req, file, cb) => {
-    if (file.mimetype.match(/\/(pdf|msword|vnd\.openxmlformats-officedocument\.wordprocessingml\.document)$/)) {
+    // Đã mở rộng Regex xíu để chắc chắn bắt đúng file ảnh nếu AI Python cần ảnh
+    if (file.mimetype.match(/\/(pdf|msword|vnd\.openxmlformats-officedocument\.wordprocessingml\.document|jpeg|jpg|png)$/)) {
       cb(null, true);
     } else {
-      cb(new Error('Only PDF, DOC, DOCX files are allowed!'), false);
+      cb(new Error('Only PDF, DOC, DOCX, JPG, PNG files are allowed!'), false);
     }
   },
   limits: {
@@ -30,7 +34,48 @@ const cvUploadOptions = {
 @Controller('applications')
 export class ApplicationsController {
   constructor(private readonly applicationsService: ApplicationsService) {}
-  
+
+  // =========================================================
+  // [MỚI] API 1: PHÂN TÍCH NHÁP CV BẰNG AI
+  // FE gửi file lên (tên field là 'cv'), gọi Python trả về JSON
+  // =========================================================
+  @UseGuards(JwtAuthGuard)
+  @Post('analyze-draft/:jobId')
+  @UseInterceptors(FileInterceptor('cv', cvUploadOptions)) 
+  async analyzeCVDraft(
+    @Param('jobId') jobId: string,
+    @UploadedFile() cvFile: Express.Multer.File,
+  ) {
+    if (!cvFile) throw new BadRequestException('Vui lòng tải lên file CV');
+    
+    // Gọi sang Service
+    const aiResult = await this.applicationsService.analyzeCVDraft(jobId, cvFile);
+    return { success: true, data: aiResult, cvFilePath: cvFile.path }; 
+    // Trả luôn cvFilePath về cho FE giữ, để lát nữa FE ném lại lúc nộp Form chính thức
+  }
+
+  // =========================================================
+  // [MỚI] API 2: NỘP FORM CHÍNH THỨC (SAU KHI ĐÃ VERIFY)
+  // =========================================================
+  @UseGuards(JwtAuthGuard)
+  @Post('submit-final')
+  async submitFinalCV(
+    @Body() submitDto: SubmitFinalCVDto,
+    @Req() req: Request
+  ) {
+    // Truyền thẳng req.user vào để lấy userId lưu vào DB
+    const result = await this.applicationsService.submitFinalCV(
+      submitDto.jobId,
+      req.user as JwtUser,
+      submitDto.cvFilePath, // FE sẽ gửi lại đường dẫn file đã upload ở API 1
+      submitDto.formData
+    );
+    return { success: true, data: result };
+  }
+
+  // =========================================================
+  // CÁC API CŨ CỦA BẠN (GIỮ NGUYÊN HOÀN TOÀN)
+  // =========================================================
   @UseGuards(JwtAuthGuard)
   @Post('')
   @UseInterceptors(FileInterceptor('cv', cvUploadOptions))

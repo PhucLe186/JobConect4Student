@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { ApplicationsService } from './applications.service';
 import { ApplicationsController } from './applications.controller';
 import { MongooseModule } from '@nestjs/mongoose';
+import { HttpModule } from '@nestjs/axios'; // <--- THÊM DÒNG NÀY: Dùng để gọi API sang Python
+
 import { job_applications, jobApplySchema } from './applyjob.schema';
 import { CSV, ResumeSchema } from '../resume/resume.schema';
 import { Student, StudentSchema } from '../student/student.schema';
@@ -13,6 +15,7 @@ import { Skills, SkillSchema } from '../skills/schema/skills.schema';
 
 @Module({
   imports: [
+    HttpModule, // <--- THÊM DÒNG NÀY: Đăng ký quyền gọi HTTP nội bộ
     MongooseModule.forFeature([
       { name: job_applications.name, schema: jobApplySchema },
       { name: CSV.name, schema: ResumeSchema },
