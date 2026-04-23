@@ -126,7 +126,7 @@ export class ApplicationsController {
 
   @UseGuards(JwtAuthGuard)
   @Get('employer-candidates')
-  async getEmployerCandidates(@Req() req: Request) {
-    return this.applicationsService.getEmployerCandidates(req.user as JwtUser);
+  async getEmployerCandidates(@Req() req: Request, @Body() body?: { filterCriteria?: any }) {
+    return this.applicationsService.getEmployerCandidates(req.user as JwtUser, body?.filterCriteria);
   }
 }
