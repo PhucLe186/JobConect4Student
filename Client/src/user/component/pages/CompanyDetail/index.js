@@ -45,10 +45,13 @@ const CompanyDetail = () => {
                 if (jobsRes.data) {
                     const filteredJobs = jobsRes.data.filter(
                         (job) =>
-                            job.company_name &&
-                            company.company_name &&
-                            job.company_name.trim().toLowerCase() ===
-                                company.company_name.trim().toLowerCase(),
+                            (company.user_id &&
+                                job.employer_id &&
+                                String(job.employer_id) === String(company.user_id)) ||
+                            (job.company_name &&
+                                company.company_name &&
+                                job.company_name.trim().toLowerCase() ===
+                                    company.company_name.trim().toLowerCase()),
                     );
                     setCompanyJobs(filteredJobs);
                 }

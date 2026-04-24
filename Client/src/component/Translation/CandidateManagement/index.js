@@ -1,55 +1,96 @@
-
 const trans__candidateManagement = {
-    vi: {
-        pageTitle: 'Quản lý ứng viên',
-        panelTitle: 'Danh sách ứng viên',
-        
-        // Filter & Search
-        searchPlaceholder: 'Tìm tên hoặc trường học...',
-        filterAllMajors: 'Tất cả chuyên ngành',
-        filterTooltip: 'Bộ lọc nâng cao',
-
-        // Card Info Labels
-        labelGraduation: 'Tốt nghiệp', 
-        labelGPA: 'GPA',
-        labelGoal: 'Mục tiêu nghề nghiệp',
-        
-        // Icon Tooltips (khi rê chuột vào icon)
-        tooltipPhone: 'Số điện thoại',
-        tooltipAddress: 'Địa chỉ',
-        tooltipSchool: 'Trường học',
-        tooltipGradYear: 'Năm tốt nghiệp',
-        tooltipGPA: 'Điểm trung bình',
-        tooltipSalary: 'Mức lương mong muốn',
-
-        // Empty state
-        noResult: 'Không tìm thấy kết quả nào.',
-    },
-    en: {
-        pageTitle: 'Candidate Management',
-        panelTitle: 'Candidate List',
-        
-        // Filter & Search
-        searchPlaceholder: 'Search by name or school...',
-        filterAllMajors: 'All Majors',
-        filterTooltip: 'Advanced Filters',
-
-        // Card Info Labels
-        labelGraduation: 'Grad', // Viết tắt Graduation
-        labelGPA: 'GPA',
-        labelGoal: 'Career Goal',
-        
-        // Icon Tooltips
-        tooltipPhone: 'Phone Number',
-        tooltipAddress: 'Address',
-        tooltipSchool: 'School',
-        tooltipGradYear: 'Graduation Year',
-        tooltipGPA: 'GPA',
-        tooltipSalary: 'Desired Salary',
-
-        // Empty state
-        noResult: 'No results found.',
-    },
+  vi: {
+    pageTitle: 'Quan ly CV ung vien',
+    pageDescription:
+      'Nha tuyen dung co the tick tieu chi de loc CV. Neu chua chon tieu chi nao, he thong se tu dong dua cac CV uu tu len tren va uu tien GPA cung tieng Anh.',
+    panelTitle: 'Danh sach CV',
+    loading: 'Dang tai danh sach ung vien...',
+    authRequired: 'Vui long dang nhap de xem danh sach ung vien.',
+    loadError: 'Khong the tai danh sach ung vien',
+    searchPlaceholder: 'Tim theo ten, truong, chuyen nganh hoac dia chi...',
+    filterAllMajors: 'Tat ca chuyen nganh',
+    clearCriteria: 'Bo tieu chi',
+    criteriaTitle: 'Tieu chi loc CV',
+    criteriaDescription: 'Tick mot hoac nhieu tieu chi de hien cac CV phu hop. Bo trong de xem danh sach CV uu tu.',
+    criteriaHighGpa: 'GPA tu 3.5 tro len',
+    criteriaEnglish: 'Tieng Anh tot',
+    criteriaRecentGraduate: 'Tot nghiep tu 2024',
+    criteriaTechMajor: 'Chuyen nganh CNTT',
+    outstandingModeTitle: 'Che do CV uu tu',
+    outstandingModeText: 'Chua co tieu chi nao duoc chon, nen danh sach dang uu tien GPA va tieng Anh de day CV noi bat len truoc.',
+    filteredModeTitle: 'Che do loc theo tieu chi',
+    filteredModeText: 'Danh sach chi hien cac CV dat du nhung tieu chi nha tuyen dung da tick.',
+    selectedCriteriaLabel: 'Tieu chi dang ap dung',
+    resultsLabel: 'CV hien thi',
+    labelPhone: 'So dien thoai',
+    labelEmail: 'Email',
+    labelAddress: 'Dia chi',
+    labelGraduation: 'Tot nghiep',
+    labelGPA: 'GPA',
+    labelEnglish: 'Tieng Anh',
+    labelSalary: 'Muc luong mong muon',
+    labelGoal: 'Muc tieu nghe nghiep',
+    labelLatestJob: 'Job gan nhat',
+    labelApplications: 'So lan ung tuyen',
+    labelSkills: 'Ky nang',
+    scorePriority: 'Diem uu tien',
+    scoreCriteria: 'Do phu hop',
+    badgeOutstanding: 'CV uu tu',
+    badgePriorityGpa: 'Uu tien GPA',
+    badgePriorityEnglish: 'Uu tien tieng Anh',
+    badgeRecentGraduate: 'Tot nghiep gan day',
+    badgeTechMajor: 'Chuyen nganh phu hop',
+    englishNotUpdated: 'Chua cap nhat',
+    noResultOutstanding: 'Khong co CV uu tu nao phu hop voi bo loc hien tai.',
+    noResultFiltered: 'Khong co CV nao dat tat ca tieu chi da chon.',
+    noCandidatesInDb: 'Chua co ung vien nao nop ho so cho cac tin tuyen dung cua ban.',
+  },
+  en: {
+    pageTitle: 'Candidate CV Management',
+    pageDescription:
+      'Recruiters can tick criteria to filter CVs. If no criteria are selected, the system automatically shows standout CVs and prioritizes GPA plus English.',
+    panelTitle: 'CV list',
+    loading: 'Loading candidates...',
+    authRequired: 'Please sign in to view candidates.',
+    loadError: 'Could not load candidates',
+    searchPlaceholder: 'Search by name, school, major, or location...',
+    filterAllMajors: 'All majors',
+    clearCriteria: 'Clear criteria',
+    criteriaTitle: 'CV criteria',
+    criteriaDescription: 'Tick one or more criteria to show matching CVs. Leave everything unchecked to see standout CVs.',
+    criteriaHighGpa: 'GPA 3.5 and above',
+    criteriaEnglish: 'Strong English',
+    criteriaRecentGraduate: 'Graduated from 2024',
+    criteriaTechMajor: 'Tech major',
+    outstandingModeTitle: 'Standout CV mode',
+    outstandingModeText: 'No criteria are selected, so the list is prioritizing GPA and English to surface standout CVs first.',
+    filteredModeTitle: 'Criteria filter mode',
+    filteredModeText: 'The list only shows CVs that satisfy every selected criterion.',
+    selectedCriteriaLabel: 'Active criteria',
+    resultsLabel: 'CVs shown',
+    labelPhone: 'Phone',
+    labelEmail: 'Email',
+    labelAddress: 'Location',
+    labelGraduation: 'Graduation',
+    labelGPA: 'GPA',
+    labelEnglish: 'English',
+    labelSalary: 'Expected salary',
+    labelGoal: 'Career goal',
+    labelLatestJob: 'Latest job',
+    labelApplications: 'Applications',
+    labelSkills: 'Skills',
+    scorePriority: 'Priority score',
+    scoreCriteria: 'Criteria fit',
+    badgeOutstanding: 'Standout CV',
+    badgePriorityGpa: 'GPA priority',
+    badgePriorityEnglish: 'English priority',
+    badgeRecentGraduate: 'Recent graduate',
+    badgeTechMajor: 'Relevant major',
+    englishNotUpdated: 'Not updated',
+    noResultOutstanding: 'No standout CV matches the current filters.',
+    noResultFiltered: 'No CV matches all selected criteria.',
+    noCandidatesInDb: 'No candidate has applied to your jobs yet.',
+  },
 };
 
 export default trans__candidateManagement;

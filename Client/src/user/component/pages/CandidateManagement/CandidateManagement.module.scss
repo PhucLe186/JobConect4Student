@@ -1,286 +1,533 @@
-:root {
-    /* Đồng bộ bảng màu và kích thước với giao diện Profile */
-    --primary-color: #0d6efd;
-    --primary-hover: #0069d9;
-    --background-color: #f8f9fa;
-    --card-background: #ffffff;
-    --text-color: #212529;
-    --text-secondary-color: #6c757d;
-    --border-color: #e9ecef;
-    --box-shadow: 0 4px 13px rgba(0, 0, 0, 0.05);
-    --card-radius: 19.25px;
-    --input-radius: 9.5px;
+.cands {
+  --primary-color: #1259c3;
+  --primary-soft: #eaf2ff;
+  --primary-soft-strong: #d7e7ff;
+  --secondary-color: #0f172a;
+  --surface-color: #ffffff;
+  --surface-muted: #f7faff;
+  --border-color: #d9e3f0;
+  --text-color: #142033;
+  --text-muted: #5f6f85;
+  --success-color: #0f8f63;
+  --shadow-color: 18px 24px 50px rgba(18, 89, 195, 0.08);
+
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  min-height: 100vh;
+  margin: 0 auto;
+  max-width: 1200px;
+  padding: 2rem 1.25rem 3rem;
+  color: var(--text-color);
+  background:
+    radial-gradient(circle at top right, rgba(18, 89, 195, 0.08), transparent 24%),
+    linear-gradient(180deg, #eef5ff 0%, #f8fbff 38%, #ffffff 100%);
 }
 
-.cands {
-    /* Đổi font sang Inter */
-    font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    background-color: var(--background-color);
-    padding: 2.2rem 1.375rem;
-    color: var(--text-color);
-    min-height: 100vh;
-    
-    /* Căn giữa giống layout Profile */
-    max-width: 1210px; 
-    margin: 0 auto;
-    line-height: 1.6;
+.cands__status {
+  padding: 2rem 1.25rem;
+  color: var(--text-muted);
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+}
+
+.cands__hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .cands__title {
-    font-size: 2.2rem;
-    font-weight: 700;
-    margin: 0 0 1.65rem;
-    color: var(--primary-color); /* Tiêu đề màu xanh */
+  margin: 0;
+  font-size: clamp(2rem, 3vw, 2.6rem);
+  font-weight: 800;
+  color: var(--secondary-color);
+}
+
+.cands__subtitle {
+  max-width: 780px;
+  margin: 0.65rem 0 0;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+
+.cands__hero-stat {
+  min-width: 150px;
+  padding: 1rem 1.15rem;
+  border: 1px solid rgba(18, 89, 195, 0.14);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: var(--shadow-color);
+  text-align: right;
+}
+
+.cands__hero-stat span {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.cands__hero-stat strong {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: 2rem;
+  color: var(--primary-color);
 }
 
 .cands__panel {
-    background-color: var(--card-background);
-    border: 1px solid var(--border-color);
-    border-radius: var(--card-radius); /* Bo góc lớn */
-    padding: 1.925rem 2.2rem;
-    margin-bottom: 1.925rem;
-    box-shadow: var(--box-shadow);
+  padding: 1.5rem;
+  border: 1px solid rgba(18, 89, 195, 0.1);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: var(--shadow-color);
 }
 
 .cands__panel-title {
-    font-size: 1.375rem;
-    font-weight: 600;
-    margin: 0 0 1.375rem;
-    color: var(--text-color);
+  margin: 0 0 1rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.cands__alert {
+  margin-bottom: 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(184, 28, 28, 0.18);
+  border-radius: 18px;
+  background: rgba(254, 242, 242, 0.9);
+  color: #b91c1c;
+  line-height: 1.6;
 }
 
 .cands__controls {
-    display: flex;
-    align-items: center;
-    gap: 1.1rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(220px, 0.95fr) auto;
+  gap: 0.9rem;
 }
 
-.cands__search {
-    position: relative;
-    flex-grow: 1;
+.cands__search,
+.cands__select {
+  min-width: 0;
 }
 
-.cands__search-icon {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    right: 1rem;
-    font-size: 18px;
-    color: var(--text-secondary-color);
+.cands__search-input,
+.cands__select-native,
+.cands__clear-btn {
+  width: 100%;
+  min-height: 52px;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  font: inherit;
 }
 
 .cands__search-input,
 .cands__select-native {
-    width: 100%;
-    height: 48px; /* Tăng chiều cao cho giống form Profile */
-    border: 1px solid var(--border-color);
-    background-color: #fdfdfd;
-    border-radius: var(--input-radius); /* Bo góc input 9.5px */
-    padding: 0 1rem;
-    font-size: 1.1rem;
-    transition: all 0.2s ease;
-    font-family: inherit;
+  padding: 0 1rem;
+  background: var(--surface-muted);
+  color: var(--text-color);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
 .cands__search-input:focus,
 .cands__select-native:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    background-color: #fff;
-    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15); /* Hiệu ứng focus mới */
-}
-
-.cands__search-input {
-    padding-right: 44px;
-}
-
-.cands__filters {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.cands__select {
-    position: relative;
-    min-width: 220px;
+  outline: none;
+  border-color: rgba(18, 89, 195, 0.45);
+  box-shadow: 0 0 0 4px rgba(18, 89, 195, 0.1);
+  background: #ffffff;
 }
 
 .cands__select-native {
-    appearance: none;
-    padding-right: 36px;
-    cursor: pointer;
+  cursor: pointer;
 }
 
-.cands__select-caret {
-    position: absolute;
-    right: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    pointer-events: none;
-    font-size: 18px;
-    color: #8c8c8c;
+.cands__clear-btn {
+  width: auto;
+  padding: 0 1.15rem;
+  border: 1px solid rgba(18, 89, 195, 0.18);
+  background: #ffffff;
+  color: var(--primary-color);
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 }
 
-.cands__filter-btn {
-    height: 48px; /* Đồng bộ chiều cao với input */
-    width: 48px;
-    border-radius: var(--input-radius);
-    border: 1px solid var(--border-color);
-    background-color: #fff;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    color: var(--text-secondary-color);
-    transition: all 0.2s;
+.cands__clear-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(18, 89, 195, 0.4);
+  background: var(--primary-soft);
 }
 
-.cands__filter-btn:hover {
-    border-color: var(--primary-color);
-    color: var(--primary-color);
-    background-color: #f0f7ff;
+.cands__criteria {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(18, 89, 195, 0.08);
+}
+
+.cands__criteria-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.cands__criteria-text {
+  margin: 0.35rem 0 0;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.cands__criteria-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.criterion-chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 46px;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--text-color);
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.criterion-chip input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.criterion-chip:hover {
+  transform: translateY(-1px);
+  border-color: rgba(18, 89, 195, 0.32);
+}
+
+.criterion-chip--active {
+  border-color: transparent;
+  background: linear-gradient(135deg, #1259c3, #1f73e0);
+  color: #ffffff;
+  box-shadow: 0 14px 26px rgba(18, 89, 195, 0.22);
+}
+
+.cands__mode {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  padding: 1rem 1.15rem;
+  border: 1px solid rgba(15, 143, 99, 0.16);
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(15, 143, 99, 0.08), rgba(15, 143, 99, 0.03));
+}
+
+.cands__mode--filtered {
+  border-color: rgba(18, 89, 195, 0.16);
+  background: linear-gradient(135deg, rgba(18, 89, 195, 0.09), rgba(18, 89, 195, 0.03));
+}
+
+.cands__mode-kicker {
+  display: inline-block;
+  margin-bottom: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--success-color);
+}
+
+.cands__mode--filtered .cands__mode-kicker {
+  color: var(--primary-color);
+}
+
+.cands__mode-text {
+  margin: 0;
+  max-width: 720px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.cands__mode-summary {
+  min-width: 110px;
+  text-align: right;
+}
+
+.cands__mode-summary strong {
+  display: block;
+  font-size: 1.8rem;
+  color: var(--secondary-color);
+}
+
+.cands__mode-summary span {
+  display: block;
+  color: var(--text-muted);
+}
+
+.cands__selected {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.cands__selected-label {
+  font-weight: 700;
+  color: var(--secondary-color);
+}
+
+.cands__selected-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.cands__selected-chip {
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary-color);
+  font-weight: 700;
 }
 
 .cands__list {
-    display: flex;
-    flex-direction: column;
-    gap: 1.1rem;
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.4rem;
 }
 
-/* CARD ỨNG VIÊN */
 .cand-card {
-    background-color: var(--card-background);
-    border: 1px solid var(--border-color);
-    border-radius: var(--card-radius); /* Bo góc lớn 19.25px */
-    padding: 1.925rem;
-    box-shadow: var(--box-shadow);
-    transition: all 0.3s ease;
+  padding: 1.4rem;
+  border: 1px solid rgba(18, 89, 195, 0.12);
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: var(--shadow-color);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
 .cand-card:hover {
-    transform: translateY(-3px); /* Thêm hiệu ứng bay nhẹ khi hover */
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-    border-color: #dbeafe;
+  transform: translateY(-4px);
+  border-color: rgba(18, 89, 195, 0.25);
+  box-shadow: 0 22px 40px rgba(18, 89, 195, 0.12);
 }
 
 .cand-card__header {
-    display: flex;
-    align-items: center;
-    gap: 1.375rem;
-    margin-bottom: 1.375rem;
-    padding-bottom: 1.375rem;
-    border-bottom: 1px dashed var(--border-color);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.cand-card__profile {
+  display: flex;
+  gap: 1rem;
+  min-width: 0;
 }
 
 .cand-card__avatar {
-    width: 72px; /* Tăng kích thước avatar một chút */
-    height: 72px;
-    border-radius: 50%;
-    object-fit: cover;
-    flex-shrink: 0;
-    border: 2px solid #fff;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+  border-radius: 22px;
+  object-fit: cover;
+  border: 1px solid rgba(18, 89, 195, 0.12);
+  background: #f1f5f9;
 }
 
-.cand-card__headings {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+.cand-card__identity {
+  min-width: 0;
 }
 
 .cand-card__name {
-    font-weight: 700;
-    font-size: 1.25rem;
-    margin: 0;
-    color: var(--primary-color);
+  font-size: 1.18rem;
+  font-weight: 800;
+  color: var(--secondary-color);
 }
 
 .cand-card__role {
-    color: var(--text-secondary-color);
-    font-weight: 500;
-    font-size: 0.95rem;
+  margin-top: 0.2rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.cand-card__school {
+  margin-top: 0.2rem;
+  color: var(--text-muted);
+}
+
+.cand-card__score {
+  min-width: 110px;
+  padding: 0.85rem 1rem;
+  border-radius: 20px;
+  background: var(--surface-muted);
+  text-align: right;
+}
+
+.cand-card__score-label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.cand-card__score strong {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 1.6rem;
+  color: var(--secondary-color);
+}
+
+.cand-card__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 1rem;
+}
+
+.cand-card__badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary-color);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.cand-card__badge--outstanding {
+  background: rgba(15, 143, 99, 0.12);
+  color: var(--success-color);
 }
 
 .cand-card__info {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1rem;
-    list-style: none;
-    padding: 0;
-    margin: 0 0 1.375rem;
-    color: var(--text-secondary-color);
-    font-size: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.85rem;
+  margin-top: 1.15rem;
 }
 
 .cand-card__info-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid rgba(18, 89, 195, 0.08);
+  border-radius: 18px;
+  background: var(--surface-muted);
 }
 
-.cand-card__icon {
-    font-size: 18px;
-    min-width: 24px;
-    text-align: center;
-    color: var(--primary-color); /* Icon màu xanh */
-    opacity: 0.8;
+.cand-card__label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
-/* Phần Goal */
 .cand-card__goal-section {
-    background-color: #f0f7ff; /* Nền xanh rất nhạt thay vì xám */
-    padding: 1.1rem;
-    border-radius: var(--input-radius); /* Bo góc 9.5px */
-    margin-top: 1rem;
-    border: 1px solid #e1effe;
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid rgba(18, 89, 195, 0.08);
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(18, 89, 195, 0.06), rgba(18, 89, 195, 0.02));
 }
 
 .cand-card__goal-label {
-    font-weight: 700;
-    font-size: 0.8rem;
-    color: var(--primary-color);
-    margin-bottom: 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--primary-color);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 .cand-card__goal-text {
-    font-size: 1rem;
-    color: var(--text-color);
-    line-height: 1.6;
+  margin-top: 0.55rem;
+  line-height: 1.7;
+  color: var(--text-color);
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .cands {
-        padding: 1.5rem 1rem;
-    }
-    
-    .cands__controls {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 1rem;
-    }
+.cand-card__skills {
+  margin-top: 1rem;
+}
 
-    .cands__select, .cands__filter-btn {
-        width: 100%;
-    }
-    
-    .cands__filter-btn {
-        width: 100%; /* Button fill full row on mobile */
-    }
+.cand-card__skills-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 0.5rem;
+}
 
-    .cand-card__header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
-    }
+.cand-card__skill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  background: #eef4ff;
+  color: var(--primary-color);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
 
-    .cand-card__info {
-        grid-template-columns: 1fr;
-    }
+.cands__empty {
+  padding: 2.25rem 1rem;
+  border: 1px dashed rgba(18, 89, 195, 0.18);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.7;
+}
+
+@media (max-width: 900px) {
+  .cands__hero,
+  .cands__mode,
+  .cand-card__header {
+    flex-direction: column;
+  }
+
+  .cands__hero-stat,
+  .cands__mode-summary,
+  .cand-card__score {
+    width: 100%;
+    text-align: left;
+  }
+
+  .cands__controls {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .cands {
+    padding: 1.35rem 0.9rem 2.2rem;
+  }
+
+  .cands__panel,
+  .cand-card {
+    padding: 1.1rem;
+    border-radius: 22px;
+  }
+
+  .cand-card__profile {
+    flex-direction: column;
+  }
+
+  .cand-card__avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+  }
+
+  .cand-card__info {
+    grid-template-columns: 1fr;
+  }
 }

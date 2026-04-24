@@ -43,6 +43,13 @@
     color: var(--primary-color);
 }
 
+.company__top-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.825rem;
+    margin: -0.4rem 0 1.25rem;
+}
+
 .company__status {
     margin: 0 0 1.25rem;
     padding: 0.9rem 1rem;
@@ -256,6 +263,16 @@
     box-shadow: 0 4px 12px rgba(13, 110, 253, 0.2);
 }
 
+.company__btn--secondary {
+    background-color: #e8f1ff;
+    color: var(--primary-color);
+    border-color: rgba(13, 110, 253, 0.15);
+}
+
+.company__btn--secondary:hover {
+    background-color: #dbe9ff;
+}
+
 @media (max-width: 768px) {
     .company {
         padding: 1rem 0.75rem;
@@ -264,6 +281,11 @@
     .company__title {
         font-size: 1.8rem;
         text-align: center;
+    }
+
+    .company__top-actions {
+        flex-direction: column;
+        margin-top: 0;
     }
 
     .company__section {
