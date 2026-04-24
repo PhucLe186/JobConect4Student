@@ -35,6 +35,18 @@ const cvUploadOptions = {
 export class ApplicationsController {
   constructor(private readonly applicationsService: ApplicationsService) {}
 
+  @UseGuards(JwtAuthGuard)
+  @Post('smart-apply/:jobId')
+  @UseInterceptors(FileInterceptor('CV', cvUploadOptions))
+  async smartApplyJob(
+    @Param('jobId') jobId: string,
+    @UploadedFile() cvFile: Express.Multer.File,
+    @Req() req: Request,
+  ) {
+    if (!cvFile) throw new BadRequestException('Vui lòng tải lên file CV');
+    return this.applicationsService.smartApplyJob(jobId, req.user as JwtUser, cvFile);
+  }
+
   // =========================================================
   // [MỚI] API 1: PHÂN TÍCH NHÁP CV BẰNG AI
   // FE gửi file lên (tên field là 'cv'), gọi Python trả về JSON

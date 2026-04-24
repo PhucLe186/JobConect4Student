@@ -43,6 +43,20 @@ export class ApplicationsService {
   private readonly defaultAvatar =
     'https://cdn-icons-png.flaticon.com/512/149/149071.png';
 
+  // =================================================================
+  // BỘ CÔNG CỤ XỬ LÝ CHUỖI VÀ TỪ ĐIỂN AI
+  // =================================================================
+  private readonly skillAliases: Record<string, string> = {
+    'c/cd': 'ci/cd',
+    'cicd': 'ci/cd',
+    'react': 'reactjs',
+    'node': 'nodejs',
+    'vue': 'vuejs',
+    'k8s': 'kubernetes',
+    'aws': 'amazon web services',
+    'js': 'javascript',
+  };
+
   private normalizeText(value = '') {
     return value
       .toString()
@@ -50,6 +64,11 @@ export class ApplicationsService {
       .replace(/[\u0300-\u036f]/g, '')
       .toLowerCase()
       .trim();
+  }
+
+  private cleanString(str: string) {
+    // Xóa sạch mọi khoảng trắng và ký tự đặc biệt (chỉ giữ chữ/số)
+    return this.normalizeText(str || '').replace(/[\s\-\/\.]+/g, '');
   }
 
   private parseGpa(value: unknown) {
@@ -117,22 +136,11 @@ export class ApplicationsService {
   }
 
   // =================================================================
-  // 1. LẤY TIÊU CHÍ JD TỪ MONGODB
+  // 1. LẤY TIÊU CHÍ JD TỪ MONGODB (ÁNH XẠ)
   // =================================================================
   private async getJdCriteria(jobId: string) {
-    const job = await this.jobsModel.findById(jobId).populate('skills', 'name').lean();
+    const job = await this.jobsModel.findById(jobId).lean();
     if (!job) throw new BadRequestException('Công việc không tồn tại!');
-
-    const skillsFromJob = ((job as any).skills || []).map((s: any) => s.name || '').filter(Boolean);
-
-    let skills = skillsFromJob;
-    if (skills.length === 0) {
-      const jobSkills = await this.jobSkillModel
-        .find({ Job_id: new Types.ObjectId(jobId) })
-        .populate('skill_id', 'name')
-        .lean();
-      skills = jobSkills.map((js: any) => js.skill_id?.name || '').filter(Boolean);
-    }
 
     const criteria = {
       position: job.title,
@@ -140,53 +148,87 @@ export class ApplicationsService {
       address: job.location,
       experience: job.experience,
       gpa: (job as any).min_gpa || 0,
-      skills,
+      skills: job.requirements || '', // Ép requirements (text) thành skills
     };
 
     return criteria;
   }
 
   // =================================================================
-  // 2. NESTJS TỰ CHẤM ĐIỂM (DÙNG CHO VÒNG 2 KHI NỘP FORM CHÍNH THỨC)
+  // 2. NESTJS TỰ CHẤM ĐIỂM (REGEX & FUZZY MATCHING THÔNG MINH)
   // =================================================================
   private calculateMatchScore(formData: any, jdCriteria: any) {
     const scores = { position: 0, level: 0, address: 0, gpa: 0, skill: 0 };
 
+    // 1. POSITION (10đ)
     const jdPos = this.normalizeText(jdCriteria.position || '');
     const formPos = this.normalizeText(formData.position || '');
-    // So sánh 2 chiều cho Position
-    if (jdPos && formPos && (formPos.includes(jdPos) || jdPos.includes(formPos))) scores.position = 10;
+    if (jdPos && formPos && (jdPos.includes(formPos) || formPos.includes(jdPos))) scores.position = 10;
 
+    // 2. LEVEL (20đ)
     const jdLevel = this.normalizeText(jdCriteria.level || '');
     const formLevel = this.normalizeText(formData.level || '');
-    if (jdLevel && jdLevel === formLevel) scores.level = 20;
+    if (jdLevel && formLevel && (jdLevel.includes(formLevel) || formLevel.includes(jdLevel))) scores.level = 20;
 
+    // 3. ADDRESS (15đ)
     const jdAddress = this.normalizeText(jdCriteria.address || '');
     const formAddress = this.normalizeText(formData.address || '');
-    // So sánh 2 chiều cho Address (Tránh lỗi JD bao gồm chữ undefined)
-    if (jdAddress && formAddress && (formAddress.includes(jdAddress) || jdAddress.includes(formAddress))) scores.address = 15;
+    if (jdAddress && formAddress && (jdAddress.includes(formAddress) || formAddress.includes(jdAddress))) scores.address = 15;
 
+    // 4. GPA (25đ)
     const formGpa = this.parseGpa(formData.gpa);
     const jdGpa = this.parseGpa(jdCriteria.gpa);
     if (jdGpa > 0) {
       scores.gpa = formGpa >= jdGpa ? 25 : Math.round((formGpa / jdGpa) * 25 * 100) / 100;
     } else {
-      scores.gpa = 25;
+      scores.gpa = 25; // JD không yêu cầu GPA thì auto cho full điểm
     }
 
-    const jdSkills: string[] = jdCriteria.skills || [];
-    const formSkillText = this.normalizeText(formData.skill || '');
-    if (jdSkills.length > 0) {
-      const matchCount = jdSkills.filter((s) =>
-        formSkillText.includes(this.normalizeText(s)),
-      ).length;
-      scores.skill = Math.round((matchCount / jdSkills.length) * 30 * 100) / 100;
-    } else {
-      scores.skill = 30;
+    // 5. SKILL (30đ) - Chấm điểm Regex & Fuzzy
+    const jdReqText = this.normalizeText(jdCriteria.skills || ''); // Lấy chuỗi requirements
+    const formSkillText = this.normalizeText(formData.skill || ''); 
+    
+    if (jdReqText && formSkillText) {
+      // Tách các kỹ năng ứng viên nhập thành mảng
+      const applicantSkills = formSkillText.split(/[,;\-|]/).map(s => s.trim()).filter(s => s.length > 1);
+      let matchedSkillsCount = 0;
+
+      applicantSkills.forEach(cvSkill => {
+        let keyword = cvSkill;
+        // Kiểm tra từ điển OCR
+        for (const [wrong, correct] of Object.entries(this.skillAliases)) {
+          if (keyword === wrong) keyword = correct;
+        }
+
+        // Tìm kiếm Regex an toàn
+        const safeKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); 
+        const regex = new RegExp(safeKeyword, 'i');
+        
+        if (regex.test(jdReqText)) {
+          matchedSkillsCount++;
+        } else {
+          // Fuzzy Matching (Bỏ dấu/khoảng trắng)
+          const pureKeyword = this.cleanString(keyword);
+          const pureJd = this.cleanString(jdReqText);
+          if (pureKeyword.length > 2 && pureJd.includes(pureKeyword)) {
+            matchedSkillsCount++;
+          }
+        }
+      });
+
+      // Quy đổi điểm: Cần 3 keyword khớp để đạt 30 điểm
+      const EXPECTED_CORE_SKILLS = 3; 
+      scores.skill = Math.min(30, Math.round((matchedSkillsCount / EXPECTED_CORE_SKILLS) * 30));
+
+    } else if (!jdReqText) {
+      scores.skill = 30; 
     }
 
     const total = scores.position + scores.level + scores.address + scores.gpa + scores.skill;
-    console.log('[NestJS] Đã chấm điểm lại Form ứng viên. Điểm mới:', total);
+    console.log('\n--- [NESTJS] CHI TIẾT CHẤM ĐIỂM FORM ---');
+    console.log(scores);
+    console.log(`=> TỔNG ĐIỂM MỚI: ${total}/100\n`);
+    
     return total;
   }
 
@@ -236,7 +278,7 @@ export class ApplicationsService {
     const finalName = rawData.full_name || rawData.fullName || applicantProfile.fullName;
 
     // 3. RẼ NHÁNH DỰA VÀO ĐIỂM PYTHON CHẤM
-    const PASS_THRESHOLD = 60; // Ngưỡng an toàn (Bạn có thể tự chỉnh)
+    const PASS_THRESHOLD = 60; // Ngưỡng an toàn
     
     if (pythonScore < PASS_THRESHOLD) {
       return {
@@ -315,8 +357,10 @@ export class ApplicationsService {
   }
 
   // =================================================================
-  // CÁC HÀM GET LỊCH SỬ & NHÀ TUYỂN DỤNG (Giữ nguyên)
+  // CÁC HÀM CŨ CỦA BẠN (GIỮ NGUYÊN)
   // =================================================================
+  
+  // (Phần code bên dưới giữ nguyên các hàm applyJobs, applyWithDetails, getApplicationHistory, getEmployerCandidates)
   async applyJobs(
     jobid: string,
     user: JwtUser,
@@ -430,6 +474,7 @@ export class ApplicationsService {
         email: app.email,
         phone: app.phone,
         cover_letter: app.cover_letter,
+        match_score: app.match_score,
       })),
     };
   }
