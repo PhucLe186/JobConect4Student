@@ -378,6 +378,7 @@ const drawPdfBackground = (doc) => {
     doc.triangle(118, 110, PAGE_WIDTH, 110, 192, 240, 'F');
 };
 
+/* eslint-disable no-unused-vars */
 const drawPdfLeftColumn = async (doc, cvData, avatar) => {
     const visibleContacts = CONTACT_FIELDS.filter(({ key }) => trimValue(cvData.contacts[key]));
     const visibleSkills = cvData.skills.map(trimValue).filter(Boolean).slice(0, MAX_SKILLS);
@@ -431,12 +432,18 @@ const drawPdfLeftColumn = async (doc, cvData, avatar) => {
         { align: 'center' },
     );
 
-    const separatorY = currentY + 6;
     doc.setDrawColor(255, 255, 255);
     doc.setLineWidth(0.2);
-    doc.line(0, separatorY, LEFT_COLUMN_WIDTH, separatorY);
+    currentY += 6;
+    const drawLeftDivider = () => {
+        doc.line(7, currentY, LEFT_COLUMN_WIDTH - 7, currentY);
+        currentY += 6;
+    };
 
-    currentY = separatorY + 8;
+    if (visibleContacts.length > 0) {
+        drawLeftDivider();
+    }
+
     doc.setFont(PDF_FONT_NAME, 'normal');
     doc.setFontSize(scalePdfFont(9.3));
 
@@ -453,9 +460,8 @@ const drawPdfLeftColumn = async (doc, cvData, avatar) => {
         currentY += 1.7;
     });
 
-    currentY += 2;
-    doc.line(7, currentY, LEFT_COLUMN_WIDTH - 7, currentY);
-    currentY += 6;
+    if (visibleSkills.length > 0) {
+        drawLeftDivider();
 
     doc.setFillColor(112, 71, 57);
     doc.roundedRect(4.8, currentY - 4.8, 20, 7.6, 3.8, 3.8, 'F');
@@ -479,11 +485,10 @@ const drawPdfLeftColumn = async (doc, cvData, avatar) => {
         currentY = drawTextLines(doc, skillLines, 12.2, currentY, scalePdfLineHeight(4.1));
         currentY += 1;
     });
+    }
 
     if (visibleInterests.length > 0 && currentY < PAGE_HEIGHT - 30) {
-        currentY += 2;
-        doc.line(7, currentY, LEFT_COLUMN_WIDTH - 7, currentY);
-        currentY += 6;
+        drawLeftDivider();
 
         doc.setFillColor(112, 71, 57);
         doc.roundedRect(4.8, currentY - 4.8, 21, 7.6, 3.8, 3.8, 'F');
@@ -525,8 +530,18 @@ const drawPdfRightColumn = (doc, cvData) => {
                 experience.bullets.length,
         )
         .slice(0, MAX_EXPERIENCES);
+    const hasObjective = Boolean(trimValue(cvData.objective));
+    const hasEducation = Object.values(cvData.education).some((value) => trimValue(value));
 
     let currentY = 18;
+    const startRightSection = (label) => {
+        if (currentY > 18) {
+            currentY += 2;
+        }
+
+        drawSectionHeader(doc, label, currentY);
+        currentY += 6;
+    };
 
     drawSectionHeader(doc, 'Mục tiêu nghề nghiệp', currentY);
     currentY += 6;
@@ -636,6 +651,295 @@ const drawPdfRightColumn = (doc, cvData) => {
     drawBulletList(doc, educationBullets, RIGHT_COLUMN_X + 2, currentY + 2, 126, 2);
 };
 
+/* eslint-enable no-unused-vars */
+const drawPdfLeftColumnDynamic = async (doc, cvData, avatar) => {
+    const visibleContacts = CONTACT_FIELDS.filter(({ key }) => trimValue(cvData.contacts[key]));
+    const visibleSkills = cvData.skills.map(trimValue).filter(Boolean).slice(0, MAX_SKILLS);
+    const visibleInterests = cvData.interests
+        .map(trimValue)
+        .filter(Boolean)
+        .slice(0, MAX_INTERESTS);
+    const avatarCenterX = LEFT_COLUMN_WIDTH / 2;
+    const avatarCenterY = 28;
+    const outerRadius = 19;
+    const innerRadius = 16.5;
+    const avatarDataUrl = await createAvatarDataUrl(avatar, { size: 420, circular: true });
+
+    doc.setFillColor(255, 255, 255);
+    doc.circle(avatarCenterX, avatarCenterY, outerRadius, 'F');
+
+    if (avatarDataUrl) {
+        doc.addImage(
+            avatarDataUrl,
+            'PNG',
+            avatarCenterX - innerRadius,
+            avatarCenterY - innerRadius,
+            innerRadius * 2,
+            innerRadius * 2,
+        );
+    } else {
+        doc.setFillColor(239, 241, 244);
+        doc.circle(avatarCenterX, avatarCenterY, innerRadius, 'F');
+        doc.setFillColor(174, 181, 191);
+        doc.circle(avatarCenterX, avatarCenterY - 7.6, 6.4, 'F');
+        doc.ellipse(avatarCenterX, avatarCenterY + 8, 11.8, 8.2, 'F');
+    }
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
+    doc.setFontSize(scalePdfFont(14.5));
+    const nameLines = getWrappedLines(doc, trimValue(cvData.fullName) || 'Há» tĂªn á»©ng viĂªn', 46, 2);
+    let currentY = drawTextLines(doc, nameLines, avatarCenterX, 58, scalePdfLineHeight(5.5), {
+        align: 'center',
+    });
+
+    doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
+    doc.setFontSize(scalePdfFont(12));
+    const headlineLines = getWrappedLines(doc, trimValue(cvData.headline) || 'Vá»‹ trĂ­ á»©ng tuyá»ƒn', 44, 3);
+    currentY = drawTextLines(
+        doc,
+        headlineLines,
+        avatarCenterX,
+        currentY + 1.5,
+        scalePdfLineHeight(5),
+        { align: 'center' },
+    );
+
+    doc.setDrawColor(255, 255, 255);
+    doc.setLineWidth(0.2);
+    currentY += 6;
+
+    const drawLeftDivider = () => {
+        doc.line(7, currentY, LEFT_COLUMN_WIDTH - 7, currentY);
+        currentY += 6;
+    };
+
+    if (visibleContacts.length > 0) {
+        drawLeftDivider();
+        doc.setFont(PDF_FONT_NAME, 'normal');
+        doc.setFontSize(scalePdfFont(9.3));
+
+        visibleContacts.forEach(({ key }) => {
+            const lines = getWrappedLines(doc, cvData.contacts[key], 44, 2);
+
+            if (!lines.length) {
+                return;
+            }
+
+            doc.setFillColor(255, 255, 255);
+            doc.circle(8.8, currentY - 1.2, 0.85, 'F');
+            currentY = drawTextLines(doc, lines, 12.2, currentY, scalePdfLineHeight(4.3));
+            currentY += 1.7;
+        });
+    }
+
+    if (visibleSkills.length > 0) {
+        drawLeftDivider();
+        doc.setFillColor(112, 71, 57);
+        doc.roundedRect(4.8, currentY - 4.8, 20, 7.6, 3.8, 3.8, 'F');
+        doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
+        doc.setFontSize(scalePdfFont(10.5));
+        doc.text('Ká»¹ nÄƒng', 7.7, currentY);
+        currentY += 6.5;
+
+        doc.setFont(PDF_FONT_NAME, 'normal');
+        doc.setFontSize(scalePdfFont(9.5));
+        visibleSkills.forEach((skill) => {
+            const skillLines = getWrappedLines(doc, skill, 44, 2);
+
+            if (!skillLines.length || currentY > PAGE_HEIGHT - 8) {
+                return;
+            }
+
+            doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
+            doc.text('â€¢', 9, currentY);
+            doc.setFont(PDF_FONT_NAME, 'normal');
+            currentY = drawTextLines(doc, skillLines, 12.2, currentY, scalePdfLineHeight(4.1));
+            currentY += 1;
+        });
+    }
+
+    if (visibleInterests.length > 0 && currentY < PAGE_HEIGHT - 30) {
+        drawLeftDivider();
+        doc.setFillColor(112, 71, 57);
+        doc.roundedRect(4.8, currentY - 4.8, 21, 7.6, 3.8, 3.8, 'F');
+        doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
+        doc.setFontSize(scalePdfFont(10.2));
+        doc.text('Sá»Ÿ thĂ­ch', 7.7, currentY);
+        currentY += 6.5;
+
+        doc.setFont(PDF_FONT_NAME, 'normal');
+        doc.setFontSize(scalePdfFont(9.4));
+        visibleInterests.forEach((interest) => {
+            const interestLines = getWrappedLines(doc, interest, 44, 2);
+
+            if (!interestLines.length || currentY > PAGE_HEIGHT - 8) {
+                return;
+            }
+
+            doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
+            doc.text('â€¢', 9, currentY);
+            doc.setFont(PDF_FONT_NAME, 'normal');
+            currentY = drawTextLines(doc, interestLines, 12.2, currentY, scalePdfLineHeight(4.1));
+            currentY += 1;
+        });
+    }
+};
+
+const drawPdfRightColumnDynamic = (doc, cvData) => {
+    const visibleExperiences = cvData.experiences
+        .map((experience) => ({
+            ...experience,
+            bullets: experience.bullets.map(trimValue).filter(Boolean).slice(0, MAX_BULLETS),
+        }))
+        .filter(
+            (experience) =>
+                trimValue(experience.position) ||
+                trimValue(experience.company) ||
+                trimValue(experience.start) ||
+                trimValue(experience.end) ||
+                experience.bullets.length,
+        )
+        .slice(0, MAX_EXPERIENCES);
+    const hasObjective = Boolean(trimValue(cvData.objective));
+    const hasEducation = Object.values(cvData.education).some((value) => trimValue(value));
+
+    let currentY = 18;
+    const startSection = (label) => {
+        if (currentY > 18) {
+            currentY += 2;
+        }
+
+        drawSectionHeader(doc, label, currentY);
+        currentY += 6;
+    };
+
+    if (hasObjective) {
+        startSection('Má»¥c tiĂªu nghá» nghiá»‡p');
+        doc.setFont(PDF_FONT_NAME, 'normal');
+        doc.setFontSize(scalePdfFont(9.5));
+        const objectiveLines = getWrappedLines(doc, cvData.objective, RIGHT_CONTENT_WIDTH, 8);
+        currentY = drawTextLines(
+            doc,
+            objectiveLines,
+            RIGHT_COLUMN_X,
+            currentY,
+            scalePdfLineHeight(4.35),
+        );
+    }
+
+    if (visibleExperiences.length > 0) {
+        startSection('Kinh nghiá»‡m lĂ m viá»‡c');
+
+        visibleExperiences.forEach((experience) => {
+            const roleLines = getWrappedLines(
+                doc,
+                trimValue(experience.position) || 'Vá»‹ trĂ­ cĂ´ng viá»‡c',
+                82,
+                2,
+            );
+            const hasPeriod = trimValue(experience.start) || trimValue(experience.end);
+
+            doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
+            doc.setFontSize(scalePdfFont(10.2));
+            const roleEndY = drawTextLines(
+                doc,
+                roleLines,
+                RIGHT_COLUMN_X,
+                currentY,
+                scalePdfLineHeight(4.3),
+            );
+
+            if (hasPeriod) {
+                doc.text(formatPeriod(experience.start, experience.end), PAGE_WIDTH - 8, currentY, { align: 'right' });
+            }
+
+            currentY = roleEndY;
+
+            if (trimValue(experience.company)) {
+                doc.setFont(PDF_FONT_NAME, 'normal');
+                doc.setFontSize(scalePdfFont(9.5));
+                const companyLines = getWrappedLines(doc, experience.company, RIGHT_CONTENT_WIDTH, 2);
+                currentY = drawTextLines(
+                    doc,
+                    companyLines,
+                    RIGHT_COLUMN_X,
+                    currentY,
+                    scalePdfLineHeight(4.1),
+                );
+            }
+
+            if (experience.bullets.length > 0) {
+                doc.setFont(PDF_FONT_NAME, 'normal');
+                doc.setFontSize(scalePdfFont(9.5));
+                currentY = drawBulletList(
+                    doc,
+                    experience.bullets,
+                    RIGHT_COLUMN_X + 2,
+                    currentY + 1.5,
+                    126,
+                    2,
+                );
+            }
+
+            currentY += 2.2;
+        });
+    }
+
+    if (hasEducation) {
+        startSection('Há»c váº¥n');
+
+        if (trimValue(cvData.education.major)) {
+            doc.setFont(PDF_FONT_NAME, 'normal');
+            doc.setFontSize(scalePdfFont(9.3));
+            const majorLines = getWrappedLines(doc, cvData.education.major, RIGHT_CONTENT_WIDTH, 2);
+            currentY = drawTextLines(
+                doc,
+                majorLines,
+                RIGHT_COLUMN_X,
+                currentY,
+                scalePdfLineHeight(4.2),
+            );
+        }
+
+        if (trimValue(cvData.education.start) || trimValue(cvData.education.end)) {
+            doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
+            doc.setFontSize(scalePdfFont(9.4));
+            doc.text(formatPeriod(cvData.education.start, cvData.education.end), RIGHT_COLUMN_X, currentY + 1);
+            currentY += 5.8;
+        }
+
+        if (trimValue(cvData.education.school)) {
+            doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
+            doc.setFontSize(scalePdfFont(10.2));
+            const schoolLines = getWrappedLines(doc, cvData.education.school, RIGHT_CONTENT_WIDTH, 2);
+            currentY = drawTextLines(
+                doc,
+                schoolLines,
+                RIGHT_COLUMN_X,
+                currentY,
+                scalePdfLineHeight(4.3),
+            );
+        }
+
+        const educationBullets = [];
+
+        if (trimValue(cvData.education.gpa)) {
+            educationBullets.push(`GPA: ${cvData.education.gpa}`);
+        }
+
+        if (trimValue(cvData.education.thesis)) {
+            educationBullets.push(`Äá»“ Ă¡n tá»‘t nghiá»‡p: ${cvData.education.thesis}`);
+        }
+
+        if (educationBullets.length > 0) {
+            doc.setFont(PDF_FONT_NAME, 'normal');
+            doc.setFontSize(scalePdfFont(9.4));
+            drawBulletList(doc, educationBullets, RIGHT_COLUMN_X + 2, currentY + 2, 126, 2);
+        }
+    }
+};
+
 const exportCvToPdf = async (cvData, avatar) => {
     const doc = new jsPDF({
         orientation: 'portrait',
@@ -646,11 +950,12 @@ const exportCvToPdf = async (cvData, avatar) => {
 
     await ensurePdfFonts(doc);
     drawPdfBackground(doc);
-    await drawPdfLeftColumn(doc, cvData, avatar);
-    drawPdfRightColumn(doc, cvData);
+    await drawPdfLeftColumnDynamic(doc, cvData, avatar);
+    drawPdfRightColumnDynamic(doc, cvData);
     doc.save(`${buildResumeTitle(cvData)}.pdf`);
 };
 
+/* eslint-disable no-unused-vars */
 function CVPreview({ cvData, avatar, compact = false }) {
     const visibleContacts = CONTACT_FIELDS.filter(({ key }) => trimValue(cvData.contacts[key]));
     const visibleSkills = cvData.skills.map(trimValue).filter(Boolean).slice(0, MAX_SKILLS);
@@ -858,6 +1163,185 @@ function CVPreview({ cvData, avatar, compact = false }) {
                             )}
                         </div>
                     </div>
+                </div>
+            </section>
+        </article>
+    );
+}
+
+/* eslint-enable no-unused-vars */
+function CVPreviewDynamic({ cvData, avatar, compact = false }) {
+    const visibleContacts = CONTACT_FIELDS.filter(({ key }) => trimValue(cvData.contacts[key]));
+    const visibleSkills = cvData.skills.map(trimValue).filter(Boolean).slice(0, MAX_SKILLS);
+    const visibleInterests = cvData.interests
+        .map(trimValue)
+        .filter(Boolean)
+        .slice(0, MAX_INTERESTS);
+    const visibleExperiences = cvData.experiences
+        .map((experience) => ({
+            ...experience,
+            bullets: experience.bullets.map(trimValue).filter(Boolean).slice(0, MAX_BULLETS),
+        }))
+        .filter(
+            (experience) =>
+                trimValue(experience.position) ||
+                trimValue(experience.company) ||
+                trimValue(experience.start) ||
+                trimValue(experience.end) ||
+                experience.bullets.length,
+        )
+        .slice(0, MAX_EXPERIENCES);
+    const hasObjective = Boolean(trimValue(cvData.objective));
+    const hasEducation = Object.values(cvData.education).some((value) => trimValue(value));
+
+    return (
+        <article className={`${styles.cvPage} ${compact ? styles.cvPageCompact : ''}`}>
+            <aside className={styles.leftColumn}>
+                <div className={styles.avatarFrame}>
+                    <div
+                        className={avatar ? styles.avatarPreview : styles.avatarPlaceholder}
+                        style={avatar ? { backgroundImage: `url(${avatar})` } : undefined}
+                    />
+                </div>
+
+                <div className={styles.identityBlock}>
+                    <h2>{trimValue(cvData.fullName) || 'Há» tĂªn á»©ng viĂªn'}</h2>
+                    <p>{trimValue(cvData.headline) || 'Vá»‹ trĂ­ á»©ng tuyá»ƒn'}</p>
+                </div>
+
+                {visibleContacts.length > 0 ? (
+                    <div className={styles.leftBlock}>
+                        <ul className={styles.contactList}>
+                            {visibleContacts.map(({ key, Icon }) => (
+                                <li className={styles.contactRow} key={key}>
+                                    <span className={styles.contactIcon}>
+                                        <Icon />
+                                    </span>
+                                    <span>{cvData.contacts[key]}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                ) : null}
+
+                {visibleSkills.length > 0 ? (
+                    <div className={styles.leftBlock}>
+                        <div className={styles.leftBadge}>Ká»¹ nÄƒng</div>
+                        <ul className={styles.skillList}>
+                            {visibleSkills.map((skill, index) => (
+                                <li key={`dynamic-preview-skill-${index}`}>{skill}</li>
+                            ))}
+                        </ul>
+                    </div>
+                ) : null}
+
+                {visibleInterests.length > 0 ? (
+                    <div className={styles.leftBlock}>
+                        <div className={styles.leftBadge}>Sá»Ÿ thĂ­ch</div>
+                        <ul className={styles.interestList}>
+                            {visibleInterests.map((interest, index) => (
+                                <li key={`dynamic-preview-interest-${index}`}>{interest}</li>
+                            ))}
+                        </ul>
+                    </div>
+                ) : null}
+            </aside>
+
+            <section className={styles.rightColumn}>
+                <div className={styles.rightContent}>
+                    {hasObjective ? (
+                        <div className={styles.sectionBlock}>
+                            <div className={styles.sectionHeader}>
+                                <div className={styles.sectionLabel}>Má»¥c tiĂªu nghá» nghiá»‡p</div>
+                                <div className={styles.sectionLine} />
+                            </div>
+
+                            <div className={styles.sectionBody}>
+                                <p className={styles.objectiveText}>{cvData.objective}</p>
+                            </div>
+                        </div>
+                    ) : null}
+
+                    {visibleExperiences.length > 0 ? (
+                        <div className={styles.sectionBlock}>
+                            <div className={styles.sectionHeader}>
+                                <div className={styles.sectionLabel}>Kinh nghiá»‡m lĂ m viá»‡c</div>
+                                <div className={styles.sectionLine} />
+                            </div>
+
+                            <div className={styles.sectionBody}>
+                                <div className={styles.experienceList}>
+                                    {visibleExperiences.map((experience) => {
+                                        const hasPeriod =
+                                            trimValue(experience.start) || trimValue(experience.end);
+
+                                        return (
+                                            <div className={styles.experienceItem} key={experience.id}>
+                                                <div className={styles.roleRow}>
+                                                    <span className={styles.roleTitle}>
+                                                        {trimValue(experience.position) || 'Vá»‹ trĂ­ cĂ´ng viá»‡c'}
+                                                    </span>
+                                                    {hasPeriod ? (
+                                                        <span className={styles.periodText}>
+                                                            {formatPeriod(experience.start, experience.end)}
+                                                        </span>
+                                                    ) : null}
+                                                </div>
+
+                                                {trimValue(experience.company) ? (
+                                                    <div className={styles.companyText}>{experience.company}</div>
+                                                ) : null}
+
+                                                {experience.bullets.length > 0 ? (
+                                                    <ul className={styles.bulletList}>
+                                                        {experience.bullets.map((bullet, bulletIndex) => (
+                                                            <li key={`${experience.id}-${bulletIndex}`}>{bullet}</li>
+                                                        ))}
+                                                    </ul>
+                                                ) : null}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+                    ) : null}
+
+                    {hasEducation ? (
+                        <div className={styles.sectionBlock}>
+                            <div className={styles.sectionHeader}>
+                                <div className={styles.sectionLabel}>Há»c váº¥n</div>
+                                <div className={styles.sectionLine} />
+                            </div>
+
+                            <div className={styles.sectionBody}>
+                                {trimValue(cvData.education.major) ? (
+                                    <div className={styles.educationIntro}>{cvData.education.major}</div>
+                                ) : null}
+
+                                {trimValue(cvData.education.start) || trimValue(cvData.education.end) ? (
+                                    <div className={styles.educationPeriod}>
+                                        {formatPeriod(cvData.education.start, cvData.education.end)}
+                                    </div>
+                                ) : null}
+
+                                {trimValue(cvData.education.school) ? (
+                                    <div className={styles.educationSchool}>{cvData.education.school}</div>
+                                ) : null}
+
+                                {trimValue(cvData.education.gpa) || trimValue(cvData.education.thesis) ? (
+                                    <ul className={styles.educationList}>
+                                        {trimValue(cvData.education.gpa) ? (
+                                            <li>GPA: {cvData.education.gpa}</li>
+                                        ) : null}
+                                        {trimValue(cvData.education.thesis) ? (
+                                            <li>Äá»“ Ă¡n tá»‘t nghiá»‡p: {cvData.education.thesis}</li>
+                                        ) : null}
+                                    </ul>
+                                ) : null}
+                            </div>
+                        </div>
+                    ) : null}
                 </div>
             </section>
         </article>
@@ -1183,7 +1667,7 @@ function CVBuilder() {
                             >
                                 <div className={styles.resumePreviewCanvas}>
                                     <div className={styles.resumePreviewScale}>
-                                        <CVPreview
+                                        <CVPreviewDynamic
                                             cvData={resume.cv_data}
                                             avatar={resume.avatar_data}
                                             compact
@@ -1648,7 +2132,7 @@ function CVBuilder() {
 
                 <section className={styles.previewPanel}>
                     <div className={styles.previewStage}>
-                        <CVPreview cvData={cvData} avatar={avatar} />
+                        <CVPreviewDynamic cvData={cvData} avatar={avatar} />
                     </div>
                 </section>
             </div>
