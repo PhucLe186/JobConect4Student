@@ -10,6 +10,8 @@ import { CreateEmployerDto } from './tdo/employer.dto';
 import { JwtUser } from '../auth/interface/jwt-user.interface';
 import { User, UserDocument } from '../auth/schema/auth.schema';
 
+const PAGE_1_REAL_BRAND_SEED = 'page1-real-brand-companies';
+
 @Injectable()
 export class EmployerService {
   constructor(
@@ -23,24 +25,47 @@ export class EmployerService {
         {},
         {
           company_name: 1,
+          description: 1,
           industry: 1,
           size: 1,
           logo: 1,
           address: 1,
+          website: 1,
+          email: 1,
           user_id: 1,
+          seed_source: 1,
         },
       )
       .sort({ _id: -1 })
       .lean()
       .exec();
 
-    const uniqueCompanies = Array.from(
-      new Map(
-        companies.map((company) => [company.user_id.toString(), company]),
-      ).values(),
-    );
+    const uniqueCompanies: Employer[] = [];
+    const seenUsers = new Set<string>();
 
-    return uniqueCompanies as Employer[];
+    for (const company of companies) {
+      const userKey = company.user_id.toString();
+
+      if (seenUsers.has(userKey)) {
+        continue;
+      }
+
+      seenUsers.add(userKey);
+      uniqueCompanies.push(company as Employer);
+    }
+
+    return uniqueCompanies.sort((firstCompany: any, secondCompany: any) => {
+      const firstPriority =
+        firstCompany.seed_source === PAGE_1_REAL_BRAND_SEED ? 0 : 1;
+      const secondPriority =
+        secondCompany.seed_source === PAGE_1_REAL_BRAND_SEED ? 0 : 1;
+
+      if (firstPriority !== secondPriority) {
+        return firstPriority - secondPriority;
+      }
+
+      return secondCompany._id.toString().localeCompare(firstCompany._id.toString());
+    });
   }
 
   async employerDetail(id: string): Promise<Employer | null> {

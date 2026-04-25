@@ -82,6 +82,12 @@ export class Jobs {
 
   @Prop({ enum: ['open', 'close', 'draft'], default: 'draft', required: true })
   status: string;
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Skills' }], default: [] })
+  skills: Types.ObjectId[];
+
+  @Prop({ type: Number, default: 0, min: 0, max: 4 })
+  min_gpa: number;
 }
 
 export const JobsSchema = SchemaFactory.createForClass(Jobs);
