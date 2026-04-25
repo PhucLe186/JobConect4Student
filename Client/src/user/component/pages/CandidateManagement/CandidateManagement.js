@@ -61,6 +61,10 @@ const ORDERED_CRITERIA_KEYS = CRITERIA_DEFINITIONS.map((criterion) => criterion.
 const DEFAULT_OUTSTANDING_KEYS = ['highGpa', 'english'];
 
 const getOutstandingScore = (candidate) => {
+  if (candidate.match_score > 0) {
+    return Math.round(candidate.match_score);
+  }
+
   let score = candidate.gpa * 20 + candidate.englishScore * 0.7;
 
   if (candidate.gpa >= 3.7) {
@@ -138,6 +142,7 @@ function CandidateManagement({ language = 'vi' }) {
         ...candidate,
         gpa: Number(candidate.gpa) || 0,
         englishScore: Number(candidate.englishScore) || 0,
+        match_score: Number(candidate.match_score) || 0,
         englishLabel: candidate.englishLabel || '',
         latestJobTitle: candidate.latestJobTitle || '',
         skills: Array.isArray(candidate.skills) ? candidate.skills : [],
@@ -203,6 +208,7 @@ function CandidateManagement({ language = 'vi' }) {
 
       return pool.sort(
         (left, right) =>
+          right.match_score - left.match_score ||
           right.outstandingScore - left.outstandingScore ||
           right.gpa - left.gpa ||
           right.englishScore - left.englishScore ||
@@ -219,6 +225,7 @@ function CandidateManagement({ language = 'vi' }) {
       .sort(
         (left, right) =>
           right.selectedCriteriaCount - left.selectedCriteriaCount ||
+          right.match_score - left.match_score ||
           right.gpa - left.gpa ||
           right.englishScore - left.englishScore ||
           right.outstandingScore - left.outstandingScore,
@@ -414,7 +421,9 @@ function CandidateManagement({ language = 'vi' }) {
                   <strong>
                     {hasSelectedCriteria
                       ? `${candidate.selectedCriteriaCount}/${selectedCriteria.length}`
-                      : candidate.outstandingScore}
+                      : candidate.match_score > 0
+                        ? `${candidate.match_score}%`
+                        : candidate.outstandingScore}
                   </strong>
                 </div>
               </header>

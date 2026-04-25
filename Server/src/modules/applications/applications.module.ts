@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ApplicationsService } from './applications.service';
 import { ApplicationsController } from './applications.controller';
 import { MongooseModule } from '@nestjs/mongoose';
+
 import { job_applications, jobApplySchema } from './applyjob.schema';
 import { CSV, ResumeSchema } from '../resume/resume.schema';
 import { Student, StudentSchema } from '../student/student.schema';
@@ -9,6 +10,7 @@ import { User, UserSchema } from '../auth/schema/auth.schema';
 import { Jobs, JobsSchema } from '../jobs/schema/jobs.schema';
 import { Employer, EmployerSchema } from '../employer/employer.schema';
 import { StudentSkills, StudentSkillSchema } from '../skills/schema/StudentSkill.schema';
+import { JobSkills, SkillSchema as JobSkillSchema } from '../skills/schema/JobSkill.schema';
 import { Skills, SkillSchema } from '../skills/schema/skills.schema';
 
 @Module({
@@ -21,6 +23,7 @@ import { Skills, SkillSchema } from '../skills/schema/skills.schema';
       { name: Jobs.name, schema: JobsSchema },
       { name: Employer.name, schema: EmployerSchema },
       { name: StudentSkills.name, schema: StudentSkillSchema },
+      { name: JobSkills.name, schema: JobSkillSchema },
       { name: Skills.name, schema: SkillSchema },
     ]),
   ],

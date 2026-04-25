@@ -204,7 +204,7 @@ const Homepage = () => {
                 <div className={cx('container')}>
                     <div className={cx('jobs-summary')}>
                         {language === 'vi'
-                            ? `${totalJob} cong viec dang hien thi`
+                            ? `${totalJob} c?ng vi?c ?ang hi?n th?`
                             : `${totalJob} jobs currently available`}
                     </div>
 

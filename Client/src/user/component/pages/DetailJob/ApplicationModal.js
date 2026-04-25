@@ -18,7 +18,7 @@ const ApplicationModal = ({ isOpen, onClose, jobData, onSubmit }) => {
     const isEmployerAccount = user?.type === 'employer';
     const employerApplyBlockedMessage =
         language === 'vi'
-            ? 'Tai khoan nha tuyen dung khong the nop CV ung tuyen. Vui long dung tai khoan sinh vien/ung vien.'
+            ? 'T?i kho?n nh? tuy?n d?ng kh?ng th? n?p CV ?ng tuy?n. Vui l?ng d?ng t?i kho?n sinh vi?n/?ng vi?n.'
             : 'Employer accounts cannot submit job applications. Please use a student/candidate account.';
 
     const handleInputChange = (e) => {
