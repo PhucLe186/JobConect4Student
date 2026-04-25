@@ -8,6 +8,7 @@
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "seed:page1-real-companies": "node seed-page1-real-companies.js",
     "seed:mock-data": "node seed-mock-data.js",
     "seed:skills": "node seed-skills-node.js",
     "start:dev": "nest start",

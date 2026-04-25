@@ -1,6 +1,13 @@
 .builderShell {
+    --builder-font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    --cv-font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
     min-height: calc(100vh - 88px);
     background: linear-gradient(180deg, #eef2f5 0%, #e7edf2 100%);
+    font-family: var(--builder-font-family);
+    font-synthesis: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
 .savedSection {
@@ -36,7 +43,8 @@
     background: #11b95c;
     color: #fff;
     font-size: 14px;
-    font-weight: 800;
+    font-weight: 700;
+    font-family: inherit;
     cursor: pointer;
     white-space: nowrap;
     transition: transform 0.15s ease, opacity 0.15s ease;
@@ -96,7 +104,7 @@
         margin: 0 0 6px;
         color: #111827;
         font-size: 18px;
-        font-weight: 800;
+        font-weight: 700;
         line-height: 1.3;
     }
 
@@ -117,7 +125,7 @@
     background: rgba(17, 185, 92, 0.12);
     color: #0f8b47;
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.04em;
 }
@@ -136,6 +144,7 @@
     display: grid;
     grid-template-columns: minmax(380px, 460px) minmax(0, 1fr);
     min-height: 0;
+    align-items: start;
 }
 
 .editorPanel {
@@ -163,7 +172,7 @@
     margin: 0;
     color: #8a6d60;
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 700;
     letter-spacing: 0.18em;
     text-transform: uppercase;
 }
@@ -189,6 +198,7 @@
     border-radius: 12px;
     font-size: 13px;
     font-weight: 700;
+    font-family: inherit;
     cursor: pointer;
     transition: transform 0.15s ease, opacity 0.15s ease, background 0.15s ease;
 
@@ -299,7 +309,7 @@
     label {
         color: #685b54;
         font-size: 11px;
-        font-weight: 800;
+        font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.04em;
     }
@@ -314,6 +324,7 @@
         color: #2e2622;
         font-size: 13px;
         line-height: 1.55;
+        font-family: inherit;
         resize: vertical;
         box-sizing: border-box;
 
@@ -356,6 +367,7 @@
         color: #2e2622;
         font-size: 13px;
         line-height: 1.55;
+        font-family: inherit;
         box-sizing: border-box;
         resize: vertical;
     }
@@ -386,14 +398,23 @@
 }
 
 .previewPanel {
-    padding: 28px 20px 48px;
-    overflow: auto;
+    position: sticky;
+    top: 104px;
+    align-self: start;
+    padding: 24px 16px 32px;
 }
 
 .previewStage {
     display: flex;
     justify-content: center;
-    min-width: fit-content;
+    align-items: flex-start;
+    width: 100%;
+    max-height: calc(100vh - 132px);
+    overflow: auto;
+    padding: 8px 10px 8px 0;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.32);
+    scrollbar-gutter: stable;
 }
 
 .cvPage {
@@ -405,7 +426,8 @@
     background: #ffffff;
     box-shadow: 0 30px 70px rgba(31, 35, 39, 0.18);
     overflow: hidden;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: var(--cv-font-family);
+    font-synthesis: none;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
 }
@@ -482,8 +504,8 @@
     h2 {
         margin: 0 0 8px;
         color: #fff;
-        font-size: 18px;
-        font-weight: 800;
+        font-size: 19.5px;
+        font-weight: 700;
         line-height: 1.28;
         word-break: break-word;
     }
@@ -491,7 +513,7 @@
     p {
         margin: 0;
         color: #fff;
-        font-size: 14px;
+        font-size: 15px;
         font-weight: 700;
         line-height: 1.55;
         word-break: break-word;
@@ -505,7 +527,6 @@
 }
 
 .contactList {
-    min-height: 118px;
     list-style: none;
     margin: 0;
     padding: 0;
@@ -520,7 +541,7 @@
     gap: 8px;
     align-items: start;
     color: #fff;
-    font-size: 12.5px;
+    font-size: 13.5px;
     font-weight: 700;
     line-height: 1.45;
     word-break: break-word;
@@ -540,20 +561,33 @@
     border-radius: 999px;
     background: #704739;
     color: #fff;
-    font-size: 14px;
-    font-weight: 800;
+    font-size: 15px;
+    font-weight: 700;
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
 .skillList {
-    min-height: 170px;
     margin: 14px 0 0;
     padding-left: 16px;
     color: #fff;
 
     li {
         margin-bottom: 7px;
-        font-size: 13px;
+        font-size: 13.8px;
+        font-weight: 700;
+        line-height: 1.55;
+        word-break: break-word;
+    }
+}
+
+.interestList {
+    margin: 12px 0 0;
+    padding-left: 16px;
+    color: #fff;
+
+    li {
+        margin-bottom: 7px;
+        font-size: 13.8px;
         font-weight: 700;
         line-height: 1.55;
         word-break: break-word;
@@ -561,10 +595,9 @@
 }
 
 .leftPlaceholder {
-    min-height: 118px;
     margin: 10px 0 0;
     color: rgba(255, 255, 255, 0.8);
-    font-size: 13px;
+    font-size: 13.6px;
     font-style: italic;
     line-height: 1.65;
 }
@@ -606,7 +639,7 @@
 }
 
 .sectionBlock {
-    margin-bottom: 7mm;
+    margin-bottom: 5mm;
 }
 
 .sectionHeader {
@@ -622,8 +655,8 @@
     border-radius: 999px;
     background: #5c3829;
     color: #fff;
-    font-size: 14px;
-    font-weight: 800;
+    font-size: 15px;
+    font-weight: 700;
     line-height: 1;
 }
 
@@ -634,9 +667,8 @@
 }
 
 .sectionBody {
-    min-height: 72px;
     color: #1e2023;
-    font-size: 13px;
+    font-size: 13.8px;
     line-height: 1.62;
 }
 
@@ -646,16 +678,13 @@
 }
 
 .experienceList {
-    min-height: 168px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .experienceItem {
-    margin-bottom: 12px;
     page-break-inside: avoid;
-
-    &:last-child {
-        margin-bottom: 0;
-    }
 }
 
 .roleRow {
@@ -667,26 +696,26 @@
 
 .roleTitle {
     color: #1e2023;
-    font-size: 14px;
-    font-weight: 800;
+    font-size: 15px;
+    font-weight: 700;
 }
 
 .periodText {
     color: #3a3d40;
-    font-size: 13px;
-    font-style: italic;
+    font-size: 13.4px;
     font-weight: 600;
     white-space: nowrap;
 }
 
 .periodPlaceholder {
     color: #8f9499;
+    font-style: italic;
 }
 
 .companyText {
     margin-top: 2px;
     color: #3e3f42;
-    font-size: 13px;
+    font-size: 13.8px;
 }
 
 .bulletList {
@@ -696,7 +725,7 @@
     li {
         margin-bottom: 4px;
         color: #1e2023;
-        font-size: 13px;
+        font-size: 13.7px;
         line-height: 1.6;
     }
 }
@@ -704,22 +733,22 @@
 .educationIntro {
     margin-bottom: 2px;
     color: #6c737b;
-    font-size: 13px;
+    font-size: 13.5px;
     font-style: italic;
 }
 
 .educationPeriod {
     margin-bottom: 2px;
     color: #1e2023;
-    font-size: 13px;
+    font-size: 13.5px;
     font-weight: 700;
 }
 
 .educationSchool {
     margin-bottom: 6px;
     color: #1e2023;
-    font-size: 14px;
-    font-weight: 800;
+    font-size: 15px;
+    font-weight: 700;
 }
 
 .educationList {
@@ -729,7 +758,7 @@
     li {
         margin-bottom: 4px;
         color: #1e2023;
-        font-size: 13px;
+        font-size: 13.7px;
         line-height: 1.6;
     }
 }
@@ -737,7 +766,7 @@
 .placeholderText {
     margin: 0;
     color: #6b7280;
-    font-size: 13px;
+    font-size: 13.7px;
     font-style: italic;
     line-height: 1.65;
 }
@@ -768,11 +797,16 @@
     }
 
     .previewPanel {
+        position: static;
         padding: 16px 8px 30px;
     }
 
     .previewStage {
         justify-content: flex-start;
+        max-height: none;
+        overflow: visible;
+        padding: 0;
+        background: transparent;
     }
 
     .projectGrid,

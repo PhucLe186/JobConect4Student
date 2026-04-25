@@ -11,16 +11,23 @@ import { AuthContext } from '~/context/AuthContext';
 import styles from './CVBuilder.module.scss';
 
 const MAX_SKILLS = 10;
-const MAX_EXPERIENCES = 3;
+const MAX_INTERESTS = 6;
+const MAX_EXPERIENCES = 5;
 const MAX_BULLETS = 4;
 const PAGE_WIDTH = 210;
 const PAGE_HEIGHT = 297;
 const LEFT_COLUMN_WIDTH = 63;
 const RIGHT_COLUMN_X = 69;
 const RIGHT_CONTENT_WIDTH = 132;
-const PDF_FONT_NAME = 'ArialUnicode';
-const PDF_FONT_BOLD_NAME = 'ArialUnicodeBold';
+const PDF_FONT_NAME = 'SegoeUI';
+const PDF_FONT_BOLD_NAME = 'SegoeUISemibold';
 const CV_TEMPLATE_TYPE = 'topcv-fixed';
+const LIST_LIMITS = {
+    skills: MAX_SKILLS,
+    interests: MAX_INTERESTS,
+};
+const PDF_FONT_SCALE = 1.06;
+const PDF_LINE_HEIGHT_SCALE = 1.05;
 
 let pdfFontAssetsPromise = null;
 
@@ -28,7 +35,7 @@ const CONTACT_FIELDS = [
     { key: 'phone', label: 'Điện thoại', Icon: FaPhoneAlt, placeholder: '0943009243' },
     { key: 'birth', label: 'Ngày sinh', Icon: FaCalendarAlt, placeholder: '31/12/2003' },
     { key: 'email', label: 'Email', Icon: FaEnvelope, placeholder: 'ban@example.com' },
-    { key: 'website', label: 'LinkedIn / Portfolio', Icon: FaLink, placeholder: 'linkedin.com/in/ban' },
+    { key: 'website', label: 'LinkedIn / Hồ sơ cá nhân', Icon: FaLink, placeholder: 'linkedin.com/in/ban' },
     { key: 'address', label: 'Địa chỉ', Icon: FaMapMarkerAlt, placeholder: 'Quận 2, Hồ Chí Minh' },
 ];
 
@@ -56,6 +63,7 @@ const createEmptyCV = () => ({
         address: '',
     },
     skills: [''],
+    interests: [''],
     experiences: [createEmptyExperience()],
     education: {
         major: '',
@@ -82,6 +90,10 @@ const normalizeCvData = (rawData = {}) => {
             ...(rawData.contacts || {}),
         },
         skills: Array.isArray(rawData.skills) && rawData.skills.length ? rawData.skills : [''],
+        interests:
+            Array.isArray(rawData.interests) && rawData.interests.length
+                ? rawData.interests
+                : [''],
         experiences: rawExperiences.slice(0, MAX_EXPERIENCES).map((experience) => ({
             ...createEmptyExperience(),
             ...experience,
@@ -174,8 +186,8 @@ const ensurePdfFonts = async (doc) => {
         const basePath = process.env.PUBLIC_URL || '';
 
         pdfFontAssetsPromise = Promise.all([
-            loadFontAsset(`${basePath}/fonts/arial.ttf`),
-            loadFontAsset(`${basePath}/fonts/arialbd.ttf`),
+            loadFontAsset(`${basePath}/fonts/segoeui.ttf`),
+            loadFontAsset(`${basePath}/fonts/seguisb.ttf`),
         ]).then(([normalFont, boldFont]) => ({
             normalFont,
             boldFont,
@@ -184,10 +196,10 @@ const ensurePdfFonts = async (doc) => {
 
     const { normalFont, boldFont } = await pdfFontAssetsPromise;
 
-    doc.addFileToVFS('arial.ttf', normalFont);
-    doc.addFont('arial.ttf', PDF_FONT_NAME, 'normal');
-    doc.addFileToVFS('arialbd.ttf', boldFont);
-    doc.addFont('arialbd.ttf', PDF_FONT_BOLD_NAME, 'bold');
+    doc.addFileToVFS('segoeui.ttf', normalFont);
+    doc.addFont('segoeui.ttf', PDF_FONT_NAME, 'normal');
+    doc.addFileToVFS('seguisb.ttf', boldFont);
+    doc.addFont('seguisb.ttf', PDF_FONT_BOLD_NAME, 'bold');
 };
 
 const truncateLineToWidth = (doc, text, maxWidth) => {
@@ -250,6 +262,9 @@ const drawTextLines = (doc, lines, x, y, lineHeight, options = {}) => {
     return currentY;
 };
 
+const scalePdfFont = (size) => Number((size * PDF_FONT_SCALE).toFixed(2));
+const scalePdfLineHeight = (size) => Number((size * PDF_LINE_HEIGHT_SCALE).toFixed(2));
+
 const drawBulletList = (doc, items, startX, startY, contentWidth, maxLinesPerBullet = 2) => {
     let currentY = startY;
 
@@ -261,11 +276,11 @@ const drawBulletList = (doc, items, startX, startY, contentWidth, maxLinesPerBul
         }
 
         doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
-        doc.setFontSize(10);
+        doc.setFontSize(scalePdfFont(10));
         doc.text('•', startX, currentY);
         doc.setFont(PDF_FONT_NAME, 'normal');
-        doc.setFontSize(9.5);
-        currentY = drawTextLines(doc, lines, startX + 4.5, currentY, 4.1);
+        doc.setFontSize(scalePdfFont(9.5));
+        currentY = drawTextLines(doc, lines, startX + 4.5, currentY, scalePdfLineHeight(4.1));
         currentY += 1;
     });
 
@@ -276,7 +291,7 @@ const drawSectionHeader = (doc, label, baselineY) => {
     doc.setFillColor(92, 56, 41);
     doc.roundedRect(RIGHT_COLUMN_X, baselineY - 5.6, 43, 8, 4, 4, 'F');
     doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
-    doc.setFontSize(10.5);
+    doc.setFontSize(scalePdfFont(10.5));
     doc.setTextColor(255, 255, 255);
     doc.text(label, RIGHT_COLUMN_X + 4, baselineY);
     doc.setDrawColor(61, 44, 36);
@@ -366,6 +381,10 @@ const drawPdfBackground = (doc) => {
 const drawPdfLeftColumn = async (doc, cvData, avatar) => {
     const visibleContacts = CONTACT_FIELDS.filter(({ key }) => trimValue(cvData.contacts[key]));
     const visibleSkills = cvData.skills.map(trimValue).filter(Boolean).slice(0, MAX_SKILLS);
+    const visibleInterests = cvData.interests
+        .map(trimValue)
+        .filter(Boolean)
+        .slice(0, MAX_INTERESTS);
     const avatarCenterX = LEFT_COLUMN_WIDTH / 2;
     const avatarCenterY = 28;
     const outerRadius = 19;
@@ -394,14 +413,23 @@ const drawPdfLeftColumn = async (doc, cvData, avatar) => {
 
     doc.setTextColor(255, 255, 255);
     doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
-    doc.setFontSize(14.5);
+    doc.setFontSize(scalePdfFont(14.5));
     const nameLines = getWrappedLines(doc, trimValue(cvData.fullName) || 'Họ tên ứng viên', 46, 2);
-    let currentY = drawTextLines(doc, nameLines, avatarCenterX, 58, 5.5, { align: 'center' });
+    let currentY = drawTextLines(doc, nameLines, avatarCenterX, 58, scalePdfLineHeight(5.5), {
+        align: 'center',
+    });
 
     doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
-    doc.setFontSize(12);
+    doc.setFontSize(scalePdfFont(12));
     const headlineLines = getWrappedLines(doc, trimValue(cvData.headline) || 'Vị trí ứng tuyển', 44, 3);
-    currentY = drawTextLines(doc, headlineLines, avatarCenterX, currentY + 1.5, 5, { align: 'center' });
+    currentY = drawTextLines(
+        doc,
+        headlineLines,
+        avatarCenterX,
+        currentY + 1.5,
+        scalePdfLineHeight(5),
+        { align: 'center' },
+    );
 
     const separatorY = currentY + 6;
     doc.setDrawColor(255, 255, 255);
@@ -410,7 +438,7 @@ const drawPdfLeftColumn = async (doc, cvData, avatar) => {
 
     currentY = separatorY + 8;
     doc.setFont(PDF_FONT_NAME, 'normal');
-    doc.setFontSize(9.3);
+    doc.setFontSize(scalePdfFont(9.3));
 
     visibleContacts.forEach(({ key }) => {
         const lines = getWrappedLines(doc, cvData.contacts[key], 44, 2);
@@ -421,7 +449,7 @@ const drawPdfLeftColumn = async (doc, cvData, avatar) => {
 
         doc.setFillColor(255, 255, 255);
         doc.circle(8.8, currentY - 1.2, 0.85, 'F');
-        currentY = drawTextLines(doc, lines, 12.2, currentY, 4.3);
+        currentY = drawTextLines(doc, lines, 12.2, currentY, scalePdfLineHeight(4.3));
         currentY += 1.7;
     });
 
@@ -432,12 +460,12 @@ const drawPdfLeftColumn = async (doc, cvData, avatar) => {
     doc.setFillColor(112, 71, 57);
     doc.roundedRect(4.8, currentY - 4.8, 20, 7.6, 3.8, 3.8, 'F');
     doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
-    doc.setFontSize(10.5);
+    doc.setFontSize(scalePdfFont(10.5));
     doc.text('Kỹ năng', 7.7, currentY);
     currentY += 6.5;
 
     doc.setFont(PDF_FONT_NAME, 'normal');
-    doc.setFontSize(9.5);
+    doc.setFontSize(scalePdfFont(9.5));
     visibleSkills.forEach((skill) => {
         const skillLines = getWrappedLines(doc, skill, 44, 2);
 
@@ -448,9 +476,38 @@ const drawPdfLeftColumn = async (doc, cvData, avatar) => {
         doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
         doc.text('•', 9, currentY);
         doc.setFont(PDF_FONT_NAME, 'normal');
-        currentY = drawTextLines(doc, skillLines, 12.2, currentY, 4.1);
+        currentY = drawTextLines(doc, skillLines, 12.2, currentY, scalePdfLineHeight(4.1));
         currentY += 1;
     });
+
+    if (visibleInterests.length > 0 && currentY < PAGE_HEIGHT - 30) {
+        currentY += 2;
+        doc.line(7, currentY, LEFT_COLUMN_WIDTH - 7, currentY);
+        currentY += 6;
+
+        doc.setFillColor(112, 71, 57);
+        doc.roundedRect(4.8, currentY - 4.8, 21, 7.6, 3.8, 3.8, 'F');
+        doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
+        doc.setFontSize(scalePdfFont(10.2));
+        doc.text('Sở thích', 7.7, currentY);
+        currentY += 6.5;
+
+        doc.setFont(PDF_FONT_NAME, 'normal');
+        doc.setFontSize(scalePdfFont(9.4));
+        visibleInterests.forEach((interest) => {
+            const interestLines = getWrappedLines(doc, interest, 44, 2);
+
+            if (!interestLines.length || currentY > PAGE_HEIGHT - 8) {
+                return;
+            }
+
+            doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
+            doc.text('•', 9, currentY);
+            doc.setFont(PDF_FONT_NAME, 'normal');
+            currentY = drawTextLines(doc, interestLines, 12.2, currentY, scalePdfLineHeight(4.1));
+            currentY += 1;
+        });
+    }
 };
 
 const drawPdfRightColumn = (doc, cvData) => {
@@ -475,10 +532,16 @@ const drawPdfRightColumn = (doc, cvData) => {
     currentY += 6;
 
     doc.setFont(PDF_FONT_NAME, 'normal');
-    doc.setFontSize(9.5);
+    doc.setFontSize(scalePdfFont(9.5));
     const objectiveLines = getWrappedLines(doc, cvData.objective, RIGHT_CONTENT_WIDTH, 8);
-    currentY = drawTextLines(doc, objectiveLines, RIGHT_COLUMN_X, currentY, 4.35);
-    currentY = Math.max(currentY, 46);
+    currentY = drawTextLines(
+        doc,
+        objectiveLines,
+        RIGHT_COLUMN_X,
+        currentY,
+        scalePdfLineHeight(4.35),
+    );
+    currentY += 2;
 
     drawSectionHeader(doc, 'Kinh nghiệm làm việc', currentY + 4);
     currentY += 10;
@@ -493,45 +556,69 @@ const drawPdfRightColumn = (doc, cvData) => {
         const periodText = formatPeriod(experience.start, experience.end);
 
         doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
-        doc.setFontSize(10.2);
-        const roleEndY = drawTextLines(doc, roleLines, RIGHT_COLUMN_X, currentY, 4.3);
+        doc.setFontSize(scalePdfFont(10.2));
+        const roleEndY = drawTextLines(
+            doc,
+            roleLines,
+            RIGHT_COLUMN_X,
+            currentY,
+            scalePdfLineHeight(4.3),
+        );
         doc.text(periodText, PAGE_WIDTH - 8, currentY, { align: 'right' });
         currentY = roleEndY;
 
         if (trimValue(experience.company)) {
             doc.setFont(PDF_FONT_NAME, 'normal');
-            doc.setFontSize(9.5);
+            doc.setFontSize(scalePdfFont(9.5));
             const companyLines = getWrappedLines(doc, experience.company, RIGHT_CONTENT_WIDTH, 2);
-            currentY = drawTextLines(doc, companyLines, RIGHT_COLUMN_X, currentY, 4.1);
+            currentY = drawTextLines(
+                doc,
+                companyLines,
+                RIGHT_COLUMN_X,
+                currentY,
+                scalePdfLineHeight(4.1),
+            );
         }
 
         doc.setFont(PDF_FONT_NAME, 'normal');
-        doc.setFontSize(9.5);
+        doc.setFontSize(scalePdfFont(9.5));
         currentY = drawBulletList(doc, experience.bullets, RIGHT_COLUMN_X + 2, currentY + 1.5, 126, 2);
         currentY += 2.2;
     });
 
-    currentY = Math.max(currentY, 202);
+    currentY += 2;
     drawSectionHeader(doc, 'Học vấn', currentY + 4);
     currentY += 10;
 
     if (trimValue(cvData.education.major)) {
         doc.setFont(PDF_FONT_NAME, 'normal');
-        doc.setFontSize(9.3);
+        doc.setFontSize(scalePdfFont(9.3));
         const majorLines = getWrappedLines(doc, cvData.education.major, RIGHT_CONTENT_WIDTH, 2);
-        currentY = drawTextLines(doc, majorLines, RIGHT_COLUMN_X, currentY, 4.2);
+        currentY = drawTextLines(
+            doc,
+            majorLines,
+            RIGHT_COLUMN_X,
+            currentY,
+            scalePdfLineHeight(4.2),
+        );
     }
 
     doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
-    doc.setFontSize(9.4);
+    doc.setFontSize(scalePdfFont(9.4));
     doc.text(formatPeriod(cvData.education.start, cvData.education.end), RIGHT_COLUMN_X, currentY + 1);
     currentY += 5.8;
 
     if (trimValue(cvData.education.school)) {
         doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
-        doc.setFontSize(10.2);
+        doc.setFontSize(scalePdfFont(10.2));
         const schoolLines = getWrappedLines(doc, cvData.education.school, RIGHT_CONTENT_WIDTH, 2);
-        currentY = drawTextLines(doc, schoolLines, RIGHT_COLUMN_X, currentY, 4.3);
+        currentY = drawTextLines(
+            doc,
+            schoolLines,
+            RIGHT_COLUMN_X,
+            currentY,
+            scalePdfLineHeight(4.3),
+        );
     }
 
     const educationBullets = [];
@@ -545,7 +632,7 @@ const drawPdfRightColumn = (doc, cvData) => {
     }
 
     doc.setFont(PDF_FONT_NAME, 'normal');
-    doc.setFontSize(9.4);
+    doc.setFontSize(scalePdfFont(9.4));
     drawBulletList(doc, educationBullets, RIGHT_COLUMN_X + 2, currentY + 2, 126, 2);
 };
 
@@ -567,6 +654,10 @@ const exportCvToPdf = async (cvData, avatar) => {
 function CVPreview({ cvData, avatar, compact = false }) {
     const visibleContacts = CONTACT_FIELDS.filter(({ key }) => trimValue(cvData.contacts[key]));
     const visibleSkills = cvData.skills.map(trimValue).filter(Boolean).slice(0, MAX_SKILLS);
+    const visibleInterests = cvData.interests
+        .map(trimValue)
+        .filter(Boolean)
+        .slice(0, MAX_INTERESTS);
     const visibleExperiences = cvData.experiences
         .map((experience) => ({
             ...experience,
@@ -631,6 +722,17 @@ function CVPreview({ cvData, avatar, compact = false }) {
                         </p>
                     )}
                 </div>
+
+                {visibleInterests.length > 0 && (
+                    <div className={styles.leftBlock}>
+                        <div className={styles.leftBadge}>Sở thích</div>
+                        <ul className={styles.interestList}>
+                            {visibleInterests.map((interest, index) => (
+                                <li key={`preview-interest-${index}`}>{interest}</li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
             </aside>
 
             <section className={styles.rightColumn}>
@@ -820,7 +922,7 @@ function CVBuilder() {
 
     const addListItem = (field, defaultValue = '') =>
         setCvData((prev) => {
-            if (prev[field].length >= MAX_SKILLS) {
+            if (prev[field].length >= (LIST_LIMITS[field] || MAX_SKILLS)) {
                 return prev;
             }
 
@@ -1053,7 +1155,7 @@ function CVBuilder() {
             <section className={styles.savedSection}>
                 <div className={styles.savedHeader}>
                     <div>
-                        <p className={styles.kicker}>CV Library</p>
+                        <p className={styles.kicker}>Thư viện CV</p>
                         <h2>CV đã tạo trên JobConnect</h2>
                         <p className={styles.savedHint}>
                             CV được lưu lại giống kiểu TopCV: có preview, ngày cập nhật và có thể mở ra
@@ -1112,7 +1214,7 @@ function CVBuilder() {
                 <section className={styles.editorPanel}>
                     <div className={styles.editorHeader}>
                         <div>
-                            <p className={styles.kicker}>CV Builder</p>
+                            <p className={styles.kicker}>Trình tạo CV</p>
                             <h1>Mẫu CV cố định theo form OCR</h1>
                             <p className={styles.editorHint}>
                                 Nhập dữ liệu ở bên trái, phần preview bên phải sẽ luôn bám một layout A4
@@ -1158,7 +1260,7 @@ function CVBuilder() {
                     </div>
 
                     <div className={styles.templateNotice}>
-                        <strong>Form này được khóa trong 1 trang A4.</strong> Để CV dễ detect text hơn,
+                        <strong>Form này được khóa trong 1 trang A4.</strong> Để CV dễ nhận diện chữ hơn,
                         mình giữ bố cục cố định: tối đa {MAX_EXPERIENCES} kinh nghiệm, {MAX_BULLETS} gạch
                         đầu dòng mỗi kinh nghiệm và {MAX_SKILLS} kỹ năng ở cột trái.
                     </div>
@@ -1172,7 +1274,7 @@ function CVBuilder() {
                                 <input
                                     maxLength={60}
                                     value={cvData.cvTitle}
-                                    placeholder="VD: Network, CV SOC Intern..."
+                                    placeholder="VD: Kỹ sư mạng, CV thực tập SOC..."
                                     onChange={(event) => updateRootField('cvTitle', event.target.value)}
                                 />
                             </div>
@@ -1192,7 +1294,7 @@ function CVBuilder() {
                                 <input
                                     maxLength={70}
                                     value={cvData.headline}
-                                    placeholder="Fresher Frontend Web Developer"
+                                    placeholder="Lập trình viên Frontend Fresher"
                                     onChange={(event) => updateRootField('headline', event.target.value)}
                                 />
                             </div>
@@ -1286,6 +1388,42 @@ function CVBuilder() {
                             </div>
                         </div>
 
+                        <div className={styles.editorCard}>
+                            <div className={styles.cardTitleRow}>
+                                <h2>Sở thích</h2>
+                                <button
+                                    className={styles.inlineButton}
+                                    type="button"
+                                    onClick={() => addListItem('interests')}
+                                    disabled={cvData.interests.length >= MAX_INTERESTS}
+                                >
+                                    + Thêm
+                                </button>
+                            </div>
+
+                            <div className={styles.compactList}>
+                                {cvData.interests.map((interest, index) => (
+                                    <div className={styles.compactRow} key={`interest-${index}`}>
+                                        <input
+                                            maxLength={70}
+                                            value={interest}
+                                            placeholder="VD: Đọc sách, nghe nhạc, thể thao..."
+                                            onChange={(event) =>
+                                                updateListItem('interests', index, event.target.value)
+                                            }
+                                        />
+                                        <button
+                                            className={styles.removeButton}
+                                            type="button"
+                                            onClick={() => removeListItem('interests', index)}
+                                        >
+                                            Xóa
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
                         <div className={`${styles.editorCard} ${styles.editorCardWide}`}>
                             <div className={styles.cardTitleRow}>
                                 <h2>Kinh nghiệm làm việc</h2>
@@ -1319,7 +1457,7 @@ function CVBuilder() {
                                                 <input
                                                     maxLength={60}
                                                     value={experience.position}
-                                                    placeholder="AI Engineer"
+                                                    placeholder="Kỹ sư AI"
                                                     onChange={(event) =>
                                                         updateExpField(
                                                             experience.id,

@@ -6,7 +6,7 @@ import classNames from 'classnames/bind';
 const cx = classNames.bind(styles);
 
 const ApplicationModal = ({ isOpen, onClose, jobData, onSubmit }) => {
-    const { api, language } = useContext(AuthContext);
+    const { api, language, user } = useContext(AuthContext);
     const [formData, setFormData] = useState({
         fullName: '',
         email: '',
@@ -15,6 +15,11 @@ const ApplicationModal = ({ isOpen, onClose, jobData, onSubmit }) => {
         cv: null
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const isEmployerAccount = user?.type === 'employer';
+    const employerApplyBlockedMessage =
+        language === 'vi'
+            ? 'Tai khoan nha tuyen dung khong the nop CV ung tuyen. Vui long dung tai khoan sinh vien/ung vien.'
+            : 'Employer accounts cannot submit job applications. Please use a student/candidate account.';
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -47,6 +52,11 @@ const ApplicationModal = ({ isOpen, onClose, jobData, onSubmit }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (isEmployerAccount) {
+            alert(employerApplyBlockedMessage);
+            return;
+        }
         
         // Validate form
         if (!formData.fullName || !formData.email || !formData.phone || !formData.cv) {

@@ -109,6 +109,11 @@ const Job = () => {
     const [isSubmittingApplication, setIsSubmittingApplication] = useState(false);
     const [cvAnalysisError, setCvAnalysisError] = useState('');
     const [applyNotice, setApplyNotice] = useState('');
+    const isEmployerAccount = user?.type === 'employer';
+    const employerApplyBlockedMessage =
+        language === 'vi'
+            ? 'Tai khoan nha tuyen dung khong the nop CV ung tuyen. Vui long dung tai khoan sinh vien/ung vien.'
+            : 'Employer accounts cannot submit job applications. Please use a student/candidate account.';
 
     const popupIntro = useMemo(() => {
         if (language === 'vi') {
@@ -141,6 +146,15 @@ const Job = () => {
         setIsSubmittingApplication(false);
         setCvAnalysisError('');
         setApplyNotice('');
+    };
+
+    const handleOpenApplyPopup = () => {
+        if (isEmployerAccount) {
+            alert(employerApplyBlockedMessage);
+            return;
+        }
+
+        setShowApplyPopup(true);
     };
 
     const getMatchHeadline = (score) => {
@@ -405,6 +419,11 @@ const Job = () => {
             return;
         }
 
+        if (isEmployerAccount) {
+            alert(employerApplyBlockedMessage);
+            return;
+        }
+
         if (!uploadedCvFile) {
             alert(language === 'vi' ? 'Vui lòng tải CV lên trước khi nộp hồ sơ.' : 'Please upload your CV before submitting.');
             return;
@@ -596,7 +615,13 @@ const Job = () => {
                             <span>{t.from} {formatJobDate(jobData.createdAt || jobData.created_at)} {t.to} {formatJobDate(jobData.deadline)}</span>
                         </div>
                         <div className={cx('buttons')}>
-                            <button className={cx('applyBtn')} onClick={() => setShowApplyPopup(true)}>{t.applyNow}</button>
+                            <button
+                                className={cx('applyBtn')}
+                                onClick={handleOpenApplyPopup}
+                                title={isEmployerAccount ? employerApplyBlockedMessage : ''}
+                            >
+                                {t.applyNow}
+                            </button>
                             <button className={cx('saveBtn')}>{t.save}</button>
                         </div>
                     </div>
@@ -669,7 +694,7 @@ const Job = () => {
                                     </div>
                                 </div>
                             ))}
-                            {suggestedJobs.length === 0 ? <p style={{ textAlign: 'center', color: '#888', padding: '12px', fontSize: '13px' }}>{language === 'vi' ? 'Dang tai...' : 'Loading...'}</p> : null}
+                            {suggestedJobs.length === 0 ? <p style={{ textAlign: 'center', color: '#888', padding: '12px', fontSize: '13px' }}>{language === 'vi' ? 'Đang tải...' : 'Loading...'}</p> : null}
                         </div>
                     </div>
                 </div>

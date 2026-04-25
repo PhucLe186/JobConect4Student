@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { JwtUser } from '../auth/interface/jwt-user.interface';
 import { InjectModel } from '@nestjs/mongoose';
 import { ApplyJobDocument, job_applications } from './applyjob.schema';
@@ -26,6 +26,14 @@ export class ApplicationsService {
 
   private readonly defaultAvatar =
     'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+
+  private ensureStudentRole(user: JwtUser) {
+    if (user.role !== 'student') {
+      throw new ForbiddenException(
+        'Chi tai khoan sinh vien/ung vien moi co the nop CV ung tuyen',
+      );
+    }
+  }
 
   private normalizeText(value = '') {
     return value
@@ -116,6 +124,7 @@ export class ApplicationsService {
     const { userId } = user;
     const { cvFile, coverLetter } = options || {};
 
+    this.ensureStudentRole(user);
     await this.ensureNotApplied(jobid, userId);
     const applicantProfile = await this.getApplicantProfile(userId);
 
@@ -168,6 +177,7 @@ export class ApplicationsService {
   ): Promise<{ status: string }> {
     const { userId } = user;
     const { jobId, fullName, email, phone, coverLetter } = applicationData;
+    this.ensureStudentRole(user);
     const applicantProfile = await this.getApplicantProfile(userId);
 
     await this.ensureNotApplied(jobId, userId);
