@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
+import { json, urlencoded } from 'express';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 const cookieParser = require('cookie-parser');
 
@@ -22,6 +23,8 @@ async function bootstrap() {
       allowedHeaders: ['Content-Type', 'Authorization'],
     });
 
+    app.use(json({ limit: '5mb' }));
+    app.use(urlencoded({ extended: true, limit: '5mb' }));
     app.use(cookieParser());
 
     // Add global exception filter

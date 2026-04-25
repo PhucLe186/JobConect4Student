@@ -136,7 +136,7 @@ export class ApplicationsService {
 
     const cv = await this.CVModel.findOne({
       student_id: new Types.ObjectId(userId),
-    });
+    }).sort({ updated_at: -1, created_at: -1 });
 
     if (!cv) {
       throw new Error('Vui lòng tải CV lên hoặc tạo CV trước khi ứng tuyển');
