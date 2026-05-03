@@ -53,6 +53,40 @@ const normalizeCompare = (value = '') =>
 
 const unique = (items) => Array.from(new Set((items || []).filter(Boolean)));
 
+const splitRequirementItems = (value = '') => {
+    const source = String(value || '')
+        .replace(/\r/g, '')
+        .replace(/[•●▪◦]/g, '\n')
+        .trim();
+
+    if (!source) return [];
+
+    const segments = source.includes('\n')
+        ? source.split(/\n+/)
+        : source.split(/[;,]+|,(?=\s*[A-Za-zÀ-ỹ0-9])/);
+
+    return unique(
+        segments
+            .map((item) =>
+                item
+                    .trim()
+                    .replace(/^[-*]\s*/, '')
+                    .replace(/\.$/, ''),
+            )
+            .filter(Boolean),
+    ).slice(0, 12);
+};
+
+const formatJobTypeLabel = (jobType = '', language = 'vi') => {
+    const normalized = String(jobType || '').trim().toLowerCase();
+
+    if (normalized === 'full-time') return language === 'vi' ? 'Toàn thời gian' : 'Full-time';
+    if (normalized === 'part-time') return language === 'vi' ? 'Bán thời gian' : 'Part-time';
+    if (normalized === 'internship') return language === 'vi' ? 'Thực tập' : 'Internship';
+
+    return jobType || (language === 'vi' ? 'Chưa cập nhật' : 'Not updated');
+};
+
 const tokenizeCompare = (value = '') =>
     normalizeCompare(value)
         .split(' ')
@@ -132,6 +166,20 @@ const Job = () => {
 
         return 'Your CV has been analyzed. You can now fill the quick form or continue to the CV builder for the next scoring step.';
     }, [cvMatchResult, language]);
+
+    const requirementItems = useMemo(
+        () => splitRequirementItems(jobData.requirements),
+        [jobData.requirements],
+    );
+    const displayJobType = useMemo(
+        () => formatJobTypeLabel(jobData.job_type, language),
+        [jobData.job_type, language],
+    );
+    const emptyValueLabel = language === 'vi' ? 'Chưa cập nhật' : 'Not updated';
+    const experienceTitle = language === 'vi' ? 'Kinh nghiệm' : 'Experience';
+    const keyRequirementsTitle = language === 'vi' ? 'Yêu cầu chính' : 'Key requirements';
+    const noRequirementsLabel =
+        language === 'vi' ? 'Chưa có yêu cầu cụ thể.' : 'No specific requirements provided.';
 
     const formatJobDate = (value) => (value ? new Date(value).toLocaleDateString('vi-VN') : '--');
 
@@ -755,7 +803,7 @@ const Job = () => {
                         <p className={cx('companyName')}>{jobData.company_name}</p>
                         <div className={cx('jobDetail')}><i className="fas fa-map-marker-alt"></i><span>{jobData.location}</span></div>
                         <div className={cx('jobDetail')}><i className="fas fa-briefcase"></i><span>{jobData.experience}</span></div>
-                        <div className={cx('jobDetail')}><i className="fas fa-clock"></i><span>{jobData.job_type}</span></div>
+                        <div className={cx('jobDetail')}><i className="fas fa-clock"></i><span>{displayJobType}</span></div>
                         <div className={cx('jobDetail')}>
                             <i className="fas fa-calendar-alt"></i>
                             <span>{t.from} {formatJobDate(jobData.createdAt || jobData.created_at)} {t.to} {formatJobDate(jobData.deadline)}</span>
@@ -783,20 +831,32 @@ const Job = () => {
                     </div>
                     <div className={cx('contentSection')}>
                         <h2>{t.requirements}</h2>
-                        <p>{jobData.requirements}</p>
+                        <p className={cx('multilineText')}>{jobData.requirements || noRequirementsLabel}</p>
                     </div>
                     <div className={cx('contentSection')}>
                         <h2>{t.experienceSkills}</h2>
                         <div className={cx('skillsContent')}>
                             <div className={cx('skillColumn')}>
-                                <div className={cx('skillItem')}><span>{t.jobType}</span><p>{jobData.job_type}</p></div>
-                                <div className={cx('skillItem')}><span>{t.level}</span><p>{jobData.level || '--'}</p></div>
-                                <div className={cx('skillItem')}><span>{t.education}</span><p>{t.graduated}</p></div>
+                                <div className={cx('skillItem')}><span>{t.jobType}</span><p>{displayJobType}</p></div>
+                                <div className={cx('skillItem')}><span>{experienceTitle}</span><p>{jobData.experience || emptyValueLabel}</p></div>
+                                <div className={cx('skillItem')}><span>{t.level}</span><p>{jobData.level || emptyValueLabel}</p></div>
                             </div>
                             <div className={cx('skillColumn')}>
-                                <div className={cx('skillItem')}><span>{t.Experience}</span><p>{jobData.experience}</p></div>
-                                <div className={cx('skillItem')}><span>{t.programmingLang}</span><p>C/C++, Java, Python</p></div>
-                                <div className={cx('skillItem')}><span>{t.industry}</span><p>{jobData.industry}</p></div>
+                                <div className={cx('skillItem')}><span>{t.industry}</span><p>{jobData.industry || emptyValueLabel}</p></div>
+                                <div className={cx('skillItem', 'skillItem--stacked')}>
+                                    <span>{keyRequirementsTitle}</span>
+                                    {requirementItems.length > 0 ? (
+                                        <div className={cx('requirementTags')}>
+                                            {requirementItems.map((item, index) => (
+                                                <span key={`${item}-${index}`} className={cx('requirementTag')}>
+                                                    {item}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p>{noRequirementsLabel}</p>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>
