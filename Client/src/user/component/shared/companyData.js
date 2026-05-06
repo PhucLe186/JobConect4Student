@@ -324,11 +324,7 @@ const formatCurrency = (value) =>
     });
 
 const createInitials = (name = 'Company') => {
-    const words = name
-        .trim()
-        .split(/\s+/)
-        .filter(Boolean)
-        .slice(0, 2);
+    const words = name.trim().split(/\s+/).filter(Boolean).slice(0, 2);
 
     if (words.length === 0) {
         return 'C';
@@ -378,6 +374,38 @@ const createAddress = (seed, variantIndex) => {
 
 const createWebsite = (seed, variant) => `${seed.website.replace(/\/$/, '')}/${variant.unit}`;
 
+const createContactPhone = (index) => `0${900000000 + index}`;
+
+const createWorkingHours = (jobType) => {
+    if (jobType === 'part-time') {
+        return 'Linh hoat theo ca: Thứ 2 - Thứ 7, 18:00 - 22:00';
+    }
+
+    return 'Thứ 2 - Thứ 6, 8:30 - 17:30';
+};
+
+const getDefaultPhoneByLocation = (location = '') => {
+    const normalizedLocation = String(location)
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/\u0111/g, 'd');
+
+    if (normalizedLocation.includes('tp.hcm') || normalizedLocation.includes('ho chi minh')) {
+        return '028 7300 6868';
+    }
+
+    if (normalizedLocation.includes('ha noi')) {
+        return '024 7300 6868';
+    }
+
+    if (normalizedLocation.includes('da nang')) {
+        return '0236 7300 6868';
+    }
+
+    return '0901 686 868';
+};
+
 const buildMockCompanies = () =>
     COMPANY_SEEDS.flatMap((seed) =>
         COMPANY_VARIANTS.map((variant, variantIndex) => {
@@ -417,6 +445,8 @@ const buildMockJobs = (companies) =>
             description: `${template.description} Lam viec tai ${company.company_name} voi moi truong chuyen nghiep va quy trinh ro rang.`,
             requirements: template.requirements,
             level: template.level,
+            phone: createContactPhone(index),
+            workingHours: createWorkingHours(template.job_type),
             status: 'open',
             logo: company.logo,
         };
@@ -466,6 +496,8 @@ export const normalizeJob = (job = {}) => {
         job_type: jobType,
         min_salary: String(minSalary || ''),
         max_salary: String(maxSalary || ''),
+        phone: job.phone || getDefaultPhoneByLocation(location),
+        workingHours: job.workingHours || createWorkingHours(jobType),
         experience: job.experience || 'không yêu cầu',
         industry: job.industry || 'Đang cập nhật',
         deadline: job.deadline || '',
@@ -473,12 +505,7 @@ export const normalizeJob = (job = {}) => {
         description: job.description || 'Đang cập nhật mô tả công việc.',
         logo: getCompanyLogo(companyName, job.logo),
         salaryLabel,
-        typeLabel:
-            jobType === 'part-time'
-                ? 'Part-time'
-                : jobType === 'internship'
-                  ? 'Internship'
-                  : 'Full-time',
+        typeLabel: jobType === 'part-time' ? 'Part-time' : jobType === 'internship' ? 'Internship' : 'Full-time',
         deadlineLabel: job.deadline ? new Date(job.deadline).toLocaleDateString('vi-VN') : 'Đang cập nhật',
     };
 };

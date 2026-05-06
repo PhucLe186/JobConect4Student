@@ -385,14 +385,14 @@ const Job = () => {
         if (!file) return;
 
         const extension = file.name.split('.').pop()?.toLowerCase();
-        if (!['pdf', 'doc', 'docx'].includes(extension)) {
+        if (!['png'].includes(extension)) {
             setUploadedCvName('');
             setUploadedCvFile(null);
             setUploadedCvPath('');
             setCvMatchResult(null);
             setApplyOption('');
             setFormScoreResult(null);
-            setCvAnalysisError(language === 'vi' ? 'Ch? h? tr? file PDF, DOC ho?c DOCX.' : 'Only PDF, DOC, and DOCX files are supported.');
+            setCvAnalysisError(language === 'vi' ? 'Ch? h? tr? file PNG.' : 'Only PNG files are supported.');
             event.target.value = '';
             return;
         }
@@ -924,11 +924,11 @@ const Job = () => {
 
                             <div className={cx('popup-field')}>
                                 <label className={cx('popup-label')}>{language === 'vi' ? 'Bước 1: Upload CV trước' : 'Step 1: Upload your CV first'} <span className={cx('required')}>*</span></label>
-                                <input className={cx('popup-file-input')} type="file" accept=".pdf,.doc,.docx" onChange={handleCvUpload} />
+                                <input className={cx('popup-file-input')} type="file" accept=".png" onChange={handleCvUpload} />
                                 <div className={cx('upload-hint')}>
                                         {language === 'vi'
-                                        ? 'Hệ thống đọc file PDF/DOC/DOCX và chấm theo 5 tiêu chí: level, chức vụ, địa chỉ, kỹ năng, GPA.'
-                                        : 'The system reads PDF/DOC/DOCX files and scores five criteria: level, position, address, skills, and GPA.'}
+                                        ? 'Hệ thống đọc file PNG và chấm theo 5 tiêu chí: level, chức vụ, địa chỉ, kỹ năng, GPA.'
+                                        : 'The system reads PNG files and scores five criteria: level, position, address, skills, and GPA.'}
                                 </div>
 
                                 {uploadedCvName ? (

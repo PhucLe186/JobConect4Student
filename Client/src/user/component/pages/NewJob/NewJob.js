@@ -11,6 +11,7 @@ const translations = {
     pageTitle: 'Đăng tin tuyển dụng mới',
     sectionBasic: 'Thông tin cơ bản',
     sectionDetail: 'Chi tiết công việc',
+    sectionContact: 'Thông tin liên hệ',
     labelTitle: 'Tiêu đề công việc',
     labelDesc: 'Mô tả chi tiết',
     labelRequirements: 'Yêu cầu công việc',
@@ -24,11 +25,15 @@ const translations = {
     labelExperience: 'Kinh nghiệm',
     labelLevel: 'Cấp bậc',
     labelDeadline: 'Hạn ứng tuyển',
+    labelPhone: 'Số điện thoại liên hệ',
+    labelWorkingHours: 'Thời gian làm việc',
     placeholderTitle: 'Ví dụ: Frontend Developer',
     placeholderDesc: 'Mô tả công việc, quyền lợi, môi trường làm việc...',
     placeholderRequirements: 'Yêu cầu về kỹ năng, kinh nghiệm, công cụ...',
     placeholderSalary: 'Ví dụ: 15000000',
     placeholderIndustry: 'Ví dụ: Công nghệ thông tin',
+    placeholderPhone: 'Ví dụ: 0901234567',
+    placeholderWorkingHours: 'Ví dụ: Thứ 2 - Thứ 6, 18:00 - 22:00',
     selectJobType: 'Chọn loại công việc',
     selectDepartment: 'Chọn phòng ban',
     selectProvince: 'Chọn tỉnh thành',
@@ -46,6 +51,7 @@ const translations = {
     pageTitle: 'Post New Job',
     sectionBasic: 'Basic Information',
     sectionDetail: 'Job Details',
+    sectionContact: 'Contact Information',
     labelTitle: 'Job title',
     labelDesc: 'Job description',
     labelRequirements: 'Requirements',
@@ -59,11 +65,15 @@ const translations = {
     labelExperience: 'Experience',
     labelLevel: 'Level',
     labelDeadline: 'Application deadline',
+    labelPhone: 'Contact phone',
+    labelWorkingHours: 'Working hours',
     placeholderTitle: 'Ex: Frontend Developer',
     placeholderDesc: 'Describe the role, benefits, responsibilities...',
     placeholderRequirements: 'List skills, tooling and requirements...',
     placeholderSalary: 'Ex: 15000000',
     placeholderIndustry: 'Ex: Information Technology',
+    placeholderPhone: 'Ex: 0901234567',
+    placeholderWorkingHours: 'Ex: Mon - Fri, 18:00 - 22:00',
     selectJobType: 'Select job type',
     selectDepartment: 'Select department',
     selectProvince: 'Select province',
@@ -134,6 +144,8 @@ const createEmptyForm = () => ({
   experience: '',
   level: '',
   deadline: '',
+  phone: '',
+  workingHours: '',
 });
 
 const sanitizeSalary = (value) => value.replace(/[^\d]/g, '');
@@ -188,6 +200,8 @@ function NewJob({ language = 'vi' }) {
         experience: form.experience,
         level: form.level || undefined,
         deadline: form.deadline,
+        phone: form.phone.trim() || undefined,
+        workingHours: form.workingHours.trim() || undefined,
         status: 'draft',
       };
 
@@ -459,6 +473,40 @@ function NewJob({ language = 'vi' }) {
                 value={form.deadline}
                 onChange={onChange}
                 required
+              />
+            </div>
+          </div>
+        </section>
+
+        <section className={cx('newjob__card')}>
+          <h2 className={cx('newjob__card-title')}>{t.sectionContact}</h2>
+
+          <div className={cx('newjob__grid', 'newjob__grid--2')}>
+            <div className={cx('newjob__field')}>
+              <label className={cx('newjob__label')} htmlFor="phone">
+                {t.labelPhone}
+              </label>
+              <input
+                id="phone"
+                className={cx('newjob__input')}
+                name="phone"
+                placeholder={t.placeholderPhone}
+                value={form.phone}
+                onChange={onChange}
+              />
+            </div>
+
+            <div className={cx('newjob__field')}>
+              <label className={cx('newjob__label')} htmlFor="workingHours">
+                {t.labelWorkingHours}
+              </label>
+              <input
+                id="workingHours"
+                className={cx('newjob__input')}
+                name="workingHours"
+                placeholder={t.placeholderWorkingHours}
+                value={form.workingHours}
+                onChange={onChange}
               />
             </div>
           </div>
