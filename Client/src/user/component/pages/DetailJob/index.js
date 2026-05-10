@@ -114,7 +114,7 @@ const Job = () => {
     const isEmployerAccount = user?.type === 'employer';
     const employerApplyBlockedMessage =
         language === 'vi'
-            ? 'T?i kho?n nh? tuy?n d?ng kh?ng th? n?p CV ?ng tuy?n. Vui l?ng d?ng t?i kho?n sinh vi?n/?ng vi?n.'
+            ? 'Tài khoản nhà tuyển dụng không thể nộp CV ứng tuyển. Vui lòng dùng tài khoản sinh viên/ứng viên.'
             : 'Employer accounts cannot submit job applications. Please use a student/candidate account.';
 
     const popupIntro = useMemo(() => {
@@ -344,7 +344,7 @@ const Job = () => {
             setCvMatchResult(null);
             setApplyOption('');
             setFormScoreResult(null);
-            setCvAnalysisError(language === 'vi' ? 'Ch? h? tr? file PDF, DOC ho?c DOCX.' : 'Only PDF, DOC, and DOCX files are supported.');
+            setCvAnalysisError(language === 'vi' ? 'Chỉ hỗ trợ file PDF, DOC hoặc DOCX.' : 'Only PDF, DOC, and DOCX files are supported.');
             event.target.value = '';
             return;
         }
@@ -356,7 +356,7 @@ const Job = () => {
             setCvMatchResult(null);
             setApplyOption('');
             setFormScoreResult(null);
-            setCvAnalysisError(language === 'vi' ? 'File CV ?ang qu? 5MB. Vui l?ng ch?n file nh? h?n.' : 'The CV file is larger than 5MB.');
+            setCvAnalysisError(language === 'vi' ? 'File CV đang quá 5MB. Vui lòng chọn file nhỏ hơn.' : 'The CV file is larger than 5MB.');
             event.target.value = '';
             return;
         }
@@ -386,7 +386,7 @@ const Job = () => {
             const normalizedResult = toClientScoreResult(
                 result,
                 language === 'vi'
-                    ? '??y l? k?t qu? ch?m t? ??ng t? AI d?a tr?n CV v? JD.'
+                    ? 'Đây là kết quả chấm tự động từ AI dựa trên CV và JD.'
                     : 'This is the AI screening result based on your CV and the job description.',
             );
 
@@ -416,7 +416,7 @@ const Job = () => {
                 setApplyNotice(
                     result?.message ||
                         (language === 'vi'
-                            ? `CV ?ang ???c AI ch?m ${normalizedResult.score}%. B?n n?n b? sung form ?? h? th?ng ch?m l?i ch?nh x?c h?n.`
+                            ? `CV đang được AI chấm ${normalizedResult.score}%. Bạn nên bổ sung form để hệ thống chấm lại chính xác hơn.`
                             : `Your CV scored ${normalizedResult.score}%. Please complete the quick form for a more accurate score.`),
                 );
                 return;
@@ -426,7 +426,7 @@ const Job = () => {
             setApplyNotice(
                 result?.message ||
                     (language === 'vi'
-                        ? `CV ??t ${normalizedResult.score}% v? ?? ???c n?p t? ??ng th?nh c?ng.`
+                        ? `CV đạt ${normalizedResult.score}% và đã được nộp tự động thành công.`
                         : `Your CV scored ${normalizedResult.score}% and has been submitted automatically.`),
             );
         } catch (error) {
@@ -441,13 +441,13 @@ const Job = () => {
                     status: 'fallback_local',
                     note:
                         language === 'vi'
-                            ? 'AI t?m th?i ch?a s?n s?ng, h? th?ng ?ang d?ng k?t qu? ??c t?nh ?? b?n ti?p t?c n?p CV.'
+                            ? 'AI tạm thời chưa sẵn sàng, hệ thống đang dùng kết quả ước tính để bạn tiếp tục nộp CV.'
                             : 'AI is temporarily unavailable, so the system is using an estimated local score.',
                 });
                 setApplyOption('form');
                 setApplyNotice(
                     language === 'vi'
-                        ? `AI t?m th?i ch?a s?n s?ng. H? th?ng ?? ch?m t?m ${fallbackResult.score}% ?? b?n v?n c? th? ?i?n form v? n?p CV.`
+                        ? `AI tạm thời chưa sẵn sàng. Hệ thống đã chấm tạm ${fallbackResult.score}% để bạn vẫn có thể điền form và nộp CV.`
                         : `AI is temporarily unavailable. The system estimated ${fallbackResult.score}% so you can still complete the form and apply.`,
                 );
             } catch (fallbackError) {
@@ -462,7 +462,7 @@ const Job = () => {
                 setCvAnalysisError(
                     error?.response?.data?.message ||
                         (language === 'vi'
-                            ? 'Kh?ng th? ph?n t?ch CV l?c n?y. Vui l?ng th? l?i khi d?ch v? AI v? Python ?ang ch?y.'
+                            ? 'Không thể phân tích CV lúc này. Vui lòng thử lại khi dịch vụ AI và Python đang chạy.'
                             : 'The CV could not be analyzed right now. Please make sure the AI and Python services are running.'),
                 );
             }
@@ -474,12 +474,12 @@ const Job = () => {
 
     const handleScoreForm = () => {
         if (!cvMatchResult) {
-            alert(language === 'vi' ? 'Vui l?ng upload CV v? ??i h? th?ng ch?m ?i?m tr??c.' : 'Please upload your CV and wait for the scoring first.');
+            alert(language === 'vi' ? 'Vui lòng upload CV và đợi hệ thống chấm điểm trước.' : 'Please upload your CV and wait for the scoring first.');
             return;
         }
 
         if (!applyOption) {
-            alert(language === 'vi' ? 'Vui l?ng ch?n m?t c?ch ?ng tuy?n.' : 'Please choose an apply option.');
+            alert(language === 'vi' ? 'Vui lòng chọn một cách ứng tuyển.' : 'Please choose an apply option.');
             return;
         }
 
@@ -507,7 +507,7 @@ const Job = () => {
         if (requiredFields.some((value) => !String(value).trim())) {
             alert(
                 language === 'vi'
-                    ? 'Vui l?ng nh?p ??y ?? th?ng tin form c? b?n tr??c khi ch?m ?i?m ti?p.'
+                    ? 'Vui lòng nhập đầy đủ thông tin form cơ bản trước khi chấm điểm tiếp.'
                     : 'Please complete the quick form before continuing the second scoring step.',
             );
             return;
@@ -517,14 +517,14 @@ const Job = () => {
         setFormScoreResult(result);
         setApplyNotice(
             language === 'vi'
-                ? `CV ?? ???c ch?m ${cvMatchResult.score}%, v? form b? sung ?? s?n s?ng ?? n?p ch?m ?i?m ch?nh th?c.`
+                ? `CV đã được chấm ${cvMatchResult.score}%, và form bổ sung đã sẵn sàng để nộp chấm điểm chính thức.`
                 : `Your CV scored ${cvMatchResult.score}%, and the quick form is now ready for final scoring.`,
         );
     };
 
     const handleSubmitApplication = async () => {
         if (!user) {
-            alert(language === 'vi' ? 'Vui l?ng ??ng nh?p tr??c khi ?ng tuy?n.' : 'Please sign in before applying.');
+            alert(language === 'vi' ? 'Vui lòng đăng nhập trước khi ứng tuyển.' : 'Please sign in before applying.');
             return;
         }
 
@@ -534,19 +534,19 @@ const Job = () => {
         }
 
         if (!uploadedCvPath && !uploadedCvFile) {
-            alert(language === 'vi' ? 'Thi?u file CV ?? upload ?? n?p h? s?.' : 'The uploaded CV file is missing for submission.');
+            alert(language === 'vi' ? 'Thiếu file CV đã upload để nộp hồ sơ.' : 'The uploaded CV file is missing for submission.');
             return;
         }
 
         if (!formScoreResult) {
-            alert(language === 'vi' ? 'Vui l?ng ch?m ?i?m form b? sung tr??c khi n?p h? s?.' : 'Please score the quick form before submitting.');
+            alert(language === 'vi' ? 'Vui lòng chấm điểm form bổ sung trước khi nộp hồ sơ.' : 'Please score the quick form before submitting.');
             return;
         }
 
         setIsSubmittingApplication(true);
 
         try {
-            let successMessage = language === 'vi' ? '?ng tuy?n th?nh c?ng!' : 'Application submitted successfully!';
+            let successMessage = language === 'vi' ? 'Ứng tuyển thành công!' : 'Application submitted successfully!';
 
             if (uploadedCvPath) {
                 const response = await api.post('applications/submit-final', {
@@ -559,7 +559,7 @@ const Job = () => {
                 const normalizedResult = toClientScoreResult(
                     serverResult,
                     language === 'vi'
-                        ? '??y l? ?i?m cu?i c?ng sau khi NestJS ch?m l?i t? form b? sung.'
+                        ? 'Đây là điểm cuối cùng sau khi NestJS chấm lại từ form bổ sung.'
                         : 'This is the final score after the server rescored your quick form.',
                 );
 
@@ -567,7 +567,7 @@ const Job = () => {
                 setApplicationSubmitted(true);
                 setApplyNotice(
                     language === 'vi'
-                        ? `N?p CV th?nh c?ng. ?i?m cu?i c?ng c?a h? s? l? ${normalizedResult.score}%.`
+                        ? `Nộp CV thành công. Điểm cuối cùng của hồ sơ là ${normalizedResult.score}%.`
                         : `Application submitted successfully. Your final score is ${normalizedResult.score}%.`,
                 );
                 successMessage = serverResult?.status || successMessage;
@@ -589,7 +589,7 @@ const Job = () => {
                 setApplicationSubmitted(true);
                 setApplyNotice(
                     language === 'vi'
-                        ? '?? n?p CV th?nh c?ng b?ng lu?ng d? ph?ng khi AI t?m th?i kh?ng s?n s?ng.'
+                        ? 'Đã nộp CV thành công bằng luồng dự phòng khi AI tạm thời không sẵn sàng.'
                         : 'Your application was submitted successfully using the fallback flow while AI was unavailable.',
                 );
                 successMessage = response?.data?.status || successMessage;
@@ -602,7 +602,7 @@ const Job = () => {
             alert(
                 error?.response?.data?.message ||
                     (language === 'vi'
-                        ? 'C? l?i x?y ra khi n?p h? s? ?ng tuy?n.'
+                        ? 'Có lỗi xảy ra khi nộp hồ sơ ứng tuyển.'
                         : 'Something went wrong while submitting your application.'),
             );
         } finally {
@@ -655,7 +655,7 @@ const Job = () => {
         } else if (highlightKeywords.length > 0) {
             feedback.push(
                 language === 'vi'
-                    ? `?i?m ?ang ?n hi?n t?i: ${highlightKeywords.join(', ')}.`
+                    ? `Điểm mạnh hiện tại: ${highlightKeywords.join(', ')}.`
                     : `Current strengths: ${highlightKeywords.join(', ')}.`,
             );
         } else if (result.note) {
@@ -705,7 +705,7 @@ const Job = () => {
                     return;
                 }
                 if (error.response) alert(error.response?.data?.message);
-                else alert(language === 'vi' ? 'L?i k?t n?i t?i server' : 'Server connection error');
+                else alert(language === 'vi' ? 'Lỗi kết nối tới server' : 'Server connection error');
             }
         };
 
@@ -816,7 +816,7 @@ const Job = () => {
                             <div className={cx('btn')} onClick={() => navigate('/job-suggestions')}><i className="fa-solid fa-bell"></i>{t.jobSuggestions}</div>
                         </div>
                         <p className={cx('suggestionCaption')}>
-                            {language === 'vi' ? 'Danh sach nay duoc uu tien theo 5 tieu chi: Level, cong viec, dia chi, ky nang va GPA.' : 'This list is prioritized by level, job, address, skills, and GPA.'}
+                            {language === 'vi' ? 'Danh sách này được ưu tiên theo 5 tiêu chí: Level, công việc, địa chỉ, kỹ năng và GPA.' : 'This list is prioritized by level, job, address, skills, and GPA.'}
                         </p>
                         <div className={cx('jobsList')}>
                             {suggestedJobs.map((job) => (
@@ -827,7 +827,7 @@ const Job = () => {
                                     <div className={cx('jobDetails')}>
                                         <div className={cx('jobTitle')}>{job.title}</div>
                                         <div className={cx('jobCompany')}>{job.company_name}</div>
-                                        {user && typeof job.suggestionScore === 'number' ? <div className={cx('jobSuggestionScore')}>{language === 'vi' ? 'Do phu hop' : 'Match'}: {job.suggestionScore}%</div> : null}
+                                        {user && typeof job.suggestionScore === 'number' ? <div className={cx('jobSuggestionScore')}>{language === 'vi' ? 'Độ phù hợp' : 'Match'}: {job.suggestionScore}%</div> : null}
                                     </div>
                                     <div
                                         className={`${styles.heartIcon} ${favorites[job.id] ? styles.active : styles.inactive}`}
@@ -920,7 +920,7 @@ const Job = () => {
                                 </>
                             ) : (
                                 <div className={cx('apply-notice')}>
-                                    {applicationSubmitted ? (language === 'vi' ? 'CV ?? ??t ng??ng v? ?? ???c n?p t? ??ng. B?n kh?ng c?n ?i?n th?m form.' : 'Your CV passed the threshold and has already been submitted automatically.') : (language === 'vi' ? 'Hai l?a ch?n ?ng tuy?n s? hi?n khi CV c?n b? sung th?m th?ng tin.' : 'The two application options will appear when the CV needs more information.')}
+                                    {applicationSubmitted ? (language === 'vi' ? 'CV đã đạt ngưỡng và đã được nộp tự động. Bạn không cần điền thêm form.' : 'Your CV passed the threshold and has already been submitted automatically.') : (language === 'vi' ? 'Hai lựa chọn ứng tuyển sẽ hiện khi CV cần bổ sung thêm thông tin.' : 'The two application options will appear when the CV needs more information.')}
                                 </div>
                             )}
 

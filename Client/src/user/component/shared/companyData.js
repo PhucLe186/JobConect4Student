@@ -77,7 +77,7 @@ const JOB_TEMPLATES = [
         level: 'Nhân viên',
         min_salary: 18000000,
         max_salary: 30000000,
-        description: 'Phát triển giao diện web, dashboard và công cụ nội bộ cho sản phẩm đang tăng trưởng.',
+        description: 'Phát triển giao diện web, dashboard và công cụ nội bộ cho các sản phẩm đang tăng trưởng.',
         requirements: 'Thành thạo React, TypeScript, HTML, CSS, REST API và tối ưu hiệu năng giao diện.',
     },
     {
@@ -316,12 +316,18 @@ const slugify = (value = '') =>
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-|-$/g, '');
 
-const formatCurrency = (value) =>
-    toNumber(value).toLocaleString('vi-VN', {
-        style: 'currency',
-        currency: 'VND',
-        maximumFractionDigits: 0,
-    });
+const formatCurrency = (value) => {
+    const num = toNumber(value);
+    if (num === 0) return 'Thương lượng';
+    
+    // Format với dấu phẩy và đơn vị triệu
+    if (num >= 1000000) {
+        const millions = num / 1000000;
+        return `${millions.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} triệu`;
+    }
+    
+    return num.toLocaleString('vi-VN') + ' đ';
+};
 
 const createInitials = (name = 'Company') => {
     const words = name
@@ -414,7 +420,7 @@ const buildMockJobs = (companies) =>
             experience: template.experience,
             industry: company.industry,
             deadline: deadlineDate.toISOString().slice(0, 10),
-            description: `${template.description} Lam viec tai ${company.company_name} voi moi truong chuyen nghiep va quy trinh ro rang.`,
+            description: `${template.description} Làm việc tại ${company.company_name} với môi trường chuyên nghiệp và quy trình rõ ràng.`,
             requirements: template.requirements,
             level: template.level,
             status: 'open',
@@ -454,7 +460,9 @@ export const normalizeJob = (job = {}) => {
     const jobType = job.job_type || job.jobType || 'full-time';
     const salaryLabel =
         minSalary > 0 || maxSalary > 0
-            ? `${formatCurrency(minSalary)} - ${formatCurrency(maxSalary || minSalary)}`
+            ? minSalary > 0 && maxSalary > 0 && minSalary !== maxSalary
+                ? `${formatCurrency(minSalary)} - ${formatCurrency(maxSalary)}`
+                : formatCurrency(maxSalary || minSalary)
             : 'Thương lượng';
 
     return {

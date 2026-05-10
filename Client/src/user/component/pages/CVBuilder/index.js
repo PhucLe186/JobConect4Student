@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
+import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import { FaCalendarAlt, FaEnvelope, FaLink, FaMapMarkerAlt, FaPhoneAlt } from 'react-icons/fa';
 import { AuthContext } from '~/context/AuthContext';
@@ -8,6 +9,10 @@ const MAX_SKILLS = 10;
 const MAX_INTERESTS = 6;
 const MAX_EXPERIENCES = 5;
 const MAX_BULLETS = 4;
+const MAX_AWARDS = 4;
+const MAX_CERTIFICATIONS = 4;
+const DESIGNER_MAX_EXPERIENCES = 4;
+const DESIGNER_MAX_BULLETS = 3;
 const PAGE_WIDTH = 210;
 const PAGE_HEIGHT = 297;
 const LEFT_COLUMN_WIDTH = 63;
@@ -15,7 +20,6 @@ const RIGHT_COLUMN_X = 69;
 const RIGHT_CONTENT_WIDTH = 132;
 const PDF_FONT_NAME = 'SegoeUI';
 const PDF_FONT_BOLD_NAME = 'SegoeUISemibold';
-const CV_TEMPLATE_TYPE = 'topcv-fixed';
 const PDF_BULLET_TEXT_INDENT = 4.5;
 const LIST_LIMITS = {
     skills: MAX_SKILLS,
@@ -258,10 +262,160 @@ const CV_THEME_MAP = CV_THEMES.reduce((accumulator, theme) => {
     return accumulator;
 }, {});
 const DEFAULT_THEME_ID = CV_THEMES[0]?.id || 'earth';
+const REFERENCE_TEMPLATE_ID = 'topcv-reference';
+const DESIGNER_TEMPLATE_ID = 'topcv-designer-inline';
+const REFERENCE_THEME = {
+    id: 'topcv-reference-theme',
+    colors: {
+        leftStart: '#6f7d7d',
+        leftEnd: '#3f4747',
+        badge: '#6f7d7d',
+        section: '#6f7d7d',
+        sectionLine: '#7b8787',
+        rightStart: '#ffffff',
+        rightMid: '#ffffff',
+        rightEnd: '#ffffff',
+        shapePrimary: '#ffffff',
+        shapeSecondary: '#ffffff',
+    },
+};
+const DESIGNER_THEME = {
+    id: 'topcv-designer-theme',
+    colors: {
+        leftStart: '#f7efe6',
+        leftEnd: '#f7efe6',
+        badge: '#d9b5a1',
+        section: '#d9b5a1',
+        sectionLine: '#c9a792',
+        rightStart: '#f7efe6',
+        rightMid: '#f7efe6',
+        rightEnd: '#f7efe6',
+        shapePrimary: '#f7efe6',
+        shapeSecondary: '#f7efe6',
+    },
+};
+const CV_TEMPLATES = [
+    {
+        id: 'jobconnect-flex',
+        label: 'JobConnect linh hoạt',
+        description: 'Giữ bố cục OCR hiện tại và cho phép đổi màu tự do.',
+        previewLabel: 'Mẫu hiện tại',
+        themeMode: 'custom',
+        previewVariant: 'dynamic',
+        pdfVariant: 'dynamic',
+        lockedThemeName: '',
+        labels: {
+            objective: 'Mục tiêu nghề nghiệp',
+            experience: 'Kinh nghiệm làm việc',
+            education: 'Học vấn',
+            skills: 'Kỹ năng',
+            interests: 'Sở thích',
+        },
+    },
+    {
+        id: DESIGNER_TEMPLATE_ID,
+        label: 'TopCV header ngang',
+        description: 'Giống mẫu ảnh mới: header ngang, ảnh bên phải và 3 cột thông tin ở cuối.',
+        previewLabel: 'Theo ảnh mới',
+        themeMode: 'locked',
+        previewVariant: 'designer',
+        pdfVariant: 'designer',
+        lockedTheme: DESIGNER_THEME,
+        lockedThemeName: 'Ivory Designer',
+        labels: {
+            objective: 'Giới thiệu',
+            experience: 'Kinh nghiệm làm việc',
+            education: 'Học vấn',
+            skills: 'Kỹ năng',
+            interests: 'Sở thích',
+        },
+    },
+];
+const CV_TEMPLATE_MAP = CV_TEMPLATES.reduce((accumulator, template) => {
+    accumulator[template.id] = template;
+    return accumulator;
+}, {});
+const DEFAULT_TEMPLATE_ID = CV_TEMPLATES[0]?.id || 'jobconnect-flex';
+const LEGACY_ROLE_LEVEL_PATTERN =
+    /^(thực tập sinh|thuc tap sinh|thực tập|thuc tap|trainee|intern|fresher|junior|mid-level|mid level|middle|senior)\b[\s|:/-]*/i;
+const LEGACY_ROLE_LEVEL_AT_END_PATTERN =
+    /\b(thực tập sinh|thuc tap sinh|thực tập|thuc tap|trainee|intern|fresher|junior|mid-level|mid level|middle|senior)$/i;
 
 const trimValue = (value = '') => value.toString().trim();
 
 const getCvTheme = (themeId) => CV_THEME_MAP[themeId] || CV_THEME_MAP[DEFAULT_THEME_ID];
+const getCvTemplate = (templateId) => CV_TEMPLATE_MAP[templateId] || CV_TEMPLATE_MAP[DEFAULT_TEMPLATE_ID];
+const getEffectiveTheme = (cvData = {}) =>
+    getCvTemplate(cvData.templateId).themeMode === 'locked'
+        ? getCvTemplate(cvData.templateId).lockedTheme || DESIGNER_THEME
+        : getCvTheme(cvData.themeId);
+
+const splitLegacyHeadline = (headline = '') => {
+    const normalizedHeadline = trimValue(headline);
+
+    if (!normalizedHeadline) {
+        return { level: '', position: '' };
+    }
+
+    const pipeParts = normalizedHeadline.split('|').map(trimValue).filter(Boolean);
+
+    if (pipeParts.length >= 2) {
+        return {
+            level: pipeParts[0],
+            position: pipeParts.slice(1).join(' | '),
+        };
+    }
+
+    const levelAtStart = normalizedHeadline.match(LEGACY_ROLE_LEVEL_PATTERN);
+
+    if (levelAtStart) {
+        return {
+            level: trimValue(levelAtStart[1]),
+            position: trimValue(normalizedHeadline.slice(levelAtStart[0].length)),
+        };
+    }
+
+    const levelAtEnd = normalizedHeadline.match(LEGACY_ROLE_LEVEL_AT_END_PATTERN);
+
+    if (levelAtEnd) {
+        return {
+            level: trimValue(levelAtEnd[1]),
+            position: trimValue(normalizedHeadline.slice(0, levelAtEnd.index)),
+        };
+    }
+
+    return { level: '', position: normalizedHeadline };
+};
+
+const getDesiredRoleContent = (cvData = {}) => {
+    const legacyHeadline = splitLegacyHeadline(cvData.headline);
+
+    return {
+        level: trimValue(cvData.desiredLevel || legacyHeadline.level),
+        position: trimValue(cvData.desiredPosition || legacyHeadline.position),
+    };
+};
+
+const buildDesiredRoleHeadline = (cvData = {}) => {
+    const { level, position } = getDesiredRoleContent(cvData);
+    return [level, position].filter(Boolean).join(' | ');
+};
+
+const getDesiredRolePreviewItems = (cvData = {}) => {
+    const { level, position } = getDesiredRoleContent(cvData);
+
+    if (!level && !position) {
+        return [
+            { key: 'level', text: 'Trình độ', kind: 'level' },
+            { key: 'position', text: 'Vị trí ứng tuyển', kind: 'position' },
+        ];
+    }
+
+    return [
+        level ? { key: 'level', text: level, kind: 'level' } : null,
+        position ? { key: 'position', text: position, kind: 'position' } : null,
+    ].filter(Boolean);
+};
 
 const hexToRgb = (hex = '') => {
     const normalized = hex.replace('#', '');
@@ -335,10 +489,19 @@ const createEmptyExperience = () => ({
     bullets: [''],
 });
 
+const createEmptyMetaItem = () => ({
+    id: Date.now() + Math.random(),
+    date: '',
+    title: '',
+});
+
 const createEmptyCV = () => ({
+    templateId: DEFAULT_TEMPLATE_ID,
     themeId: DEFAULT_THEME_ID,
     cvTitle: '',
     fullName: '',
+    desiredLevel: '',
+    desiredPosition: '',
     headline: '',
     objective: '',
     contacts: {
@@ -350,6 +513,8 @@ const createEmptyCV = () => ({
     },
     skills: [''],
     interests: [''],
+    awards: [createEmptyMetaItem()],
+    certifications: [createEmptyMetaItem()],
     experiences: [createEmptyExperience()],
     education: {
         major: '',
@@ -363,6 +528,17 @@ const createEmptyCV = () => ({
 
 const normalizeCvData = (rawData = {}) => {
     const emptyCV = createEmptyCV();
+    const legacyHeadline = splitLegacyHeadline(rawData.headline);
+    const desiredLevel = trimValue(rawData.desiredLevel || legacyHeadline.level);
+    const desiredPosition = trimValue(rawData.desiredPosition || legacyHeadline.position);
+    const normalizedTemplateId =
+        rawData.templateId === REFERENCE_TEMPLATE_ID
+            ? DESIGNER_TEMPLATE_ID
+            : getCvTemplate(rawData.templateId).id;
+    const rawAwards = Array.isArray(rawData.awards) ? rawData.awards : [createEmptyMetaItem()];
+    const rawCertifications = Array.isArray(rawData.certifications)
+        ? rawData.certifications
+        : [createEmptyMetaItem()];
     const rawExperiences =
         Array.isArray(rawData.experiences) && rawData.experiences.length
             ? rawData.experiences
@@ -371,14 +547,33 @@ const normalizeCvData = (rawData = {}) => {
     return {
         ...emptyCV,
         ...rawData,
+        templateId: normalizedTemplateId,
         themeId: getCvTheme(rawData.themeId).id,
         cvTitle: trimValue(rawData.cvTitle || rawData.title || ''),
+        desiredLevel,
+        desiredPosition,
+        headline:
+            buildDesiredRoleHeadline({
+                desiredLevel,
+                desiredPosition,
+                headline: rawData.headline,
+            }) || trimValue(rawData.headline || ''),
         contacts: {
             ...emptyCV.contacts,
             ...(rawData.contacts || {}),
         },
         skills: Array.isArray(rawData.skills) && rawData.skills.length ? rawData.skills : [''],
         interests: Array.isArray(rawData.interests) && rawData.interests.length ? rawData.interests : [''],
+        awards: rawAwards.slice(0, MAX_AWARDS).map((item) => ({
+            ...createEmptyMetaItem(),
+            ...item,
+            id: item?.id || Date.now() + Math.random(),
+        })),
+        certifications: rawCertifications.slice(0, MAX_CERTIFICATIONS).map((item) => ({
+            ...createEmptyMetaItem(),
+            ...item,
+            id: item?.id || Date.now() + Math.random(),
+        })),
         experiences: rawExperiences.slice(0, MAX_EXPERIENCES).map((experience) => ({
             ...createEmptyExperience(),
             ...experience,
@@ -393,7 +588,7 @@ const normalizeCvData = (rawData = {}) => {
 };
 
 const buildResumeTitle = (cvData) =>
-    trimValue(cvData.cvTitle) || trimValue(cvData.headline) || trimValue(cvData.fullName) || 'CV chưa đặt tên';
+    trimValue(cvData.cvTitle) || buildDesiredRoleHeadline(cvData) || trimValue(cvData.fullName) || 'CV chưa đặt tên';
 
 const formatPeriod = (start = '', end = '', fallback = 'Bắt đầu - Kết thúc') => {
     const from = trimValue(start);
@@ -420,16 +615,39 @@ const formatDisplayDate = (value) => {
     return date.toLocaleDateString('vi-VN');
 };
 
+const getVisibleMetaItems = (items = [], maxItems = MAX_AWARDS) =>
+    items
+        .map((item) => ({
+            ...item,
+            date: trimValue(item?.date),
+            title: trimValue(item?.title),
+        }))
+        .filter((item) => item.date || item.title)
+        .slice(0, maxItems);
+
+const getDesignerVisibleContacts = (contacts = {}) => {
+    const preferredKeys = ['phone', 'email', 'website', 'address', 'birth'];
+
+    return preferredKeys
+        .map((key) => ({
+            key,
+            value: trimValue(contacts[key]),
+        }))
+        .filter((item) => item.value)
+        .slice(0, 4);
+};
+
 const normalizeResumeRecord = (resume) => {
     const cvData = normalizeCvData({
         ...(resume?.cv_data || {}),
+        templateId: resume?.template_type || resume?.cv_data?.templateId || DEFAULT_TEMPLATE_ID,
         cvTitle: resume?.title || resume?.cv_data?.cvTitle || '',
     });
 
     return {
         id: resume?.id || '',
         title: resume?.title || buildResumeTitle(cvData),
-        template_type: resume?.template_type || CV_TEMPLATE_TYPE,
+        template_type: getCvTemplate(resume?.template_type || cvData.templateId).id,
         avatar_data: resume?.avatar_data || '',
         created_at: resume?.created_at || '',
         updated_at: resume?.updated_at || '',
@@ -541,6 +759,118 @@ const drawTextLines = (doc, lines, x, y, lineHeight, options = {}) => {
     return currentY;
 };
 
+const getFittedPdfFontSize = (doc, text, preferredSize, minSize, maxWidth) => {
+    let fontSize = scalePdfFont(preferredSize);
+    const minimumFontSize = scalePdfFont(minSize);
+
+    doc.setFontSize(fontSize);
+
+    while (fontSize > minimumFontSize && doc.getTextWidth(text) > maxWidth) {
+        fontSize = Number(Math.max(fontSize - 0.2, minimumFontSize).toFixed(2));
+        doc.setFontSize(fontSize);
+    }
+
+    return fontSize;
+};
+
+const drawPdfDesiredRole = (doc, cvData, centerX, startY, maxWidth = 44) => {
+    const desiredRoleItems = getDesiredRolePreviewItems(cvData);
+    let currentY = startY;
+
+    desiredRoleItems.forEach((item, index) => {
+        const isLevelLine = item.kind === 'level' && desiredRoleItems.length > 1;
+        const lineWidth = isLevelLine ? maxWidth : maxWidth + 3;
+
+        doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
+
+        const fittedFontSize = getFittedPdfFontSize(
+            doc,
+            item.text,
+            isLevelLine ? 10.8 : 12,
+            isLevelLine ? 10 : 10.2,
+            lineWidth,
+        );
+        const shouldKeepSingleLine = doc.getTextWidth(item.text) <= lineWidth;
+
+        doc.setFontSize(fittedFontSize);
+
+        const lines = getWrappedLines(doc, item.text, lineWidth, shouldKeepSingleLine || isLevelLine ? 1 : 2);
+        currentY = drawTextLines(
+            doc,
+            lines,
+            centerX,
+            currentY + (index === 0 ? 1.5 : 0.45),
+            scalePdfLineHeight(isLevelLine ? 4.3 : 5),
+            { align: 'center' },
+        );
+    });
+
+    return currentY;
+};
+
+const drawPdfDesiredRoleSingleLine = (doc, cvData, centerX, startY, maxWidth = 46) => {
+    const desiredRoleText = buildDesiredRoleHeadline(cvData) || 'Desired Role';
+
+    doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
+
+    const fittedFontSize = getFittedPdfFontSize(doc, desiredRoleText, 11.8, 10, maxWidth);
+    doc.setFontSize(fittedFontSize);
+
+    const lines = getWrappedLines(doc, desiredRoleText, maxWidth, 2);
+
+    return drawTextLines(doc, lines, centerX, startY + 1.5, scalePdfLineHeight(lines.length > 1 ? 4.5 : 5), {
+        align: 'center',
+    });
+};
+
+const drawPdfContactIcon = (doc, key, x, y, badgeHex = '#704739') => {
+    setDocFillColor(doc, badgeHex);
+    doc.setDrawColor(255, 255, 255);
+    doc.setLineWidth(0.18);
+    doc.circle(x, y, 2.15, 'FD');
+
+    doc.setDrawColor(255, 255, 255);
+    doc.setFillColor(255, 255, 255);
+    doc.setLineWidth(0.26);
+
+    switch (key) {
+        case 'phone':
+            doc.roundedRect(x - 0.95, y - 1.3, 1.9, 2.65, 0.26, 0.26, 'S');
+            doc.line(x - 0.33, y - 0.86, x + 0.33, y - 0.86);
+            doc.circle(x, y + 0.8, 0.08, 'F');
+            break;
+        case 'birth':
+            doc.roundedRect(x - 1.08, y - 1.02, 2.16, 1.95, 0.2, 0.2, 'S');
+            doc.line(x - 1.08, y - 0.3, x + 1.08, y - 0.3);
+            doc.line(x - 0.52, y - 1.28, x - 0.52, y - 0.66);
+            doc.line(x + 0.52, y - 1.28, x + 0.52, y - 0.66);
+            doc.line(x - 0.56, y + 0.18, x - 0.08, y + 0.18);
+            doc.line(x + 0.08, y + 0.18, x + 0.56, y + 0.18);
+            break;
+        case 'email':
+            doc.roundedRect(x - 1.18, y - 0.82, 2.36, 1.64, 0.14, 0.14, 'S');
+            doc.line(x - 1.18, y - 0.82, x, y + 0.06);
+            doc.line(x + 1.18, y - 0.82, x, y + 0.06);
+            break;
+        case 'website':
+            doc.circle(x, y, 0.98, 'S');
+            doc.line(x - 0.74, y, x + 0.74, y);
+            doc.line(x, y - 0.74, x, y + 0.74);
+            doc.line(x - 0.48, y - 0.48, x + 0.48, y + 0.48);
+            break;
+        case 'address':
+            doc.circle(x, y - 0.34, 0.7, 'S');
+            doc.circle(x, y - 0.34, 0.13, 'F');
+            doc.line(x, y + 0.22, x, y + 1.18);
+            doc.line(x - 0.38, y + 0.82, x, y + 1.18);
+            doc.line(x + 0.38, y + 0.82, x, y + 1.18);
+            break;
+        default:
+            doc.circle(x, y, 0.5, 'F');
+            break;
+    }
+};
+
 const scalePdfFont = (size) => Number((size * PDF_FONT_SCALE).toFixed(2));
 const scalePdfLineHeight = (size) => Number((size * PDF_LINE_HEIGHT_SCALE).toFixed(2));
 
@@ -569,14 +899,17 @@ const drawBulletList = (doc, items, startX, startY, contentWidth, maxLinesPerBul
 };
 
 const drawSectionHeader = (doc, label, baselineY, theme) => {
-    const badgeWidth = Math.max(doc.getTextWidth(label) + 8.5, 24);
     doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
     doc.setFontSize(scalePdfFont(10.5));
+    const badgeWidth = Math.max(doc.getTextWidth(label) + 8.5, 24);
+
+    setDocFillColor(doc, theme.colors.section);
+    doc.roundedRect(RIGHT_COLUMN_X - 1.2, baselineY - 4.8, badgeWidth, 7.3, 3.6, 3.6, 'F');
     doc.setTextColor(255, 255, 255);
-    doc.text(label, RIGHT_COLUMN_X + 4, baselineY);
+    doc.text(label, RIGHT_COLUMN_X + 3, baselineY);
     setDocDrawColor(doc, theme.colors.sectionLine);
     doc.setLineWidth(0.25);
-    doc.line(RIGHT_COLUMN_X + badgeWidth + 2.8, baselineY - 1.5, PAGE_WIDTH - 8, baselineY - 1.5);
+    doc.line(RIGHT_COLUMN_X + badgeWidth + 1.8, baselineY - 1.5, PAGE_WIDTH - 8, baselineY - 1.5);
     doc.setTextColor(30, 32, 35);
 };
 
@@ -654,11 +987,21 @@ const drawPdfBackground = (doc, theme) => {
     doc.setFillColor(255, 255, 255);
     doc.rect(0, 0, PAGE_WIDTH, PAGE_HEIGHT, 'F');
 
-    setDocFillColor(doc, theme.colors.leftEnd);
-    doc.rect(0, 0, LEFT_COLUMN_WIDTH, PAGE_HEIGHT, 'F');
-
     setDocFillColor(doc, theme.colors.rightStart);
     doc.rect(LEFT_COLUMN_WIDTH, 0, PAGE_WIDTH - LEFT_COLUMN_WIDTH, PAGE_HEIGHT, 'F');
+
+    if (theme.id === REFERENCE_THEME.id) {
+        const splitY = PAGE_HEIGHT * 0.305;
+
+        setDocFillColor(doc, theme.colors.leftStart);
+        doc.rect(0, 0, LEFT_COLUMN_WIDTH, splitY, 'F');
+        setDocFillColor(doc, theme.colors.leftEnd);
+        doc.rect(0, splitY, LEFT_COLUMN_WIDTH, PAGE_HEIGHT - splitY, 'F');
+        return;
+    }
+
+    setDocFillColor(doc, theme.colors.leftEnd);
+    doc.rect(0, 0, LEFT_COLUMN_WIDTH, PAGE_HEIGHT, 'F');
 
     setDocFillColor(doc, theme.colors.shapePrimary);
     doc.triangle(95, 185, PAGE_WIDTH, 185, 178, PAGE_HEIGHT, 'F');
@@ -667,10 +1010,18 @@ const drawPdfBackground = (doc, theme) => {
 };
 
 /* eslint-disable no-unused-vars */
-const drawPdfLeftColumn = async (doc, cvData, avatar) => {
+const drawPdfLeftColumn = async (
+    doc,
+    cvData,
+    avatar,
+    theme = REFERENCE_THEME,
+    labels = getCvTemplate(REFERENCE_TEMPLATE_ID).labels,
+) => {
     const visibleContacts = CONTACT_FIELDS.filter(({ key }) => trimValue(cvData.contacts[key]));
     const visibleSkills = cvData.skills.map(trimValue).filter(Boolean).slice(0, MAX_SKILLS);
     const visibleInterests = cvData.interests.map(trimValue).filter(Boolean).slice(0, MAX_INTERESTS);
+    const hasEducation = hasEducationData(cvData.education);
+    const educationHighlights = buildEducationHighlights(cvData.education);
     const avatarCenterX = LEFT_COLUMN_WIDTH / 2;
     const avatarCenterY = 28;
     const outerRadius = 19;
@@ -705,12 +1056,7 @@ const drawPdfLeftColumn = async (doc, cvData, avatar) => {
         align: 'center',
     });
 
-    doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
-    doc.setFontSize(scalePdfFont(12));
-    const headlineLines = getWrappedLines(doc, trimValue(cvData.headline) || 'Vị trí ứng tuyển', 44, 3);
-    currentY = drawTextLines(doc, headlineLines, avatarCenterX, currentY + 1.5, scalePdfLineHeight(5), {
-        align: 'center',
-    });
+    currentY = drawPdfDesiredRoleSingleLine(doc, cvData, avatarCenterX, currentY);
 
     doc.setDrawColor(255, 255, 255);
     doc.setLineWidth(0.2);
@@ -734,20 +1080,60 @@ const drawPdfLeftColumn = async (doc, cvData, avatar) => {
             return;
         }
 
-        doc.setFillColor(255, 255, 255);
-        doc.circle(8.8, currentY - 1.2, 0.85, 'F');
-        currentY = drawTextLines(doc, lines, 12.2, currentY, scalePdfLineHeight(4.3));
-        currentY += 1.7;
+        drawPdfContactIcon(doc, key, 9.4, currentY - 0.15, theme.colors.badge);
+        currentY = drawTextLines(doc, lines, 14.2, currentY + 0.15, scalePdfLineHeight(4.15));
+        currentY += 1.55;
     });
+
+    if (hasEducation && currentY < PAGE_HEIGHT - 42) {
+        drawLeftDivider();
+        drawPdfLeftBadge(doc, labels.education, currentY, theme);
+        currentY += 6.2;
+
+        if (trimValue(cvData.education.major)) {
+            doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
+            doc.setFontSize(scalePdfFont(9.5));
+            const majorLines = getWrappedLines(doc, cvData.education.major, 44, 2);
+            currentY = drawTextLines(doc, majorLines, 7.7, currentY, scalePdfLineHeight(4.15));
+        }
+
+        if (trimValue(cvData.education.start) || trimValue(cvData.education.end)) {
+            doc.setFont(PDF_FONT_NAME, 'normal');
+            doc.setFontSize(scalePdfFont(9.1));
+            const periodLines = getWrappedLines(doc, formatPeriod(cvData.education.start, cvData.education.end), 44, 1);
+            currentY = drawTextLines(doc, periodLines, 7.7, currentY + 0.4, scalePdfLineHeight(4));
+        }
+
+        if (trimValue(cvData.education.school)) {
+            doc.setFont(PDF_FONT_NAME, 'normal');
+            doc.setFontSize(scalePdfFont(8.95));
+            const schoolLines = getWrappedLines(doc, cvData.education.school, 44, 2);
+            currentY = drawTextLines(doc, schoolLines, 7.7, currentY + 0.35, scalePdfLineHeight(4));
+        }
+
+        educationHighlights.forEach((item) => {
+            if (currentY > PAGE_HEIGHT - 12) {
+                return;
+            }
+
+            const bulletLines = getWrappedLines(doc, item, 39.5, 2);
+            if (!bulletLines.length) {
+                return;
+            }
+
+            doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
+            doc.setFontSize(scalePdfFont(9));
+            doc.text('•', 9, currentY + 0.8);
+            doc.setFont(PDF_FONT_NAME, 'normal');
+            doc.setFontSize(scalePdfFont(8.95));
+            currentY = drawTextLines(doc, bulletLines, 12.2, currentY + 0.8, scalePdfLineHeight(3.95));
+            currentY += 0.6;
+        });
+    }
 
     if (visibleSkills.length > 0) {
         drawLeftDivider();
-
-        doc.setFillColor(112, 71, 57);
-        doc.roundedRect(4.8, currentY - 4.8, 20, 7.6, 3.8, 3.8, 'F');
-        doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
-        doc.setFontSize(scalePdfFont(10.5));
-        doc.text('Kỹ năng', 7.7, currentY);
+        drawPdfLeftBadge(doc, labels.skills, currentY, theme);
         currentY += 6.5;
 
         doc.setFont(PDF_FONT_NAME, 'normal');
@@ -769,12 +1155,7 @@ const drawPdfLeftColumn = async (doc, cvData, avatar) => {
 
     if (visibleInterests.length > 0 && currentY < PAGE_HEIGHT - 30) {
         drawLeftDivider();
-
-        doc.setFillColor(112, 71, 57);
-        doc.roundedRect(4.8, currentY - 4.8, 21, 7.6, 3.8, 3.8, 'F');
-        doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
-        doc.setFontSize(scalePdfFont(10.2));
-        doc.text('Sở thích', 7.7, currentY);
+        drawPdfLeftBadge(doc, labels.interests, currentY, theme);
         currentY += 6.5;
 
         doc.setFont(PDF_FONT_NAME, 'normal');
@@ -795,11 +1176,12 @@ const drawPdfLeftColumn = async (doc, cvData, avatar) => {
     }
 };
 
-const drawPdfRightColumn = (doc, cvData, theme) => {
-    const rightTextX = RIGHT_COLUMN_X + 0.6;
-    const rightTextWidth = RIGHT_CONTENT_WIDTH - 5.5;
-    const experienceBulletX = RIGHT_COLUMN_X + 3.5;
-    const experienceBulletWidth = RIGHT_CONTENT_WIDTH - 8;
+const drawPdfRightColumn = (
+    doc,
+    cvData,
+    theme = REFERENCE_THEME,
+    labels = getCvTemplate(REFERENCE_TEMPLATE_ID).labels,
+) => {
     const visibleExperiences = cvData.experiences
         .map((experience) => ({
             ...experience,
@@ -815,7 +1197,6 @@ const drawPdfRightColumn = (doc, cvData, theme) => {
         )
         .slice(0, MAX_EXPERIENCES);
     const hasObjective = Boolean(trimValue(cvData.objective));
-    const hasEducation = Object.values(cvData.education).some((value) => trimValue(value));
 
     let currentY = 18;
     const startRightSection = (label) => {
@@ -823,85 +1204,54 @@ const drawPdfRightColumn = (doc, cvData, theme) => {
             currentY += 2;
         }
 
-        drawSectionHeader(doc, label, currentY);
+        drawSectionHeader(doc, label, currentY, theme);
         currentY += 6;
     };
 
-    drawSectionHeader(doc, 'Mục tiêu nghề nghiệp', currentY, theme);
-    currentY += 6;
+    if (hasObjective) {
+        startRightSection(labels.objective);
+        doc.setFont(PDF_FONT_NAME, 'normal');
+        doc.setFontSize(scalePdfFont(9.5));
+        const objectiveLines = getWrappedLines(doc, cvData.objective, RIGHT_CONTENT_WIDTH, 8);
+        currentY = drawTextLines(doc, objectiveLines, RIGHT_COLUMN_X, currentY, scalePdfLineHeight(4.35));
+    }
 
-    doc.setFont(PDF_FONT_NAME, 'normal');
-    doc.setFontSize(scalePdfFont(9.5));
-    const objectiveLines = getWrappedLines(doc, cvData.objective, RIGHT_CONTENT_WIDTH, 8);
-    currentY = drawTextLines(doc, objectiveLines, RIGHT_COLUMN_X, currentY, scalePdfLineHeight(4.35));
-    currentY += 2;
-
-    drawSectionHeader(doc, 'Kinh nghiệm làm việc', currentY + 4, theme);
-    currentY += 10;
+    if (visibleExperiences.length > 0) {
+        startRightSection(labels.experience);
+    }
 
     visibleExperiences.forEach((experience) => {
-        const periodText = formatPeriod(experience.start, experience.end);
-        doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
-        doc.setFontSize(10);
-        const periodWidth = doc.getTextWidth(periodText);
-        const roleWidth = Math.max(55, rightTextWidth - periodWidth - 7);
-        const roleLines = getWrappedLines(doc, trimValue(experience.position) || 'Vị trí công việc', roleWidth, 2);
+        const hasPeriod = trimValue(experience.start) || trimValue(experience.end);
+        const primaryTitle = trimValue(experience.company) || trimValue(experience.position) || 'Project / Role';
+        const secondaryTitle =
+            trimValue(experience.company) && trimValue(experience.position) ? trimValue(experience.position) : '';
+        const roleLines = getWrappedLines(doc, primaryTitle, 82, 2);
 
         doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
         doc.setFontSize(scalePdfFont(10.2));
         const roleEndY = drawTextLines(doc, roleLines, RIGHT_COLUMN_X, currentY, scalePdfLineHeight(4.3));
-        doc.text(periodText, PAGE_WIDTH - 8, currentY, { align: 'right' });
-        currentY = roleEndY;
 
-        if (trimValue(experience.company)) {
-            doc.setFont(PDF_FONT_NAME, 'normal');
-            doc.setFontSize(scalePdfFont(9.5));
-            const companyLines = getWrappedLines(doc, experience.company, RIGHT_CONTENT_WIDTH, 2);
-            currentY = drawTextLines(doc, companyLines, RIGHT_COLUMN_X, currentY, scalePdfLineHeight(4.1));
+        if (hasPeriod) {
+            doc.text(formatPeriod(experience.start, experience.end), PAGE_WIDTH - 8, currentY, { align: 'right' });
         }
 
-        doc.setFont(PDF_FONT_NAME, 'normal');
-        doc.setFontSize(scalePdfFont(9.5));
-        currentY = drawBulletList(doc, experience.bullets, RIGHT_COLUMN_X + 2, currentY + 1.5, 126, 2);
+        currentY = roleEndY;
+
+        if (secondaryTitle) {
+            doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
+            doc.setFontSize(scalePdfFont(9.7));
+            const secondaryLines = getWrappedLines(doc, secondaryTitle, RIGHT_CONTENT_WIDTH, 2);
+            currentY = drawTextLines(doc, secondaryLines, RIGHT_COLUMN_X, currentY + 0.3, scalePdfLineHeight(4.05));
+        }
+
+        if (experience.bullets.length > 0) {
+            doc.setFont(PDF_FONT_NAME, 'normal');
+            doc.setFontSize(scalePdfFont(9.5));
+            currentY = drawBulletList(doc, experience.bullets, RIGHT_COLUMN_X + 2, currentY + 1.5, 126, 2);
+        }
+
         currentY += 2.2;
     });
-
-    currentY += 2;
-    drawSectionHeader(doc, 'Học vấn', currentY + 4);
-    currentY += 10;
-
-    if (trimValue(cvData.education.major)) {
-        doc.setFont(PDF_FONT_NAME, 'normal');
-        doc.setFontSize(scalePdfFont(9.3));
-        const majorLines = getWrappedLines(doc, cvData.education.major, RIGHT_CONTENT_WIDTH, 2);
-        currentY = drawTextLines(doc, majorLines, RIGHT_COLUMN_X, currentY, scalePdfLineHeight(4.2));
-    }
-
-    doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
-    doc.setFontSize(scalePdfFont(9.4));
-    doc.text(formatPeriod(cvData.education.start, cvData.education.end), RIGHT_COLUMN_X, currentY + 1);
-    currentY += 5.8;
-
-    if (trimValue(cvData.education.school)) {
-        doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
-        doc.setFontSize(scalePdfFont(10.2));
-        const schoolLines = getWrappedLines(doc, cvData.education.school, RIGHT_CONTENT_WIDTH, 2);
-        currentY = drawTextLines(doc, schoolLines, RIGHT_COLUMN_X, currentY, scalePdfLineHeight(4.3));
-    }
-
-    const educationBullets = [];
-
-    if (trimValue(cvData.education.gpa)) {
-        educationBullets.push(`GPA: ${cvData.education.gpa}`);
-    }
-
-    if (trimValue(cvData.education.thesis)) {
-        educationBullets.push(`Đồ án tốt nghiệp: ${cvData.education.thesis}`);
-    }
-
-    doc.setFont(PDF_FONT_NAME, 'normal');
-    doc.setFontSize(scalePdfFont(9.4));
-    drawBulletList(doc, educationBullets, RIGHT_COLUMN_X + 2, currentY + 2, 126, 2);
 };
 
 /* eslint-enable no-unused-vars */
@@ -909,6 +1259,8 @@ const drawPdfLeftColumnDynamic = async (doc, cvData, avatar, theme) => {
     const visibleContacts = CONTACT_FIELDS.filter(({ key }) => trimValue(cvData.contacts[key]));
     const visibleSkills = cvData.skills.map(trimValue).filter(Boolean).slice(0, MAX_SKILLS);
     const visibleInterests = cvData.interests.map(trimValue).filter(Boolean).slice(0, MAX_INTERESTS);
+    const hasEducation = hasEducationData(cvData.education);
+    const educationHighlights = buildEducationHighlights(cvData.education);
     const avatarCenterX = LEFT_COLUMN_WIDTH / 2;
     const avatarCenterY = 28;
     const outerRadius = 19;
@@ -943,12 +1295,7 @@ const drawPdfLeftColumnDynamic = async (doc, cvData, avatar, theme) => {
         align: 'center',
     });
 
-    doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
-    doc.setFontSize(scalePdfFont(12));
-    const headlineLines = getWrappedLines(doc, trimValue(cvData.headline) || 'Vị trí ứng tuyển', 44, 3);
-    currentY = drawTextLines(doc, headlineLines, avatarCenterX, currentY + 1.5, scalePdfLineHeight(5), {
-        align: 'center',
-    });
+    currentY = drawPdfDesiredRole(doc, cvData, avatarCenterX, currentY);
 
     doc.setDrawColor(255, 255, 255);
     doc.setLineWidth(0.2);
@@ -971,10 +1318,59 @@ const drawPdfLeftColumnDynamic = async (doc, cvData, avatar, theme) => {
                 return;
             }
 
-            doc.setFillColor(255, 255, 255);
-            doc.circle(8.8, currentY - 1.2, 0.85, 'F');
-            currentY = drawTextLines(doc, lines, 12.2, currentY, scalePdfLineHeight(4.3));
-            currentY += 1.7;
+            drawPdfContactIcon(doc, key, 9.4, currentY - 0.15, theme.colors.badge);
+            currentY = drawTextLines(doc, lines, 14.2, currentY + 0.15, scalePdfLineHeight(4.15));
+            currentY += 1.55;
+        });
+    }
+
+    if (hasEducation && currentY < PAGE_HEIGHT - 42) {
+        drawLeftDivider();
+        setDocFillColor(doc, theme.colors.badge);
+        doc.roundedRect(4.8, currentY - 4.8, 22.5, 7.6, 3.8, 3.8, 'F');
+        doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
+        doc.setFontSize(scalePdfFont(10.2));
+        doc.text('Học vấn', 7.7, currentY);
+        currentY += 6.2;
+
+        if (trimValue(cvData.education.major)) {
+            doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
+            doc.setFontSize(scalePdfFont(9.5));
+            const majorLines = getWrappedLines(doc, cvData.education.major, 44, 2);
+            currentY = drawTextLines(doc, majorLines, 7.7, currentY, scalePdfLineHeight(4.15));
+        }
+
+        if (trimValue(cvData.education.start) || trimValue(cvData.education.end)) {
+            doc.setFont(PDF_FONT_NAME, 'normal');
+            doc.setFontSize(scalePdfFont(9.1));
+            const periodLines = getWrappedLines(doc, formatPeriod(cvData.education.start, cvData.education.end), 44, 1);
+            currentY = drawTextLines(doc, periodLines, 7.7, currentY + 0.4, scalePdfLineHeight(4));
+        }
+
+        if (trimValue(cvData.education.school)) {
+            doc.setFont(PDF_FONT_NAME, 'normal');
+            doc.setFontSize(scalePdfFont(8.95));
+            const schoolLines = getWrappedLines(doc, cvData.education.school, 44, 2);
+            currentY = drawTextLines(doc, schoolLines, 7.7, currentY + 0.35, scalePdfLineHeight(4));
+        }
+
+        educationHighlights.forEach((item) => {
+            if (currentY > PAGE_HEIGHT - 12) {
+                return;
+            }
+
+            const bulletLines = getWrappedLines(doc, item, 39.5, 2);
+            if (!bulletLines.length) {
+                return;
+            }
+
+            doc.setFont(PDF_FONT_BOLD_NAME, 'bold');
+            doc.setFontSize(scalePdfFont(9));
+            doc.text('•', 9, currentY + 0.8);
+            doc.setFont(PDF_FONT_NAME, 'normal');
+            doc.setFontSize(scalePdfFont(8.95));
+            currentY = drawTextLines(doc, bulletLines, 12.2, currentY + 0.8, scalePdfLineHeight(3.95));
+            currentY += 0.6;
         });
     }
 
@@ -1047,7 +1443,7 @@ const drawPdfRightColumnDynamic = (doc, cvData, theme) => {
         )
         .slice(0, MAX_EXPERIENCES);
     const hasObjective = Boolean(trimValue(cvData.objective));
-    const hasEducation = Object.values(cvData.education).some((value) => trimValue(value));
+    const showEducationInRightColumn = false;
 
     let currentY = 18;
     const startSection = (label) => {
@@ -1100,7 +1496,7 @@ const drawPdfRightColumnDynamic = (doc, cvData, theme) => {
         });
     }
 
-    if (hasEducation) {
+    if (showEducationInRightColumn) {
         startSection('Học vấn');
 
         if (trimValue(cvData.education.major)) {
@@ -1142,8 +1538,39 @@ const drawPdfRightColumnDynamic = (doc, cvData, theme) => {
     }
 };
 
-const exportCvToPdf = async (cvData, avatar) => {
-    const theme = getCvTheme(cvData.themeId);
+const exportPreviewElementToPdf = async (element, fileName) => {
+    if (!element) {
+        throw new Error('Không tìm thấy preview để xuất PDF.');
+    }
+
+    const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#f7efe6',
+        logging: false,
+    });
+
+    const imageData = canvas.toDataURL('image/png');
+    const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+        compress: true,
+    });
+
+    doc.addImage(imageData, 'PNG', 0, 0, PAGE_WIDTH, PAGE_HEIGHT, undefined, 'FAST');
+    doc.save(`${fileName}.pdf`);
+};
+
+const exportCvToPdf = async (cvData, avatar, previewElement) => {
+    const template = getCvTemplate(cvData.templateId);
+    const theme = getEffectiveTheme(cvData);
+
+    if (template.pdfVariant === 'designer') {
+        await exportPreviewElementToPdf(previewElement, buildResumeTitle(cvData));
+        return;
+    }
+
     const doc = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -1153,15 +1580,24 @@ const exportCvToPdf = async (cvData, avatar) => {
 
     await ensurePdfFonts(doc);
     drawPdfBackground(doc, theme);
-    await drawPdfLeftColumnDynamic(doc, cvData, avatar, theme);
-    drawPdfRightColumnDynamic(doc, cvData, theme);
+
+    if (template.pdfVariant === 'reference') {
+        await drawPdfLeftColumn(doc, cvData, avatar, theme, template.labels);
+        drawPdfRightColumn(doc, cvData, theme, template.labels);
+    } else {
+        await drawPdfLeftColumnDynamic(doc, cvData, avatar, theme);
+        drawPdfRightColumnDynamic(doc, cvData, theme);
+    }
+
     doc.save(`${buildResumeTitle(cvData)}.pdf`);
 };
 
 /* eslint-disable no-unused-vars */
-function CVPreview({ cvData, avatar, compact = false }) {
-    const theme = getCvTheme(cvData.themeId);
+function CVPreview({ cvData, avatar, compact = false, articleRef = null }) {
+    const theme = REFERENCE_THEME;
+    const labels = getCvTemplate(REFERENCE_TEMPLATE_ID).labels;
     const educationHighlights = buildEducationHighlights(cvData.education);
+    const desiredRoleText = buildDesiredRoleHeadline(cvData) || 'Desired Role';
     const visibleContacts = CONTACT_FIELDS.filter(({ key }) => trimValue(cvData.contacts[key]));
     const visibleSkills = cvData.skills.map(trimValue).filter(Boolean).slice(0, MAX_SKILLS);
     const visibleInterests = cvData.interests.map(trimValue).filter(Boolean).slice(0, MAX_INTERESTS);
@@ -1184,7 +1620,8 @@ function CVPreview({ cvData, avatar, compact = false }) {
 
     return (
         <article
-            className={`${styles.cvPage} ${compact ? styles.cvPageCompact : ''}`}
+            ref={articleRef}
+            className={`${styles.cvPage} ${styles.cvPageReference} ${compact ? styles.cvPageCompact : ''}`}
             style={getPreviewThemeStyle(theme)}
         >
             <aside className={styles.leftColumn}>
@@ -1195,9 +1632,9 @@ function CVPreview({ cvData, avatar, compact = false }) {
                     />
                 </div>
 
-                <div className={styles.identityBlock}>
+                <div className={`${styles.identityBlock} ${styles.identityBlockReference}`}>
                     <h2>{trimValue(cvData.fullName) || 'Họ tên ứng viên'}</h2>
-                    <p>{trimValue(cvData.headline) || 'Vị trí ứng tuyển'}</p>
+                    <div className={styles.referenceIdentityRole}>{desiredRoleText}</div>
                 </div>
 
                 <div className={styles.leftBlock}>
@@ -1208,7 +1645,7 @@ function CVPreview({ cvData, avatar, compact = false }) {
                                     <span className={styles.contactIcon}>
                                         <Icon />
                                     </span>
-                                    <span>{cvData.contacts[key]}</span>
+                                    <span className={styles.contactValue}>{cvData.contacts[key]}</span>
                                 </li>
                             ))}
                         </ul>
@@ -1220,7 +1657,7 @@ function CVPreview({ cvData, avatar, compact = false }) {
                 </div>
 
                 <div className={styles.leftBlock}>
-                    <div className={styles.leftBadge}>Học vấn</div>
+                    <div className={styles.leftBadge}>{labels.education}</div>
                     {hasEducation ? (
                         <div className={styles.educationAside}>
                             {trimValue(cvData.education.major) && (
@@ -1256,7 +1693,7 @@ function CVPreview({ cvData, avatar, compact = false }) {
                 </div>
 
                 <div className={styles.leftBlock}>
-                    <div className={styles.leftBadge}>Kỹ năng</div>
+                    <div className={styles.leftBadge}>{labels.skills}</div>
                     {visibleSkills.length > 0 ? (
                         <ul className={styles.skillList}>
                             {visibleSkills.map((skill, index) => (
@@ -1272,7 +1709,7 @@ function CVPreview({ cvData, avatar, compact = false }) {
 
                 {visibleInterests.length > 0 && (
                     <div className={styles.leftBlock}>
-                        <div className={styles.leftBadge}>Sở thích</div>
+                        <div className={styles.leftBadge}>{labels.interests}</div>
                         <ul className={styles.interestList}>
                             {visibleInterests.map((interest, index) => (
                                 <li key={`preview-interest-${index}`}>{interest}</li>
@@ -1286,7 +1723,7 @@ function CVPreview({ cvData, avatar, compact = false }) {
                 <div className={styles.rightContent}>
                     <div className={styles.sectionBlock}>
                         <div className={styles.sectionHeader}>
-                            <div className={styles.sectionLabel}>Mục tiêu nghề nghiệp</div>
+                            <div className={styles.sectionLabel}>{labels.objective}</div>
                             <div className={styles.sectionLine} />
                         </div>
 
@@ -1303,7 +1740,7 @@ function CVPreview({ cvData, avatar, compact = false }) {
 
                     <div className={styles.sectionBlock}>
                         <div className={styles.sectionHeader}>
-                            <div className={styles.sectionLabel}>Kinh nghiệm làm việc</div>
+                            <div className={styles.sectionLabel}>{labels.experience}</div>
                             <div className={styles.sectionLine} />
                         </div>
 
@@ -1311,27 +1748,32 @@ function CVPreview({ cvData, avatar, compact = false }) {
                             {visibleExperiences.length > 0 ? (
                                 <div className={styles.experienceList}>
                                     {visibleExperiences.map((experience) => {
-                                        const isPeriodEmpty =
-                                            !trimValue(experience.start) && !trimValue(experience.end);
+                                        const hasPeriod = trimValue(experience.start) || trimValue(experience.end);
+                                        const primaryTitle =
+                                            trimValue(experience.company) ||
+                                            trimValue(experience.position) ||
+                                            'Project / Role';
+                                        const secondaryTitle =
+                                            trimValue(experience.company) && trimValue(experience.position)
+                                                ? experience.position
+                                                : '';
 
                                         return (
                                             <div className={styles.experienceItem} key={experience.id}>
                                                 <div className={styles.roleRow}>
-                                                    <span className={styles.roleTitle}>
-                                                        {trimValue(experience.position) || 'Vị trí công việc'}
-                                                    </span>
-                                                    <span
-                                                        className={`${styles.periodText} ${
-                                                            isPeriodEmpty ? styles.periodPlaceholder : ''
-                                                        }`}
-                                                    >
-                                                        {formatPeriod(experience.start, experience.end)}
-                                                    </span>
+                                                    <span className={styles.roleTitle}>{primaryTitle}</span>
+                                                    {hasPeriod ? (
+                                                        <span className={styles.periodText}>
+                                                            {formatPeriod(experience.start, experience.end)}
+                                                        </span>
+                                                    ) : null}
                                                 </div>
 
-                                                {trimValue(experience.company) && (
-                                                    <div className={styles.companyText}>{experience.company}</div>
-                                                )}
+                                                {secondaryTitle ? (
+                                                    <div className={styles.referenceExperienceTitle}>
+                                                        {secondaryTitle}
+                                                    </div>
+                                                ) : null}
 
                                                 {experience.bullets.length > 0 && (
                                                     <ul className={styles.bulletList}>
@@ -1358,8 +1800,10 @@ function CVPreview({ cvData, avatar, compact = false }) {
 }
 
 /* eslint-enable no-unused-vars */
-function CVPreviewDynamic({ cvData, avatar, compact = false }) {
-    const theme = getCvTheme(cvData.themeId);
+function CVPreviewDynamic({ cvData, avatar, compact = false, articleRef = null }) {
+    const theme = getEffectiveTheme(cvData);
+    const desiredRoleItems = getDesiredRolePreviewItems(cvData);
+    const educationHighlights = buildEducationHighlights(cvData.education);
     const visibleContacts = CONTACT_FIELDS.filter(({ key }) => trimValue(cvData.contacts[key]));
     const visibleSkills = cvData.skills.map(trimValue).filter(Boolean).slice(0, MAX_SKILLS);
     const visibleInterests = cvData.interests.map(trimValue).filter(Boolean).slice(0, MAX_INTERESTS);
@@ -1378,10 +1822,13 @@ function CVPreviewDynamic({ cvData, avatar, compact = false }) {
         )
         .slice(0, MAX_EXPERIENCES);
     const hasObjective = Boolean(trimValue(cvData.objective));
-    const hasEducation = Object.values(cvData.education).some((value) => trimValue(value));
+    const hasEducation = hasEducationData(cvData.education);
+    const showEducationInRightColumn = false;
+    const isEducationPeriodEmpty = !trimValue(cvData.education.start) && !trimValue(cvData.education.end);
 
     return (
         <article
+            ref={articleRef}
             className={`${styles.cvPage} ${compact ? styles.cvPageCompact : ''}`}
             style={getPreviewThemeStyle(theme)}
         >
@@ -1395,7 +1842,16 @@ function CVPreviewDynamic({ cvData, avatar, compact = false }) {
 
                 <div className={styles.identityBlock}>
                     <h2>{trimValue(cvData.fullName) || 'Họ tên ứng viên'}</h2>
-                    <p>{trimValue(cvData.headline) || 'Vị trí ứng tuyển'}</p>
+                    <div className={styles.identityRole}>
+                        {desiredRoleItems.map((item) => (
+                            <span
+                                className={item.kind === 'level' ? styles.identityLevel : styles.identityPosition}
+                                key={item.key}
+                            >
+                                {item.text}
+                            </span>
+                        ))}
+                    </div>
                 </div>
 
                 {visibleContacts.length > 0 ? (
@@ -1406,10 +1862,41 @@ function CVPreviewDynamic({ cvData, avatar, compact = false }) {
                                     <span className={styles.contactIcon}>
                                         <Icon />
                                     </span>
-                                    <span>{cvData.contacts[key]}</span>
+                                    <span className={styles.contactValue}>{cvData.contacts[key]}</span>
                                 </li>
                             ))}
                         </ul>
+                    </div>
+                ) : null}
+
+                {hasEducation ? (
+                    <div className={styles.leftBlock}>
+                        <div className={styles.leftBadge}>Học vấn</div>
+                        <div className={styles.educationAside}>
+                            {trimValue(cvData.education.major) ? (
+                                <div className={styles.educationAsideMajor}>{cvData.education.major}</div>
+                            ) : null}
+
+                            <div
+                                className={`${styles.educationAsidePeriod} ${
+                                    isEducationPeriodEmpty ? styles.periodPlaceholder : ''
+                                }`}
+                            >
+                                {formatPeriod(cvData.education.start, cvData.education.end)}
+                            </div>
+
+                            {trimValue(cvData.education.school) ? (
+                                <div className={styles.educationAsideSchool}>{cvData.education.school}</div>
+                            ) : null}
+
+                            {educationHighlights.length > 0 ? (
+                                <ul className={styles.educationAsideList}>
+                                    {educationHighlights.map((item, index) => (
+                                        <li key={`dynamic-education-highlight-${index}`}>{item}</li>
+                                    ))}
+                                </ul>
+                            ) : null}
+                        </div>
                     </div>
                 ) : null}
 
@@ -1495,7 +1982,7 @@ function CVPreviewDynamic({ cvData, avatar, compact = false }) {
                         </div>
                     ) : null}
 
-                    {hasEducation ? (
+                    {showEducationInRightColumn ? (
                         <div className={styles.sectionBlock}>
                             <div className={styles.sectionHeader}>
                                 <div className={styles.sectionLabel}>Học vấn</div>
@@ -1534,6 +2021,224 @@ function CVPreviewDynamic({ cvData, avatar, compact = false }) {
     );
 }
 
+function CVPreviewDesigner({ cvData, avatar, compact = false, articleRef = null }) {
+    const visibleContacts = getDesignerVisibleContacts(cvData.contacts);
+    const visibleExperiences = cvData.experiences
+        .map((experience) => ({
+            ...experience,
+            bullets: experience.bullets.map(trimValue).filter(Boolean).slice(0, DESIGNER_MAX_BULLETS),
+        }))
+        .filter(
+            (experience) =>
+                trimValue(experience.position) ||
+                trimValue(experience.company) ||
+                trimValue(experience.start) ||
+                trimValue(experience.end) ||
+                experience.bullets.length,
+        )
+        .slice(0, DESIGNER_MAX_EXPERIENCES);
+    const visibleAwards = getVisibleMetaItems(cvData.awards, MAX_AWARDS);
+    const visibleCertifications = getVisibleMetaItems(cvData.certifications, MAX_CERTIFICATIONS);
+    const educationHighlights = buildEducationHighlights(cvData.education);
+    const educationPeriod = formatPeriod(cvData.education.start, cvData.education.end, '');
+    const hasEducation = hasEducationData(cvData.education);
+    const hasAwardsSection = Array.isArray(cvData.awards) && cvData.awards.length > 0;
+    const hasCertificationsSection = Array.isArray(cvData.certifications) && cvData.certifications.length > 0;
+    const designerFooterSections = [
+        {
+            key: 'education',
+            title: 'Học vấn',
+            content: hasEducation ? (
+                <div className={styles.designerFooterEntry}>
+                    {trimValue(cvData.education.major) ? (
+                        <div className={styles.designerFooterTitle}>{cvData.education.major}</div>
+                    ) : null}
+                    {trimValue(cvData.education.school) ? (
+                        <div className={styles.designerFooterSubtitle}>{cvData.education.school}</div>
+                    ) : null}
+                    {educationPeriod ? <div className={styles.designerFooterDate}>{educationPeriod}</div> : null}
+                    {educationHighlights.length > 0 ? (
+                        <div className={styles.designerFooterNotes}>{educationHighlights.join(' • ')}</div>
+                    ) : null}
+                </div>
+            ) : (
+                <p className={styles.designerPlaceholder}>
+                    Điền trường, ngành và thời gian học để khối này giống mẫu.
+                </p>
+            ),
+        },
+    ];
+
+    if (hasAwardsSection) {
+        designerFooterSections.push({
+            key: 'awards',
+            title: 'Danh hiệu và giải thưởng',
+            content:
+                visibleAwards.length > 0 ? (
+                    visibleAwards.map((item) => (
+                        <div className={styles.designerFooterEntry} key={item.id}>
+                            {item.date ? <div className={styles.designerFooterDate}>{item.date}</div> : null}
+                            <div className={styles.designerFooterTitle}>{item.title || 'Tên giải thưởng'}</div>
+                        </div>
+                    ))
+                ) : (
+                    <p className={styles.designerPlaceholder}>
+                        Thêm giải thưởng hoặc học bổng để hiển thị cột này.
+                    </p>
+                ),
+        });
+    }
+
+    if (hasCertificationsSection) {
+        designerFooterSections.push({
+            key: 'certifications',
+            title: 'Chứng chỉ',
+            content:
+                visibleCertifications.length > 0 ? (
+                    visibleCertifications.map((item) => (
+                        <div className={styles.designerFooterEntry} key={item.id}>
+                            {item.date ? <div className={styles.designerFooterDate}>{item.date}</div> : null}
+                            <div className={styles.designerFooterTitle}>{item.title || 'Tên chứng chỉ'}</div>
+                        </div>
+                    ))
+                ) : (
+                    <p className={styles.designerPlaceholder}>
+                        Thêm chứng chỉ chuyên môn để hoàn thiện bố cục mẫu.
+                    </p>
+                ),
+        });
+    }
+
+    const designerFooterGridStyle = {
+        gridTemplateColumns: `repeat(${designerFooterSections.length}, minmax(0, 1fr))`,
+    };
+
+    return (
+        <article
+            ref={articleRef}
+            className={`${styles.cvPage} ${styles.cvPageDesigner} ${compact ? styles.cvPageCompact : ''}`}
+        >
+            <div className={styles.designerContactStrip}>
+                {visibleContacts.length > 0 ? (
+                    visibleContacts.map((item) => (
+                        <div className={styles.designerContactItem} key={item.key}>
+                            <span className={styles.designerContactDot} />
+                            <span>{item.value}</span>
+                        </div>
+                    ))
+                ) : (
+                    <>
+                        <div className={styles.designerContactItem}>
+                            <span className={styles.designerContactDot} />
+                            <span>0123456789</span>
+                        </div>
+                        <div className={styles.designerContactItem}>
+                            <span className={styles.designerContactDot} />
+                            <span>ban@example.com</span>
+                        </div>
+                        <div className={styles.designerContactItem}>
+                            <span className={styles.designerContactDot} />
+                            <span>be.net/yourprofile</span>
+                        </div>
+                        <div className={styles.designerContactItem}>
+                            <span className={styles.designerContactDot} />
+                            <span>Quận 7, Hồ Chí Minh</span>
+                        </div>
+                    </>
+                )}
+            </div>
+
+            <div className={styles.designerHero}>
+                <div className={styles.designerHeroText}>
+                    <h2>{trimValue(cvData.fullName) || 'Nguyễn Văn A'}</h2>
+                    <div className={styles.designerHeroRole}>
+                        {trimValue(cvData.desiredPosition) || buildDesiredRoleHeadline(cvData) || 'Designer'}
+                    </div>
+                    <p className={styles.designerHeroSummary}>
+                        {trimValue(cvData.objective) ||
+                            'Mô tả ngắn gọn về định hướng nghề nghiệp, điểm mạnh và mục tiêu phát triển để phần mở đầu giống bố cục của mẫu CV này.'}
+                    </p>
+                </div>
+
+                <div className={styles.designerPhotoFrame}>
+                    <div
+                        className={avatar ? styles.designerPhoto : styles.designerPhotoPlaceholder}
+                        style={avatar ? { backgroundImage: `url(${avatar})` } : undefined}
+                    />
+                </div>
+            </div>
+
+            <div className={styles.designerBody}>
+                <div className={styles.designerSectionHeader}>
+                    <div className={styles.designerSectionBadge}>Kinh nghiệm làm việc</div>
+                    <div className={styles.designerSectionDivider} />
+                </div>
+
+                <div className={styles.designerExperienceList}>
+                    {visibleExperiences.length > 0 ? (
+                        visibleExperiences.map((experience) => (
+                            <div className={styles.designerExperienceItem} key={experience.id}>
+                                <div className={styles.designerTimelineMeta}>
+                                    <div className={styles.designerTimelineDate}>
+                                        {formatPeriod(experience.start, experience.end, 'Thời gian')}
+                                    </div>
+                                    <div className={styles.designerTimelineCompany}>
+                                        {trimValue(experience.company) || 'Tên công ty'}
+                                    </div>
+                                </div>
+
+                                <div className={styles.designerExperienceContent}>
+                                    <div className={styles.designerExperienceTitle}>
+                                        {trimValue(experience.position) || 'Vị trí công việc'}
+                                    </div>
+                                    {experience.bullets.length > 0 ? (
+                                        <ul className={styles.designerExperienceBullets}>
+                                            {experience.bullets.map((bullet, index) => (
+                                                <li key={`${experience.id}-designer-${index}`}>{bullet}</li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <p className={styles.designerPlaceholder}>
+                                            Thêm mô tả công việc hoặc thành tích để hiển thị như mẫu.
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <p className={styles.designerPlaceholder}>
+                            Thêm kinh nghiệm làm việc để phần timeline hiển thị giống mẫu.
+                        </p>
+                    )}
+                </div>
+
+                <div className={styles.designerFooterGrid} style={designerFooterGridStyle}>
+                    {designerFooterSections.map((section) => (
+                        <div className={styles.designerFooterColumn} key={section.key}>
+                            <div className={styles.designerFooterHeader}>{section.title}</div>
+                            <div className={styles.designerFooterBody}>{section.content}</div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </article>
+    );
+}
+
+function CVTemplatePreview({ cvData, avatar, compact = false, articleRef = null }) {
+    const template = getCvTemplate(cvData?.templateId);
+
+    if (template.previewVariant === 'reference') {
+        return <CVPreview cvData={cvData} avatar={avatar} compact={compact} articleRef={articleRef} />;
+    }
+
+    if (template.previewVariant === 'designer') {
+        return <CVPreviewDesigner cvData={cvData} avatar={avatar} compact={compact} articleRef={articleRef} />;
+    }
+
+    return <CVPreviewDynamic cvData={cvData} avatar={avatar} compact={compact} articleRef={articleRef} />;
+}
+
 function CVBuilder() {
     const { api, user } = useContext(AuthContext);
     const [cvData, setCvData] = useState(createEmptyCV);
@@ -1545,6 +2250,7 @@ function CVBuilder() {
     const [isDeletingResume, setIsDeletingResume] = useState(false);
     const [isLoadingResumes, setIsLoadingResumes] = useState(false);
     const avatarInputRef = useRef(null);
+    const previewArticleRef = useRef(null);
 
     useEffect(() => {
         const fetchResumes = async () => {
@@ -1570,7 +2276,19 @@ function CVBuilder() {
         fetchResumes();
     }, [api, user]);
 
-    const updateRootField = (field, value) => setCvData((prev) => ({ ...prev, [field]: value }));
+    const updateRootField = (field, value) =>
+        setCvData((prev) => {
+            const nextData = { ...prev, [field]: value };
+
+            if (field === 'desiredLevel' || field === 'desiredPosition') {
+                return {
+                    ...nextData,
+                    headline: buildDesiredRoleHeadline(nextData),
+                };
+            }
+
+            return nextData;
+        });
 
     const updateNestedField = (section, field, value) =>
         setCvData((prev) => ({
@@ -1606,6 +2324,40 @@ function CVBuilder() {
             return {
                 ...prev,
                 [field]: nextItems.length ? nextItems : [''],
+            };
+        });
+
+    const updateMetaItemField = (field, id, key, value) =>
+        setCvData((prev) => ({
+            ...prev,
+            [field]: prev[field].map((item) => (item.id === id ? { ...item, [key]: value } : item)),
+        }));
+
+    const addMetaItem = (field, maxItems) =>
+        setCvData((prev) => {
+            if (prev[field].length >= maxItems) {
+                return prev;
+            }
+
+            return {
+                ...prev,
+                [field]: [...prev[field], createEmptyMetaItem()],
+            };
+        });
+
+    const clearMetaSection = (field) =>
+        setCvData((prev) => ({
+            ...prev,
+            [field]: [],
+        }));
+
+    const removeMetaItem = (field, id) =>
+        setCvData((prev) => {
+            const nextItems = prev[field].filter((item) => item.id !== id);
+
+            return {
+                ...prev,
+                [field]: nextItems,
             };
         });
 
@@ -1727,7 +2479,7 @@ function CVBuilder() {
         setIsExporting(true);
 
         try {
-            await exportCvToPdf(cvData, avatar);
+            await exportCvToPdf(cvData, avatar, previewArticleRef.current);
         } catch (error) {
             console.error('Lỗi khi xuất PDF:', error);
             window.alert('Không thể tạo file PDF. Vui lòng thử lại.');
@@ -1759,9 +2511,13 @@ function CVBuilder() {
 
             const payload = {
                 title: buildResumeTitle(cvData),
-                template_type: CV_TEMPLATE_TYPE,
+                template_type: getCvTemplate(cvData.templateId).id,
                 cv_data: {
                     ...cvData,
+                    templateId: getCvTemplate(cvData.templateId).id,
+                    desiredLevel: trimValue(cvData.desiredLevel),
+                    desiredPosition: trimValue(cvData.desiredPosition),
+                    headline: buildDesiredRoleHeadline(cvData),
                     cvTitle: buildResumeTitle(cvData),
                 },
                 avatar_data: avatarData,
@@ -1815,6 +2571,7 @@ function CVBuilder() {
         }
     };
 
+    const selectedTemplate = getCvTemplate(cvData.templateId);
     const selectedTheme = getCvTheme(cvData.themeId);
 
     return (
@@ -1849,13 +2606,17 @@ function CVBuilder() {
                             >
                                 <div className={styles.resumePreviewCanvas}>
                                     <div className={styles.resumePreviewScale}>
-                                        <CVPreviewDynamic cvData={resume.cv_data} avatar={resume.avatar_data} compact />
+                                        <CVTemplatePreview cvData={resume.cv_data} avatar={resume.avatar_data} compact />
                                     </div>
                                 </div>
 
                                 <div className={styles.resumeMeta}>
                                     <h3>{resume.title}</h3>
-                                    <p>Cập nhật {formatDisplayDate(resume.updated_at)}</p>
+                                    <p>
+                                        {getCvTemplate(resume.cv_data?.templateId || resume.template_type).label}
+                                        {' • '}
+                                        Cập nhật {formatDisplayDate(resume.updated_at)}
+                                    </p>
                                     {selectedResumeId === resume.id && (
                                         <span className={styles.resumeBadge}>Đang chỉnh sửa</span>
                                     )}
@@ -1877,10 +2638,10 @@ function CVBuilder() {
                     <div className={styles.editorHeader}>
                         <div>
                             <p className={styles.kicker}>Trình tạo CV</p>
-                            <h1>Mẫu CV cố định theo form OCR</h1>
+                            <h1>Bộ mẫu CV theo form OCR</h1>
                             <p className={styles.editorHint}>
-                                Nhập dữ liệu ở bên trái, phần preview bên phải sẽ luôn bám một layout A4 cố định giống
-                                mẫu bạn gửi.
+                                Nhập dữ liệu ở bên trái, sau đó chọn template để preview bên phải đổi đúng layout A4
+                                mà người dùng muốn dùng.
                             </p>
                         </div>
 
@@ -1948,12 +2709,22 @@ function CVBuilder() {
                             </div>
 
                             <div className={styles.formGroup}>
+                                <label>Trình độ</label>
+                                <input
+                                    maxLength={32}
+                                    value={cvData.desiredLevel}
+                                    placeholder="Intern, Fresher, Junior..."
+                                    onChange={(event) => updateRootField('desiredLevel', event.target.value)}
+                                />
+                            </div>
+
+                            <div className={styles.formGroup}>
                                 <label>Vị trí ứng tuyển</label>
                                 <input
                                     maxLength={70}
-                                    value={cvData.headline}
-                                    placeholder="Lập trình viên Frontend Fresher"
-                                    onChange={(event) => updateRootField('headline', event.target.value)}
+                                    value={cvData.desiredPosition}
+                                    placeholder="Frontend Developer"
+                                    onChange={(event) => updateRootField('desiredPosition', event.target.value)}
                                 />
                             </div>
 
@@ -1990,76 +2761,6 @@ function CVBuilder() {
                                     onChange={(event) => updateRootField('objective', event.target.value)}
                                 />
                             </div>
-                        </div>
-
-                        <div className={styles.editorCard}>
-                            <h2>Màu CV</h2>
-                            <p className={styles.editorSubtle}>
-                                Chọn nhanh tone màu để CV nhìn đa dạng hơn mà vẫn giữ nguyên bố cục.
-                            </p>
-
-                            <div className={styles.themeGrid}>
-                                {CV_THEMES.map((theme) => {
-                                    const isActive = cvData.themeId === theme.id;
-
-                                    return (
-                                        <button
-                                            className={`${styles.themeOption} ${
-                                                isActive ? styles.themeOptionActive : ''
-                                            }`}
-                                            type="button"
-                                            key={theme.id}
-                                            onClick={() => updateRootField('themeId', theme.id)}
-                                            style={{
-                                                '--theme-strong': theme.colors.section,
-                                                '--theme-soft': hexToRgbaString(theme.colors.section, 0.08),
-                                                '--theme-outline': hexToRgbaString(theme.colors.section, 0.28),
-                                            }}
-                                        >
-                                            <span className={styles.themeSwatches}>
-                                                {theme.swatches.map((swatch) => (
-                                                    <span
-                                                        className={styles.themeSwatch}
-                                                        key={`${theme.id}-${swatch}`}
-                                                        style={{ background: swatch }}
-                                                    />
-                                                ))}
-                                            </span>
-                                            <span className={styles.themeInfo}>
-                                                <strong>{theme.label}</strong>
-                                                <small>{theme.description}</small>
-                                            </span>
-                                        </button>
-                                    );
-                                })}
-                            </div>
-
-                            <div className={styles.themeSummary}>
-                                Màu đang chọn: <strong>{selectedTheme.label}</strong>
-                            </div>
-                        </div>
-
-                        <div className={styles.editorCard}>
-                            <h2>Thông tin liên hệ</h2>
-
-                            {CONTACT_FIELDS.map((field) => (
-                                <div className={styles.formGroup} key={field.key}>
-                                    <label>{field.label}</label>
-                                    <div className={styles.inputWithIcon}>
-                                        <span className={styles.inputIcon}>
-                                            <field.Icon />
-                                        </span>
-                                        <input
-                                            maxLength={80}
-                                            value={cvData.contacts[field.key]}
-                                            placeholder={field.placeholder}
-                                            onChange={(event) =>
-                                                updateNestedField('contacts', field.key, event.target.value)
-                                            }
-                                        />
-                                    </div>
-                                </div>
-                            ))}
                         </div>
 
                         <div className={styles.editorCard}>
@@ -2129,6 +2830,286 @@ function CVBuilder() {
                                     onChange={(event) => updateNestedField('education', 'thesis', event.target.value)}
                                 />
                             </div>
+                        </div>
+
+                        <div className={styles.editorCard}>
+                            <div className={styles.cardTitleRow}>
+                                <h2>Danh hiệu và giải thưởng</h2>
+                                <div className={styles.cardActions}>
+                                    {cvData.awards.length > 0 ? (
+                                        <button
+                                            className={styles.removeButton}
+                                            type="button"
+                                            onClick={() => clearMetaSection('awards')}
+                                        >
+                                            Xóa mục
+                                        </button>
+                                    ) : null}
+                                    <button
+                                        className={styles.inlineButton}
+                                        type="button"
+                                        onClick={() => addMetaItem('awards', MAX_AWARDS)}
+                                        disabled={cvData.awards.length >= MAX_AWARDS}
+                                    >
+                                        + Thêm
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className={styles.projectEditorList}>
+                                {cvData.awards.length === 0 ? (
+                                    <p className={styles.editorSubtle}>
+                                        Mục này đang ẩn khỏi CV. Bấm `+ Thêm` để hiện lại.
+                                    </p>
+                                ) : null}
+                                {cvData.awards.map((item) => (
+                                    <div className={styles.projectEditorCard} key={item.id}>
+                                        <div className={styles.projectEditorHeader}>
+                                            <h3>{trimValue(item.title) || 'Giải thưởng mới'}</h3>
+                                            <button
+                                                className={styles.removeButton}
+                                                type="button"
+                                                onClick={() => removeMetaItem('awards', item.id)}
+                                            >
+                                                Xóa
+                                            </button>
+                                        </div>
+
+                                        <div className={styles.projectGrid}>
+                                            <div className={styles.formGroup}>
+                                                <label>Thời gian</label>
+                                                <input
+                                                    maxLength={24}
+                                                    value={item.date}
+                                                    placeholder="12/2023"
+                                                    onChange={(event) =>
+                                                        updateMetaItemField('awards', item.id, 'date', event.target.value)
+                                                    }
+                                                />
+                                            </div>
+
+                                            <div className={styles.formGroup}>
+                                                <label>Tên giải thưởng</label>
+                                                <input
+                                                    maxLength={140}
+                                                    value={item.title}
+                                                    placeholder="Sinh viên 5 tốt / Học bổng / Giải cuộc thi..."
+                                                    onChange={(event) =>
+                                                        updateMetaItemField('awards', item.id, 'title', event.target.value)
+                                                    }
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className={styles.editorCard}>
+                            <div className={styles.cardTitleRow}>
+                                <h2>Chứng chỉ</h2>
+                                <div className={styles.cardActions}>
+                                    {cvData.certifications.length > 0 ? (
+                                        <button
+                                            className={styles.removeButton}
+                                            type="button"
+                                            onClick={() => clearMetaSection('certifications')}
+                                        >
+                                            Xóa mục
+                                        </button>
+                                    ) : null}
+                                    <button
+                                        className={styles.inlineButton}
+                                        type="button"
+                                        onClick={() => addMetaItem('certifications', MAX_CERTIFICATIONS)}
+                                        disabled={cvData.certifications.length >= MAX_CERTIFICATIONS}
+                                    >
+                                        + Thêm
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className={styles.projectEditorList}>
+                                {cvData.certifications.length === 0 ? (
+                                    <p className={styles.editorSubtle}>
+                                        Mục này đang ẩn khỏi CV. Bấm `+ Thêm` để hiện lại.
+                                    </p>
+                                ) : null}
+                                {cvData.certifications.map((item) => (
+                                    <div className={styles.projectEditorCard} key={item.id}>
+                                        <div className={styles.projectEditorHeader}>
+                                            <h3>{trimValue(item.title) || 'Chứng chỉ mới'}</h3>
+                                            <button
+                                                className={styles.removeButton}
+                                                type="button"
+                                                onClick={() => removeMetaItem('certifications', item.id)}
+                                            >
+                                                Xóa
+                                            </button>
+                                        </div>
+
+                                        <div className={styles.projectGrid}>
+                                            <div className={styles.formGroup}>
+                                                <label>Thời gian</label>
+                                                <input
+                                                    maxLength={24}
+                                                    value={item.date}
+                                                    placeholder="06/2024"
+                                                    onChange={(event) =>
+                                                        updateMetaItemField(
+                                                            'certifications',
+                                                            item.id,
+                                                            'date',
+                                                            event.target.value,
+                                                        )
+                                                    }
+                                                />
+                                            </div>
+
+                                            <div className={styles.formGroup}>
+                                                <label>Tên chứng chỉ</label>
+                                                <input
+                                                    maxLength={140}
+                                                    value={item.title}
+                                                    placeholder="Google UX Design / TOEIC / AWS..."
+                                                    onChange={(event) =>
+                                                        updateMetaItemField(
+                                                            'certifications',
+                                                            item.id,
+                                                            'title',
+                                                            event.target.value,
+                                                        )
+                                                    }
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className={styles.editorCard}>
+                            <h2>Mẫu CV</h2>
+                            <p className={styles.editorSubtle}>
+                                Chọn template trước. Mỗi mẫu giữ cùng dữ liệu nhưng có cách trình bày riêng để người
+                                dùng lựa chọn.
+                            </p>
+
+                            <div className={styles.templateGrid}>
+                                {CV_TEMPLATES.map((template) => {
+                                    const isActive = cvData.templateId === template.id;
+
+                                    return (
+                                        <button
+                                            className={`${styles.templateOption} ${
+                                                isActive ? styles.templateOptionActive : ''
+                                            }`}
+                                            type="button"
+                                            key={template.id}
+                                            onClick={() => updateRootField('templateId', template.id)}
+                                        >
+                                            <span className={styles.templateOptionTop}>
+                                                <strong>{template.label}</strong>
+                                                <span className={styles.templatePreviewChip}>
+                                                    {template.previewLabel}
+                                                </span>
+                                            </span>
+                                            <small>{template.description}</small>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
+                            <div className={styles.themeSummary}>
+                                Mẫu đang chọn: <strong>{selectedTemplate.label}</strong>
+                            </div>
+                        </div>
+
+                        <div className={styles.editorCard}>
+                            <h2>Màu CV</h2>
+                            {selectedTemplate.themeMode === 'locked' ? (
+                                <>
+                                    <p className={styles.editorSubtle}>
+                                        Template này khóa sẵn palette để bám đúng form gốc, nên không cho đổi màu thủ công.
+                                    </p>
+                                    <div className={styles.templateLockNotice}>
+                                        Màu đang dùng: <strong>{selectedTemplate.lockedThemeName || 'Fixed palette'}</strong>.
+                                        Nếu muốn đổi màu, hãy chuyển sang mẫu JobConnect linh hoạt.
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <p className={styles.editorSubtle}>
+                                        Chọn nhanh tone màu để CV nhìn đa dạng hơn mà vẫn giữ nguyên bố cục.
+                                    </p>
+
+                                    <div className={styles.themeGrid}>
+                                        {CV_THEMES.map((theme) => {
+                                            const isActive = cvData.themeId === theme.id;
+
+                                            return (
+                                                <button
+                                                    className={`${styles.themeOption} ${
+                                                        isActive ? styles.themeOptionActive : ''
+                                                    }`}
+                                                    type="button"
+                                                    key={theme.id}
+                                                    onClick={() => updateRootField('themeId', theme.id)}
+                                                    style={{
+                                                        '--theme-strong': theme.colors.section,
+                                                        '--theme-soft': hexToRgbaString(theme.colors.section, 0.08),
+                                                        '--theme-outline': hexToRgbaString(
+                                                            theme.colors.section,
+                                                            0.28,
+                                                        ),
+                                                    }}
+                                                >
+                                                    <span className={styles.themeSwatches}>
+                                                        {theme.swatches.map((swatch) => (
+                                                            <span
+                                                                className={styles.themeSwatch}
+                                                                key={`${theme.id}-${swatch}`}
+                                                                style={{ background: swatch }}
+                                                            />
+                                                        ))}
+                                                    </span>
+                                                    <span className={styles.themeInfo}>
+                                                        <strong>{theme.label}</strong>
+                                                        <small>{theme.description}</small>
+                                                    </span>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+
+                                    <div className={styles.themeSummary}>
+                                        Màu đang chọn: <strong>{selectedTheme.label}</strong>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+
+                        <div className={styles.editorCard}>
+                            <h2>Thông tin liên hệ</h2>
+
+                            {CONTACT_FIELDS.map((field) => (
+                                <div className={styles.formGroup} key={field.key}>
+                                    <label>{field.label}</label>
+                                    <div className={styles.inputWithIcon}>
+                                        <span className={styles.inputIcon}>
+                                            <field.Icon />
+                                        </span>
+                                        <input
+                                            maxLength={80}
+                                            value={cvData.contacts[field.key]}
+                                            placeholder={field.placeholder}
+                                            onChange={(event) =>
+                                                updateNestedField('contacts', field.key, event.target.value)
+                                            }
+                                        />
+                                    </div>
+                                </div>
+                            ))}
                         </div>
 
                         <div className={styles.editorCard}>
@@ -2326,7 +3307,7 @@ function CVBuilder() {
 
                 <section className={styles.previewPanel}>
                     <div className={styles.previewStage}>
-                        <CVPreviewDynamic cvData={cvData} avatar={avatar} />
+                        <CVTemplatePreview cvData={cvData} avatar={avatar} articleRef={previewArticleRef} />
                     </div>
                 </section>
             </div>

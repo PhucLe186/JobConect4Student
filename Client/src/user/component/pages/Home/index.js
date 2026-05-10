@@ -43,7 +43,7 @@ const Homepage = () => {
         }
 
         if (type === 'internship') {
-            return language === 'vi' ? 'Thuc tap' : 'Internship';
+            return language === 'vi' ? 'Thực tập' : 'Internship';
         }
 
         return 'Full-time';
@@ -144,7 +144,7 @@ const Homepage = () => {
                                     onChange={(e) => updateSalary(e.target.value)}
                                 />
                                 <div className={cx('salary-display')}>
-                                    0 - {salaryValue} {language === 'vi' ? 'trieu VND' : 'million VND'}
+                                    0 - {salaryValue} {language === 'vi' ? 'triệu VND' : 'million VND'}
                                 </div>
                             </div>
                         </div>
@@ -204,7 +204,7 @@ const Homepage = () => {
                 <div className={cx('container')}>
                     <div className={cx('jobs-summary')}>
                         {language === 'vi'
-                            ? `${totalJob} c?ng vi?c ?ang hi?n th?`
+                            ? `${totalJob} công việc đang hiển thị`
                             : `${totalJob} jobs currently available`}
                     </div>
 
@@ -261,7 +261,7 @@ const Homepage = () => {
                                     <div className={cx('job-meta-item')}>
                                         <i className="fas fa-calendar-days"></i>
                                         <span>
-                                            {language === 'vi' ? 'Han nop' : 'Deadline'}: {job.deadlineLabel}
+                                            {language === 'vi' ? 'Hạn nộp' : 'Deadline'}: {job.deadlineLabel}
                                         </span>
                                     </div>
                                 </div>

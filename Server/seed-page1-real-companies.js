@@ -16,12 +16,12 @@ const REAL_COMPANIES = [
   {
     company_name: 'Google Vietnam',
     login_email: 'google.vietnam@company.jobconnect4students.local',
-    industry: 'Cong nghe thong tin va nen tang so',
+    industry: 'Công nghệ thông tin và nền tảng số',
     size: 1100,
     address: '76 Lê Lợi, Quận 1, TP.HCM',
     website: 'https://careers.google.com',
     description:
-      'Doanh nghiep cong nghe quoc te phat trien he sinh thai tim kiem, cloud, du lieu va AI tai thi truong Viet Nam.',
+      'Doanh nghiệp công nghệ quốc tế phát triển hệ sinh thái tìm kiếm, cloud, dữ liệu và AI tại thị trường Việt Nam.',
     job: {
       title: 'Frontend Engineer',
       department: 'Engineering',
@@ -34,55 +34,55 @@ const REAL_COMPANIES = [
       requirements:
         'React, TypeScript, REST API, HTML, CSS, UI performance, teamwork.',
       description:
-        'Phat trien giao dien san pham va dashboard noi bo cho cac nen tang so dang tang truong.',
+        'Phát triển giao diện sản phẩm và dashboard nội bộ cho các nền tảng số đang tăng trưởng.',
     },
   },
   {
     company_name: 'Grab Vietnam',
     login_email: 'grab.vietnam@company.jobconnect4students.local',
-    industry: 'Cong nghe va van tai so',
+    industry: 'Công nghệ và vận tải số',
     size: 900,
     address: '27 Lê Duẩn, Quận 1, TP.HCM',
     website: 'https://www.grab.com/vn',
     description:
-      'He sinh thai goi xe, giao nhan va fintech voi doi ngu van hanh va san pham lon tai Viet Nam.',
+      'Hệ sinh thái gọi xe, giao nhận và fintech với đội ngũ vận hành và sản phẩm lớn tại Việt Nam.',
     job: {
       title: 'Backend Engineer',
       department: 'Engineering',
       job_type: 'full-time',
-      experience: '2 nam',
-      level: 'Nhan vien',
+      experience: '2 năm',
+      level: 'Nhân viên',
       min_salary: '24000000',
       max_salary: '38000000',
-      location: 'Quan 1, TP.HCM',
+      location: 'Quận 1, TP.HCM',
       requirements:
         'Node.js, SQL, Redis, API design, microservices, cloud deployment.',
       description:
-        'Xay dung API va service backend ho tro nen tang giao van va van hanh so.',
+        'Xây dựng API và service backend hỗ trợ nền tảng giao vận và vận hành số.',
     },
   },
   {
     company_name: 'LG Electronics Vietnam',
     login_email: 'lg.electronics.vietnam@company.jobconnect4students.local',
-    industry: 'Dien tu va thiet bi gia dung',
+    industry: 'Điện tử và thiết bị gia dụng',
     size: 1500,
-    address: '18 Le Hong Phong, Ngo Quyen, Hai Phong',
+    address: '18 Lê Hồng Phong, Ngô Quyền, Hải Phòng',
     website: 'https://www.lg.com/vn',
     description:
-      'Phat trien thiet bi thong minh, giai phap dien tu va he thong quan ly san xuat quy mo lon.',
+      'Phát triển thiết bị thông minh, giải pháp điện tử và hệ thống quản lý sản xuất quy mô lớn.',
     job: {
       title: 'Product Designer',
       department: 'Design',
       job_type: 'full-time',
-      experience: '1 nam',
-      level: 'Nhan vien',
+      experience: '1 năm',
+      level: 'Nhân viên',
       min_salary: '18000000',
       max_salary: '30000000',
-      location: 'Hai Phong',
+      location: 'Hải Phòng',
       requirements:
         'Figma, UX research, design system, prototype, product collaboration.',
       description:
-        'Thiet ke luong nguoi dung va prototype cho ung dung dieu phoi san xuat va thiet bi thong minh.',
+        'Thiết kế luồng người dùng và prototype cho ứng dụng điều phối sản xuất và thiết bị thông minh.',
     },
   },
   {
