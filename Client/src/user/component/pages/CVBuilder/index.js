@@ -13,6 +13,8 @@ const MAX_AWARDS = 4;
 const MAX_CERTIFICATIONS = 4;
 const DESIGNER_MAX_EXPERIENCES = 4;
 const DESIGNER_MAX_BULLETS = 3;
+const DESIGNER_MAX_SKILLS = 6;
+const DESIGNER_MAX_INTERESTS = 4;
 const PAGE_WIDTH = 210;
 const PAGE_HEIGHT = 297;
 const LEFT_COLUMN_WIDTH = 63;
@@ -315,9 +317,9 @@ const CV_TEMPLATES = [
     {
         id: DESIGNER_TEMPLATE_ID,
         label: 'TopCV header ngang',
-        description: 'Giống mẫu ảnh mới: header ngang, ảnh bên phải và 3 cột thông tin ở cuối.',
+        description: 'Header ngang, ảnh bên phải, cụm thông tin cuối trang và vẫn cho đổi màu.',
         previewLabel: 'Theo ảnh mới',
-        themeMode: 'locked',
+        themeMode: 'custom',
         previewVariant: 'designer',
         pdfVariant: 'designer',
         lockedTheme: DESIGNER_THEME,
@@ -480,6 +482,23 @@ const buildEducationHighlights = (education = {}) => {
     return highlights;
 };
 
+const normalizeTextListField = (value) => {
+    if (Array.isArray(value)) {
+        const normalizedItems = value.map(trimValue).filter(Boolean);
+        return normalizedItems.length ? normalizedItems : [''];
+    }
+
+    if (typeof value === 'string') {
+        const normalizedItems = value
+            .split(/\r?\n|[;,]/)
+            .map(trimValue)
+            .filter(Boolean);
+        return normalizedItems.length ? normalizedItems : [''];
+    }
+
+    return [''];
+};
+
 const createEmptyExperience = () => ({
     id: Date.now() + Math.random(),
     position: '',
@@ -531,6 +550,10 @@ const normalizeCvData = (rawData = {}) => {
     const legacyHeadline = splitLegacyHeadline(rawData.headline);
     const desiredLevel = trimValue(rawData.desiredLevel || legacyHeadline.level);
     const desiredPosition = trimValue(rawData.desiredPosition || legacyHeadline.position);
+    const rawContacts =
+        rawData.contacts && typeof rawData.contacts === 'object' && !Array.isArray(rawData.contacts)
+            ? rawData.contacts
+            : {};
     const normalizedTemplateId =
         rawData.templateId === REFERENCE_TEMPLATE_ID
             ? DESIGNER_TEMPLATE_ID
@@ -560,10 +583,16 @@ const normalizeCvData = (rawData = {}) => {
             }) || trimValue(rawData.headline || ''),
         contacts: {
             ...emptyCV.contacts,
-            ...(rawData.contacts || {}),
+            phone: trimValue(rawContacts.phone ?? rawData.phone),
+            birth: trimValue(rawContacts.birth ?? rawData.birth ?? rawData.dateOfBirth ?? rawData.dateOfbirth),
+            email: trimValue(rawContacts.email ?? rawData.email),
+            website: trimValue(rawContacts.website ?? rawData.website ?? rawData.linkedin ?? rawData.portfolio),
+            address: trimValue(rawContacts.address ?? rawData.address),
         },
-        skills: Array.isArray(rawData.skills) && rawData.skills.length ? rawData.skills : [''],
-        interests: Array.isArray(rawData.interests) && rawData.interests.length ? rawData.interests : [''],
+        skills: normalizeTextListField(rawData.skills ?? rawData.skill),
+        interests: normalizeTextListField(
+            rawData.interests ?? rawData.hobbies ?? rawData.hobby ?? rawData.interest,
+        ),
         awards: rawAwards.slice(0, MAX_AWARDS).map((item) => ({
             ...createEmptyMetaItem(),
             ...item,
@@ -626,16 +655,22 @@ const getVisibleMetaItems = (items = [], maxItems = MAX_AWARDS) =>
         .slice(0, maxItems);
 
 const getDesignerVisibleContacts = (contacts = {}) => {
-    const preferredKeys = ['phone', 'email', 'website', 'address', 'birth'];
-
-    return preferredKeys
+    return CONTACT_FIELDS.map(({ key }) => key)
         .map((key) => ({
             key,
             value: trimValue(contacts[key]),
         }))
         .filter((item) => item.value)
-        .slice(0, 4);
+        .slice(0, CONTACT_FIELDS.length);
 };
+
+const DESIGNER_PLACEHOLDER_CONTACTS = [
+    { key: 'phone', value: '0123456789' },
+    { key: 'birth', value: '31/12/2003' },
+    { key: 'email', value: 'ban@example.com' },
+    { key: 'website', value: 'linkedin.com/in/ban' },
+    { key: 'address', value: 'Quận 7, Hồ Chí Minh' },
+];
 
 const normalizeResumeRecord = (resume) => {
     const cvData = normalizeCvData({
@@ -2022,7 +2057,12 @@ function CVPreviewDynamic({ cvData, avatar, compact = false, articleRef = null }
 }
 
 function CVPreviewDesigner({ cvData, avatar, compact = false, articleRef = null }) {
+    const theme = getEffectiveTheme(cvData);
+    const desiredRoleItems = getDesiredRolePreviewItems(cvData);
+    const designerRoleText = desiredRoleItems.map((item) => item.text).join(' ').trim();
     const visibleContacts = getDesignerVisibleContacts(cvData.contacts);
+    const visibleSkills = cvData.skills.map(trimValue).filter(Boolean).slice(0, DESIGNER_MAX_SKILLS);
+    const visibleInterests = cvData.interests.map(trimValue).filter(Boolean).slice(0, DESIGNER_MAX_INTERESTS);
     const visibleExperiences = cvData.experiences
         .map((experience) => ({
             ...experience,
@@ -2044,6 +2084,7 @@ function CVPreviewDesigner({ cvData, avatar, compact = false, articleRef = null 
     const hasEducation = hasEducationData(cvData.education);
     const hasAwardsSection = Array.isArray(cvData.awards) && cvData.awards.length > 0;
     const hasCertificationsSection = Array.isArray(cvData.certifications) && cvData.certifications.length > 0;
+    const designerContacts = visibleContacts.length > 0 ? visibleContacts : DESIGNER_PLACEHOLDER_CONTACTS;
     const designerFooterSections = [
         {
             key: 'education',
@@ -2058,7 +2099,13 @@ function CVPreviewDesigner({ cvData, avatar, compact = false, articleRef = null 
                     ) : null}
                     {educationPeriod ? <div className={styles.designerFooterDate}>{educationPeriod}</div> : null}
                     {educationHighlights.length > 0 ? (
-                        <div className={styles.designerFooterNotes}>{educationHighlights.join(' • ')}</div>
+                        <div className={styles.designerFooterNotes}>
+                            {educationHighlights.map((item, index) => (
+                                <div className={styles.designerFooterNote} key={`designer-education-note-${index}`}>
+                                    {item}
+                                </div>
+                            ))}
+                        </div>
                     ) : null}
                 </div>
             ) : (
@@ -2109,50 +2156,63 @@ function CVPreviewDesigner({ cvData, avatar, compact = false, articleRef = null 
         });
     }
 
+    if (visibleSkills.length > 0) {
+        designerFooterSections.push({
+            key: 'skills',
+            title: 'Kỹ năng',
+            content: (
+                <ul className={styles.designerFooterList}>
+                    {visibleSkills.map((skill, index) => (
+                        <li key={`designer-skill-${index}`}>{skill}</li>
+                    ))}
+                </ul>
+            ),
+        });
+    }
+
+    if (visibleInterests.length > 0) {
+        designerFooterSections.push({
+            key: 'interests',
+            title: 'Sở thích',
+            content: (
+                <ul className={styles.designerFooterList}>
+                    {visibleInterests.map((interest, index) => (
+                        <li key={`designer-interest-${index}`}>{interest}</li>
+                    ))}
+                </ul>
+            ),
+        });
+    }
+
+    const designerContactGridStyle = {
+        gridTemplateColumns: `repeat(${Math.min(designerContacts.length, CONTACT_FIELDS.length)}, minmax(0, 1fr))`,
+    };
+
     const designerFooterGridStyle = {
-        gridTemplateColumns: `repeat(${designerFooterSections.length}, minmax(0, 1fr))`,
+        gridTemplateColumns: `repeat(${Math.min(designerFooterSections.length, 3)}, minmax(0, 1fr))`,
     };
 
     return (
         <article
             ref={articleRef}
             className={`${styles.cvPage} ${styles.cvPageDesigner} ${compact ? styles.cvPageCompact : ''}`}
+            style={getPreviewThemeStyle(theme)}
         >
-            <div className={styles.designerContactStrip}>
-                {visibleContacts.length > 0 ? (
-                    visibleContacts.map((item) => (
-                        <div className={styles.designerContactItem} key={item.key}>
-                            <span className={styles.designerContactDot} />
-                            <span>{item.value}</span>
-                        </div>
-                    ))
-                ) : (
-                    <>
-                        <div className={styles.designerContactItem}>
-                            <span className={styles.designerContactDot} />
-                            <span>0123456789</span>
-                        </div>
-                        <div className={styles.designerContactItem}>
-                            <span className={styles.designerContactDot} />
-                            <span>ban@example.com</span>
-                        </div>
-                        <div className={styles.designerContactItem}>
-                            <span className={styles.designerContactDot} />
-                            <span>be.net/yourprofile</span>
-                        </div>
-                        <div className={styles.designerContactItem}>
-                            <span className={styles.designerContactDot} />
-                            <span>Quận 7, Hồ Chí Minh</span>
-                        </div>
-                    </>
-                )}
+            <div className={styles.designerContactStrip} style={designerContactGridStyle}>
+                {designerContacts.map((item) => (
+                    <div className={styles.designerContactItem} key={item.key}>
+                        <span className={styles.designerContactDot} />
+                        <span>{item.value}</span>
+                    </div>
+                ))}
             </div>
 
             <div className={styles.designerHero}>
                 <div className={styles.designerHeroText}>
                     <h2>{trimValue(cvData.fullName) || 'Nguyễn Văn A'}</h2>
                     <div className={styles.designerHeroRole}>
-                        {trimValue(cvData.desiredPosition) || buildDesiredRoleHeadline(cvData) || 'Designer'}
+                        <span className={styles.designerHeroRoleText}>{designerRoleText || 'Designer'}</span>
+                        <span className={styles.designerHeroRule} />
                     </div>
                     <p className={styles.designerHeroSummary}>
                         {trimValue(cvData.objective) ||
