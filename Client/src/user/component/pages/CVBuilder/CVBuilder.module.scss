@@ -36,26 +36,6 @@
     line-height: 1.7;
 }
 
-.createButton {
-    border: none;
-    border-radius: 999px;
-    padding: 12px 22px;
-    background: #11b95c;
-    color: #fff;
-    font-size: 14px;
-    font-weight: 700;
-    font-family: inherit;
-    cursor: pointer;
-    white-space: nowrap;
-    transition:
-        transform 0.15s ease,
-        opacity 0.15s ease;
-
-    &:hover {
-        transform: translateY(-1px);
-    }
-}
-
 .resumeGrid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));

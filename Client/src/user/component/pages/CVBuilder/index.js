@@ -299,7 +299,7 @@ const DESIGNER_THEME = {
 const CV_TEMPLATES = [
     {
         id: 'jobconnect-flex',
-        label: 'JobConnect linh hoạt',
+        label: 'Mẫu 1',
         description: 'Giữ bố cục OCR hiện tại và cho phép đổi màu tự do.',
         previewLabel: 'Mẫu hiện tại',
         themeMode: 'custom',
@@ -316,7 +316,7 @@ const CV_TEMPLATES = [
     },
     {
         id: DESIGNER_TEMPLATE_ID,
-        label: 'TopCV header ngang',
+        label: 'Mẫu 2',
         description: 'Header ngang, ảnh bên phải, cụm thông tin cuối trang và vẫn cho đổi màu.',
         previewLabel: 'Theo ảnh mới',
         themeMode: 'custom',
@@ -2646,9 +2646,6 @@ function CVBuilder() {
                         </p>
                     </div>
 
-                    <button className={styles.createButton} type="button" onClick={handleCreateNewCv}>
-                        + Tạo CV
-                    </button>
                 </div>
 
                 {isLoadingResumes ? (
@@ -3094,7 +3091,7 @@ function CVBuilder() {
                                     </p>
                                     <div className={styles.templateLockNotice}>
                                         Màu đang dùng: <strong>{selectedTemplate.lockedThemeName || 'Fixed palette'}</strong>.
-                                        Nếu muốn đổi màu, hãy chuyển sang mẫu JobConnect linh hoạt.
+                                        Nếu muốn đổi màu, hãy chuyển sang Mẫu 1.
                                     </div>
                                 </>
                             ) : (
