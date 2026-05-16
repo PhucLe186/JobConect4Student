@@ -16,6 +16,8 @@ const trans__home = {
     website: 'Website',
     ph_website: 'Nhập địa chỉ website',
     saveBtn: 'Lưu thông tin',
+    manageJobsBtn: 'Quản lý tin đăng',
+    createJobBtn: 'Đăng tin mới',
     avatarAlt: 'Ảnh đại diện công ty',
     loadingText: 'Đang tải hồ sơ công ty...',
     loginRequired:
@@ -50,6 +52,8 @@ const trans__home = {
     website: 'Website',
     ph_website: 'Enter website URL',
     saveBtn: 'Save Information',
+    manageJobsBtn: 'Manage Jobs',
+    createJobBtn: 'Post New Job',
     avatarAlt: 'Company avatar',
     loadingText: 'Loading company profile...',
     loginRequired:

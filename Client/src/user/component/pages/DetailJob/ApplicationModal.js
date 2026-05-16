@@ -6,7 +6,7 @@ import classNames from 'classnames/bind';
 const cx = classNames.bind(styles);
 
 const ApplicationModal = ({ isOpen, onClose, jobData, onSubmit }) => {
-    const { api, language } = useContext(AuthContext);
+    const { api, language, user } = useContext(AuthContext);
     const [formData, setFormData] = useState({
         fullName: '',
         email: '',
@@ -15,6 +15,11 @@ const ApplicationModal = ({ isOpen, onClose, jobData, onSubmit }) => {
         cv: null
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const isEmployerAccount = user?.type === 'employer';
+    const employerApplyBlockedMessage =
+        language === 'vi'
+            ? 'T?i kho?n nh? tuy?n d?ng kh?ng th? n?p CV ?ng tuy?n. Vui l?ng d?ng t?i kho?n sinh vi?n/?ng vi?n.'
+            : 'Employer accounts cannot submit job applications. Please use a student/candidate account.';
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -28,9 +33,9 @@ const ApplicationModal = ({ isOpen, onClose, jobData, onSubmit }) => {
         const file = e.target.files[0];
         if (file) {
             // Kiểm tra định dạng file
-            const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+            const allowedTypes = ['image/png'];
             if (!allowedTypes.includes(file.type)) {
-                alert('Chỉ chấp nhận file PDF, DOC, DOCX');
+                alert('Chỉ chấp nhận file PNG');
                 return;
             }
             // Kiểm tra kích thước file (5MB)
@@ -47,6 +52,11 @@ const ApplicationModal = ({ isOpen, onClose, jobData, onSubmit }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (isEmployerAccount) {
+            alert(employerApplyBlockedMessage);
+            return;
+        }
         
         // Validate form
         if (!formData.fullName || !formData.email || !formData.phone || !formData.cv) {
@@ -161,11 +171,11 @@ const ApplicationModal = ({ isOpen, onClose, jobData, onSubmit }) => {
                                 id="cv"
                                 name="cv"
                                 onChange={handleFileChange}
-                                accept=".pdf,.doc,.docx"
+                                accept=".png"
                                 required
                             />
                             <div className={cx('fileUploadText')}>
-                                {formData.cv ? formData.cv.name : 'Chọn file CV (PDF, DOC, DOCX - tối đa 5MB)'}
+                                {formData.cv ? formData.cv.name : 'Chọn file CV (PNG - tối đa 5MB)'}
                             </div>
                         </div>
                     </div>

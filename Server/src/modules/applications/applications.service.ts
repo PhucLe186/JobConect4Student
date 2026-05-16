@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { JwtUser } from '../auth/interface/jwt-user.interface';
 import { InjectModel } from '@nestjs/mongoose';
 import { ApplyJobDocument, job_applications } from './applyjob.schema';
@@ -8,7 +8,10 @@ import { Student, StudentDocument } from '../student/student.schema';
 import { User, UserDocument } from '../auth/schema/auth.schema';
 import { Jobs, JobsDocument } from '../jobs/schema/jobs.schema';
 import { Employer, EmployerDocument } from '../employer/employer.schema';
-import { StudentSkills, StudentSkillDocument } from '../skills/schema/StudentSkill.schema';
+import {
+  StudentSkills,
+  StudentSkillDocument,
+} from '../skills/schema/StudentSkill.schema';
 import { JobSkills, JobSkillDocument } from '../skills/schema/JobSkill.schema';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
@@ -43,18 +46,26 @@ export class ApplicationsService {
   private readonly defaultAvatar =
     'https://cdn-icons-png.flaticon.com/512/149/149071.png';
 
+  private ensureStudentRole(user: JwtUser) {
+    if (user.role !== 'student') {
+      throw new ForbiddenException(
+        'Ch? t?i kho?n sinh vi?n/?ng vi?n m?i c? th? n?p CV ?ng tuy?n',
+      );
+    }
+  }
+
   // =================================================================
   // BỘ CÔNG CỤ XỬ LÝ CHUỖI VÀ TỪ ĐIỂN AI
   // =================================================================
   private readonly skillAliases: Record<string, string> = {
     'c/cd': 'ci/cd',
-    'cicd': 'ci/cd',
-    'react': 'reactjs',
-    'node': 'nodejs',
-    'vue': 'vuejs',
-    'k8s': 'kubernetes',
-    'aws': 'amazon web services',
-    'js': 'javascript',
+    cicd: 'ci/cd',
+    react: 'reactjs',
+    node: 'nodejs',
+    vue: 'vuejs',
+    k8s: 'kubernetes',
+    aws: 'amazon web services',
+    js: 'javascript',
   };
 
   private normalizeText(value = '') {
@@ -163,37 +174,56 @@ export class ApplicationsService {
     // 1. POSITION (10đ)
     const jdPos = this.normalizeText(jdCriteria.position || '');
     const formPos = this.normalizeText(formData.position || '');
-    if (jdPos && formPos && (jdPos.includes(formPos) || formPos.includes(jdPos))) scores.position = 10;
+    if (
+      jdPos &&
+      formPos &&
+      (jdPos.includes(formPos) || formPos.includes(jdPos))
+    )
+      scores.position = 10;
 
     // 2. LEVEL (20đ)
     const jdLevel = this.normalizeText(jdCriteria.level || '');
     const formLevel = this.normalizeText(formData.level || '');
-    if (jdLevel && formLevel && (jdLevel.includes(formLevel) || formLevel.includes(jdLevel))) scores.level = 20;
+    if (
+      jdLevel &&
+      formLevel &&
+      (jdLevel.includes(formLevel) || formLevel.includes(jdLevel))
+    )
+      scores.level = 20;
 
     // 3. ADDRESS (15đ)
     const jdAddress = this.normalizeText(jdCriteria.address || '');
     const formAddress = this.normalizeText(formData.address || '');
-    if (jdAddress && formAddress && (jdAddress.includes(formAddress) || formAddress.includes(jdAddress))) scores.address = 15;
+    if (
+      jdAddress &&
+      formAddress &&
+      (jdAddress.includes(formAddress) || formAddress.includes(jdAddress))
+    )
+      scores.address = 15;
 
     // 4. GPA (25đ)
     const formGpa = this.parseGpa(formData.gpa);
     const jdGpa = this.parseGpa(jdCriteria.gpa);
     if (jdGpa > 0) {
-      scores.gpa = formGpa >= jdGpa ? 25 : Math.round((formGpa / jdGpa) * 25 * 100) / 100;
+      scores.gpa =
+        formGpa >= jdGpa ? 25 : Math.round((formGpa / jdGpa) * 25 * 100) / 100;
     } else {
       scores.gpa = 25; // JD không yêu cầu GPA thì auto cho full điểm
     }
 
     // 5. SKILL (30đ) - Chấm điểm Regex & Fuzzy
     const jdReqText = this.normalizeText(jdCriteria.skills || ''); // Lấy chuỗi requirements
-    const formSkillText = this.normalizeText(formData.skill || ''); 
-    
+    const formSkillText = this.normalizeText(formData.skill || '');
+
     if (jdReqText && formSkillText) {
       // Tách các kỹ năng ứng viên nhập thành mảng
-      const applicantSkills = formSkillText.split(/[,;\-|]/).map(s => s.trim()).filter(s => s.length > 1);
+      const applicantSkills = formSkillText
+        .split(/[,;\-|]/)
+        .map((s) => s.trim())
+        .filter((s) => s.length > 1);
       let matchedSkillsCount = 0;
 
-      applicantSkills.forEach(cvSkill => {
+      applicantSkills.forEach((cvSkill) => {
         let keyword = cvSkill;
         // Kiểm tra từ điển OCR
         for (const [wrong, correct] of Object.entries(this.skillAliases)) {
@@ -201,9 +231,9 @@ export class ApplicationsService {
         }
 
         // Tìm kiếm Regex an toàn
-        const safeKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); 
+        const safeKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const regex = new RegExp(safeKeyword, 'i');
-        
+
         if (regex.test(jdReqText)) {
           matchedSkillsCount++;
         } else {
@@ -217,18 +247,25 @@ export class ApplicationsService {
       });
 
       // Quy đổi điểm: Cần 3 keyword khớp để đạt 30 điểm
-      const EXPECTED_CORE_SKILLS = 3; 
-      scores.skill = Math.min(30, Math.round((matchedSkillsCount / EXPECTED_CORE_SKILLS) * 30));
-
+      const EXPECTED_CORE_SKILLS = 3;
+      scores.skill = Math.min(
+        30,
+        Math.round((matchedSkillsCount / EXPECTED_CORE_SKILLS) * 30),
+      );
     } else if (!jdReqText) {
-      scores.skill = 30; 
+      scores.skill = 30;
     }
 
-    const total = scores.position + scores.level + scores.address + scores.gpa + scores.skill;
+    const total =
+      scores.position +
+      scores.level +
+      scores.address +
+      scores.gpa +
+      scores.skill;
     console.log('\n--- [NESTJS] CHI TIẾT CHẤM ĐIỂM FORM ---');
     console.log(scores);
     console.log(`=> TỔNG ĐIỂM MỚI: ${total}/100\n`);
-    
+
     return total;
   }
 
@@ -239,47 +276,64 @@ export class ApplicationsService {
     const jdCriteria = await this.getJdCriteria(jobId);
 
     const form = new FormData();
-    form.append('file', fs.createReadStream(cvFile.path), { filename: cvFile.originalname });
+    form.append('file', fs.createReadStream(cvFile.path), {
+      filename: cvFile.originalname,
+    });
     form.append('jd_criteria', JSON.stringify(jdCriteria));
 
     try {
-      const response = await lastValueFrom(
-        this.httpService.post('http://localhost:8000/api/extract-cv', form, {
-          headers: form.getHeaders(),
-        }),
-      );
-      return response.data;
+      const response = await fetch('http://localhost:8000/api/extract-cv', {
+        method: 'POST',
+        headers: form.getHeaders() as Record<string, string>,
+        body: form as unknown as BodyInit,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || `AI service returned ${response.status}`);
+      }
+
+      return response.json();
     } catch (error) {
-      console.error('AI Error:', error.message);
-      throw new BadRequestException('Hệ thống AI đang bận, không thể bóc tách tự động lúc này.');
+      const message =
+        error instanceof Error ? error.message : 'Unknown AI error';
+      console.error('AI Error:', message);
+      throw new BadRequestException(
+        'Hệ thống AI đang bận, không thể bóc tách tự động lúc này.',
+      );
     }
   }
 
   // =================================================================
   // [VÒNG 1] AUTO-SCREENING: PYTHON ĐỌC VÀ CHẤM ĐIỂM SƠ BỘ
   // =================================================================
-  async smartApplyJob(jobId: string, user: JwtUser, cvFile: Express.Multer.File) {
+  async smartApplyJob(
+    jobId: string,
+    user: JwtUser,
+    cvFile: Express.Multer.File,
+  ) {
     const { userId } = user;
-    
+    this.ensureStudentRole(user);
     await this.ensureNotApplied(jobId, userId);
 
     // 1. Gọi Python AI
     const aiResponse = await this.analyzeCVDraft(jobId, cvFile);
-    
+
     // 2. Lấy kết quả từ Python
     const rawData = aiResponse.data || {};
-    const pythonScore = aiResponse.score || 0; 
+    const pythonScore = aiResponse.score || 0;
     console.log(`[Python AI] Đã chấm điểm sơ bộ. Điểm số: ${pythonScore}/100`);
 
     // Bổ sung thông tin cá nhân
     const applicantProfile = await this.getApplicantProfile(userId);
     const finalEmail = rawData.email || applicantProfile.email;
     const finalPhone = rawData.phone || applicantProfile.phone;
-    const finalName = rawData.full_name || rawData.fullName || applicantProfile.fullName;
+    const finalName =
+      rawData.full_name || rawData.fullName || applicantProfile.fullName;
 
     // 3. RẼ NHÁNH DỰA VÀO ĐIỂM PYTHON CHẤM
     const PASS_THRESHOLD = 60; // Ngưỡng an toàn
-    
+
     if (pythonScore < PASS_THRESHOLD) {
       return {
         status: 'low_score',
@@ -291,8 +345,8 @@ export class ApplicationsService {
           ...rawData,
           email: finalEmail,
           phone: finalPhone,
-          full_name: finalName
-        }
+          full_name: finalName,
+        },
       };
     }
 
@@ -311,19 +365,25 @@ export class ApplicationsService {
       ai_extracted_data: rawData,
     });
 
-    return { 
-      status: 'success', 
+    return {
+      status: 'success',
       message: 'CV của bạn rất xuất sắc! Đã tự động ứng tuyển thành công.',
       require_form: false,
-      match_score: pythonScore 
+      match_score: pythonScore,
     };
   }
 
   // =================================================================
   // [VÒNG 2] NỘP FORM CHÍNH THỨC: NESTJS CHẤM LẠI ĐIỂM
   // =================================================================
-  async submitFinalCV(jobId: string, user: JwtUser, cvFilePath: string, formData: any) {
+  async submitFinalCV(
+    jobId: string,
+    user: JwtUser,
+    cvFilePath: string,
+    formData: any,
+  ) {
     const { userId } = user;
+    this.ensureStudentRole(user);
 
     const fullName = formData.full_name || formData.fullName;
     if (!fullName) throw new BadRequestException('Thiếu họ tên');
@@ -334,7 +394,7 @@ export class ApplicationsService {
 
     // 1. Lấy lại tiêu chí JD từ DB
     const jdCriteria = await this.getJdCriteria(jobId);
-    
+
     // 2. NESTJS tự tính toán lại điểm dựa trên Form ứng viên đã sửa
     const finalScore = this.calculateMatchScore(formData, jdCriteria);
 
@@ -359,7 +419,7 @@ export class ApplicationsService {
   // =================================================================
   // CÁC HÀM CŨ CỦA BẠN (GIỮ NGUYÊN)
   // =================================================================
-  
+
   // (Phần code bên dưới giữ nguyên các hàm applyJobs, applyWithDetails, getApplicationHistory, getEmployerCandidates)
   async applyJobs(
     jobid: string,
@@ -369,6 +429,7 @@ export class ApplicationsService {
     const { userId } = user;
     const { cvFile, coverLetter } = options || {};
 
+    this.ensureStudentRole(user);
     await this.ensureNotApplied(jobid, userId);
     const applicantProfile = await this.getApplicantProfile(userId);
 
@@ -386,8 +447,11 @@ export class ApplicationsService {
       return { status: 'Ứng tuyển thành công!' };
     }
 
-    const cv = await this.CVModel.findOne({ student_id: new Types.ObjectId(userId) });
-    if (!cv) throw new Error('Vui lòng tải CV lên hoặc tạo CV trước khi ứng tuyển');
+    const cv = await this.CVModel.findOne({
+      student_id: new Types.ObjectId(userId),
+    });
+    if (!cv)
+      throw new Error('Vui lòng tải CV lên hoặc tạo CV trước khi ứng tuyển');
 
     await this.jobApplyModel.create({
       job_id: new Types.ObjectId(jobid),
@@ -403,12 +467,19 @@ export class ApplicationsService {
   }
 
   async applyWithDetails(
-    applicationData: { jobId: string; fullName: string; email: string; phone: string; coverLetter?: string },
+    applicationData: {
+      jobId: string;
+      fullName: string;
+      email: string;
+      phone: string;
+      coverLetter?: string;
+    },
     cvFile: Express.Multer.File,
     user: JwtUser,
   ): Promise<{ status: string }> {
     const { userId } = user;
     const { jobId, fullName, email, phone, coverLetter } = applicationData;
+    this.ensureStudentRole(user);
     const applicantProfile = await this.getApplicantProfile(userId);
 
     await this.ensureNotApplied(jobId, userId);
@@ -439,7 +510,11 @@ export class ApplicationsService {
         .populate({
           path: 'job_id',
           model: 'Jobs',
-          populate: { path: 'employer_id', model: 'Employer', select: 'company_name logo' },
+          populate: {
+            path: 'employer_id',
+            model: 'Employer',
+            select: 'company_name logo',
+          },
         })
         .populate('cv_id')
         .sort({ applied_at: -1 }),
@@ -494,7 +569,11 @@ export class ApplicationsService {
     const jobMap = new Map(
       jobs.map((job) => [
         job._id.toString(),
-        { id: job._id.toString(), title: job.title || '', location: job.location || '' },
+        {
+          id: job._id.toString(),
+          title: job.title || '',
+          location: job.location || '',
+        },
       ]),
     );
 
@@ -512,7 +591,10 @@ export class ApplicationsService {
     const objectUserIds = applicantUserIds.map((id) => new Types.ObjectId(id));
 
     const [users, students] = await Promise.all([
-      this.userModel.find({ _id: { $in: objectUserIds } }).select('name email dateOfbirth gender').lean(),
+      this.userModel
+        .find({ _id: { $in: objectUserIds } })
+        .select('name email dateOfbirth gender')
+        .lean(),
       this.studentModel.find({ user_id: { $in: objectUserIds } }).lean(),
     ]);
 
@@ -526,12 +608,19 @@ export class ApplicationsService {
           .lean()
       : [];
 
-    const studentSkillMap = new Map<string, Array<{ id: string; name: string; level: number }>>();
+    const studentSkillMap = new Map<
+      string,
+      Array<{ id: string; name: string; level: number }>
+    >();
     studentSkills.forEach((ss: any) => {
       const sid = ss.student_id?.toString();
       if (!sid) return;
       const list = studentSkillMap.get(sid) || [];
-      list.push({ id: ss.skill_id?._id?.toString() || '', name: ss.skill_id?.name || '', level: ss.level || 0 });
+      list.push({
+        id: ss.skill_id?._id?.toString() || '',
+        name: ss.skill_id?.name || '',
+        level: ss.level || 0,
+      });
       studentSkillMap.set(sid, list);
     });
 
@@ -544,14 +633,28 @@ export class ApplicationsService {
       const account = userMap.get(applicantUserId);
       const student = studentMap.get(applicantUserId);
       const job = jobMap.get(application.job_id?.toString());
-      const candidateSkills = student ? studentSkillMap.get(student._id.toString()) || [] : [];
-      const { englishLabel, englishScore } = this.getEnglishMeta(candidateSkills, student?.career_goal);
+      const candidateSkills = student
+        ? studentSkillMap.get(student._id.toString()) || []
+        : [];
+      const { englishLabel, englishScore } = this.getEnglishMeta(
+        candidateSkills,
+        student?.career_goal,
+      );
       const gpa = this.parseGpa(student?.gpa);
 
       if (filterCriteria) {
-        if (filterCriteria.minGpa !== undefined && gpa < filterCriteria.minGpa) return;
-        if (filterCriteria.minMatchScore !== undefined && (application.match_score || 0) < filterCriteria.minMatchScore) return;
-        if (filterCriteria.level && this.normalizeText(student?.career_goal || '') !== this.normalizeText(filterCriteria.level)) {
+        if (filterCriteria.minGpa !== undefined && gpa < filterCriteria.minGpa)
+          return;
+        if (
+          filterCriteria.minMatchScore !== undefined &&
+          (application.match_score || 0) < filterCriteria.minMatchScore
+        )
+          return;
+        if (
+          filterCriteria.level &&
+          this.normalizeText(student?.career_goal || '') !==
+            this.normalizeText(filterCriteria.level)
+        ) {
         }
         if (filterCriteria.address) {
           const studentAddr = this.normalizeText(student?.address || '');
@@ -559,7 +662,9 @@ export class ApplicationsService {
           if (!studentAddr.includes(filterAddr)) return;
         }
         if (filterCriteria.skills && filterCriteria.skills.length > 0) {
-          const studentSkillNames = candidateSkills.map((s) => this.normalizeText(s.name));
+          const studentSkillNames = candidateSkills.map((s) =>
+            this.normalizeText(s.name),
+          );
           const hasSkill = filterCriteria.skills.some((s) =>
             studentSkillNames.includes(this.normalizeText(s)),
           );
@@ -611,8 +716,12 @@ export class ApplicationsService {
     const candidates = Array.from(candidatesByUserId.values())
       .map((c) => ({ ...c, appliedJobs: c.appliedJobs.slice(0, 5) }))
       .sort((a, b) => {
-        if (b.match_score !== a.match_score) return b.match_score - a.match_score;
-        return new Date(b.latestAppliedAt).getTime() - new Date(a.latestAppliedAt).getTime();
+        if (b.match_score !== a.match_score)
+          return b.match_score - a.match_score;
+        return (
+          new Date(b.latestAppliedAt).getTime() -
+          new Date(a.latestAppliedAt).getTime()
+        );
       });
 
     return { candidates };

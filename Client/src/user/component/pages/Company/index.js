@@ -92,7 +92,7 @@ const Company = () => {
     }, [api]);
 
     const sizeOptions = [
-        { label: t.choose_size, value: '' },
+        { label: t.choose_size || t.Choose_size, value: '' },
         { label: `1-50 ${t.employees}`, value: '1-50' },
         { label: `50-200 ${t.employees}`, value: '50-200' },
         { label: `201-1000 ${t.employees}`, value: '201-1000' },
@@ -178,7 +178,7 @@ const Company = () => {
                             </select>
                         </div>
                         <div className={cx('filter-item')}>
-                            <label>{language === 'vi' ? 'Tổng công ty' : 'Total companies'}</label>
+                            <label>{language === 'vi' ? 'Tổng số công ty' : 'Total companies'}</label>
                             <div className={cx('summary-box')}>
                                 <strong>{totalCompanies}</strong>
                                 <span>{language === 'vi' ? 'công ty đang hiển thị' : 'companies shown'}</span>

@@ -3,6 +3,7 @@ import styles from './Home.module.scss';
 import classNames from 'classnames/bind';
 import trans__home from '../../../../component/Translation/NTDProfile';
 import { AuthContext } from '~/context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const cx = classNames.bind(styles);
 
@@ -29,6 +30,7 @@ const getFormValue = (formData, field) => String(formData.get(field) || '').trim
 
 function NTDProfile({ language = 'vi' }) {
   const { api, user, language: contextLanguage } = useContext(AuthContext);
+  const navigate = useNavigate();
   const currentLanguage = contextLanguage || language;
   const t = trans__home[currentLanguage] || trans__home.vi;
   const [profileData, setProfileData] = useState(EMPTY_PROFILE);
@@ -212,6 +214,23 @@ function NTDProfile({ language = 'vi' }) {
   return (
     <form className={cx('company')} onSubmit={handleSubmit}>
       <h1 className={cx('company__title')}>{t.pageTitle}</h1>
+
+      <div className={cx('company__top-actions')}>
+        <button
+          type="button"
+          className={cx('company__btn', 'company__btn--secondary')}
+          onClick={() => navigate('/NTDJobManagement')}
+        >
+          {t.manageJobsBtn}
+        </button>
+        <button
+          type="button"
+          className={cx('company__btn', 'company__btn--primary')}
+          onClick={() => navigate('/newjob')}
+        >
+          {t.createJobBtn}
+        </button>
+      </div>
 
       {message.text && (
         <p

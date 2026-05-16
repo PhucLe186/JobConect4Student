@@ -43,7 +43,7 @@ const Homepage = () => {
         }
 
         if (type === 'internship') {
-            return language === 'vi' ? 'Thuc tap' : 'Internship';
+            return language === 'vi' ? 'Thực tập' : 'Internship';
         }
 
         return 'Full-time';
@@ -144,7 +144,7 @@ const Homepage = () => {
                                     onChange={(e) => updateSalary(e.target.value)}
                                 />
                                 <div className={cx('salary-display')}>
-                                    0 - {salaryValue} {language === 'vi' ? 'trieu VND' : 'million VND'}
+                                    0 - {salaryValue} {language === 'vi' ? 'triệu VND' : 'million VND'}
                                 </div>
                             </div>
                         </div>
@@ -204,14 +204,14 @@ const Homepage = () => {
                 <div className={cx('container')}>
                     <div className={cx('jobs-summary')}>
                         {language === 'vi'
-                            ? `${totalJob} cong viec dang hien thi`
+                            ? `${totalJob} công việc đang hiển thị`
                             : `${totalJob} jobs currently available`}
                     </div>
 
                     {filteredJobs.length === 0 && (
                         <p className={cx('empty-state')}>
                             {language === 'vi'
-                                ? 'Khong tim thay cong viec phu hop voi bo loc hien tai.'
+                                ? 'Không tìm thấy công việc phù hợp với bộ lọc hiện tại.'
                                 : 'No jobs match the current filters.'}
                         </p>
                     )}
@@ -233,7 +233,7 @@ const Homepage = () => {
                                         <div className={cx('job-title-row')}>
                                             <h3 className={cx('job-title')}>{job.title}</h3>
                                             <span className={cx('job-level-badge')}>
-                                                {job.level || (language === 'vi' ? 'Cap nhat sau' : 'Updating')}
+                                                {job.level || (language === 'vi' ? 'Cập nhật sau' : 'Updating')}
                                             </span>
                                         </div>
                                         <p className={cx('company-name')}>{job.company_name}</p>
@@ -261,7 +261,7 @@ const Homepage = () => {
                                     <div className={cx('job-meta-item')}>
                                         <i className="fas fa-calendar-days"></i>
                                         <span>
-                                            {language === 'vi' ? 'Han nop' : 'Deadline'}: {job.deadlineLabel}
+                                            {language === 'vi' ? 'Hạn nộp' : 'Deadline'}: {job.deadlineLabel}
                                         </span>
                                     </div>
                                 </div>

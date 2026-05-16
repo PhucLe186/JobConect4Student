@@ -1,55 +1,96 @@
-
 const trans__candidateManagement = {
-    vi: {
-        pageTitle: 'Quản lý ứng viên',
-        panelTitle: 'Danh sách ứng viên',
-        
-        // Filter & Search
-        searchPlaceholder: 'Tìm tên hoặc trường học...',
-        filterAllMajors: 'Tất cả chuyên ngành',
-        filterTooltip: 'Bộ lọc nâng cao',
-
-        // Card Info Labels
-        labelGraduation: 'Tốt nghiệp', 
-        labelGPA: 'GPA',
-        labelGoal: 'Mục tiêu nghề nghiệp',
-        
-        // Icon Tooltips (khi rê chuột vào icon)
-        tooltipPhone: 'Số điện thoại',
-        tooltipAddress: 'Địa chỉ',
-        tooltipSchool: 'Trường học',
-        tooltipGradYear: 'Năm tốt nghiệp',
-        tooltipGPA: 'Điểm trung bình',
-        tooltipSalary: 'Mức lương mong muốn',
-
-        // Empty state
-        noResult: 'Không tìm thấy kết quả nào.',
-    },
-    en: {
-        pageTitle: 'Candidate Management',
-        panelTitle: 'Candidate List',
-        
-        // Filter & Search
-        searchPlaceholder: 'Search by name or school...',
-        filterAllMajors: 'All Majors',
-        filterTooltip: 'Advanced Filters',
-
-        // Card Info Labels
-        labelGraduation: 'Grad', // Viết tắt Graduation
-        labelGPA: 'GPA',
-        labelGoal: 'Career Goal',
-        
-        // Icon Tooltips
-        tooltipPhone: 'Phone Number',
-        tooltipAddress: 'Address',
-        tooltipSchool: 'School',
-        tooltipGradYear: 'Graduation Year',
-        tooltipGPA: 'GPA',
-        tooltipSalary: 'Desired Salary',
-
-        // Empty state
-        noResult: 'No results found.',
-    },
+  vi: {
+    pageTitle: 'Quản lý CV ứng viên',
+    pageDescription:
+      'Nhà tuyển dụng có thể tick tiêu chí để lọc CV. Nếu chưa chọn tiêu chí nào, hệ thống sẽ tự động đưa các CV ưu tú lên trên và ưu tiên GPA cùng tiếng Anh.',
+    panelTitle: 'Danh sách CV',
+    loading: 'Đang tải danh sách ứng viên...',
+    authRequired: 'Vui lòng đăng nhập để xem danh sách ứng viên.',
+    loadError: 'Không thể tải danh sách ứng viên',
+    searchPlaceholder: 'Tìm theo tên, trường, chuyên ngành hoặc địa chỉ...',
+    filterAllMajors: 'Tất cả chuyên ngành',
+    clearCriteria: 'Bỏ tiêu chí',
+    criteriaTitle: 'Tiêu chí lọc CV',
+    criteriaDescription: 'Tick một hoặc nhiều tiêu chí để hiển thị các CV phù hợp. Bỏ trống để xem danh sách CV ưu tú.',
+    criteriaHighGpa: 'GPA từ 3.5 trở lên',
+    criteriaEnglish: 'Tiếng Anh tốt',
+    criteriaRecentGraduate: 'Tốt nghiệp từ 2024',
+    criteriaTechMajor: 'Chuyên ngành CNTT',
+    outstandingModeTitle: 'Chế độ CV ưu tú',
+    outstandingModeText: 'Chưa có tiêu chí nào được chọn, nên danh sách đang ưu tiên GPA và tiếng Anh để đẩy CV nổi bật lên trước.',
+    filteredModeTitle: 'Chế độ lọc theo tiêu chí',
+    filteredModeText: 'Danh sách chỉ hiển thị các CV đạt đủ những tiêu chí nhà tuyển dụng đã tick.',
+    selectedCriteriaLabel: 'Tiêu chí đang áp dụng',
+    resultsLabel: 'CV hiển thị',
+    labelPhone: 'Số điện thoại',
+    labelEmail: 'Email',
+    labelAddress: 'Địa chỉ',
+    labelGraduation: 'Tốt nghiệp',
+    labelGPA: 'GPA',
+    labelEnglish: 'Tiếng Anh',
+    labelSalary: 'Mức lương mong muốn',
+    labelGoal: 'Mục tiêu nghề nghiệp',
+    labelLatestJob: 'Công việc gần nhất',
+    labelApplications: 'Số lần ứng tuyển',
+    labelSkills: 'Kỹ năng',
+    scorePriority: 'Điểm ưu tiên',
+    scoreCriteria: 'Độ phù hợp',
+    badgeOutstanding: 'CV ưu tú',
+    badgePriorityGpa: 'Ưu tiên GPA',
+    badgePriorityEnglish: 'Ưu tiên tiếng Anh',
+    badgeRecentGraduate: 'Tốt nghiệp gần đây',
+    badgeTechMajor: 'Chuyên ngành phù hợp',
+    englishNotUpdated: 'Chưa cập nhật',
+    noResultOutstanding: 'Không có CV ưu tú nào phù hợp với bộ lọc hiện tại.',
+    noResultFiltered: 'Không có CV nào đạt tất cả tiêu chí đã chọn.',
+    noCandidatesInDb: 'Chưa có ứng viên nào nộp hồ sơ cho các tin tuyển dụng của bạn.',
+  },
+  en: {
+    pageTitle: 'Candidate CV Management',
+    pageDescription:
+      'Recruiters can tick criteria to filter CVs. If no criteria are selected, the system automatically shows standout CVs and prioritizes GPA plus English.',
+    panelTitle: 'CV list',
+    loading: 'Loading candidates...',
+    authRequired: 'Please sign in to view candidates.',
+    loadError: 'Could not load candidates',
+    searchPlaceholder: 'Search by name, school, major, or location...',
+    filterAllMajors: 'All majors',
+    clearCriteria: 'Clear criteria',
+    criteriaTitle: 'CV criteria',
+    criteriaDescription: 'Tick one or more criteria to show matching CVs. Leave everything unchecked to see standout CVs.',
+    criteriaHighGpa: 'GPA 3.5 and above',
+    criteriaEnglish: 'Strong English',
+    criteriaRecentGraduate: 'Graduated from 2024',
+    criteriaTechMajor: 'Tech major',
+    outstandingModeTitle: 'Standout CV mode',
+    outstandingModeText: 'No criteria are selected, so the list is prioritizing GPA and English to surface standout CVs first.',
+    filteredModeTitle: 'Criteria filter mode',
+    filteredModeText: 'The list only shows CVs that satisfy every selected criterion.',
+    selectedCriteriaLabel: 'Active criteria',
+    resultsLabel: 'CVs shown',
+    labelPhone: 'Phone',
+    labelEmail: 'Email',
+    labelAddress: 'Location',
+    labelGraduation: 'Graduation',
+    labelGPA: 'GPA',
+    labelEnglish: 'English',
+    labelSalary: 'Expected salary',
+    labelGoal: 'Career goal',
+    labelLatestJob: 'Latest job',
+    labelApplications: 'Applications',
+    labelSkills: 'Skills',
+    scorePriority: 'Priority score',
+    scoreCriteria: 'Criteria fit',
+    badgeOutstanding: 'Standout CV',
+    badgePriorityGpa: 'GPA priority',
+    badgePriorityEnglish: 'English priority',
+    badgeRecentGraduate: 'Recent graduate',
+    badgeTechMajor: 'Relevant major',
+    englishNotUpdated: 'Not updated',
+    noResultOutstanding: 'No standout CV matches the current filters.',
+    noResultFiltered: 'No CV matches all selected criteria.',
+    noCandidatesInDb: 'No candidate has applied to your jobs yet.',
+  },
 };
 
 export default trans__candidateManagement;

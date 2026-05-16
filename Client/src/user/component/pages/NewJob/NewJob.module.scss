@@ -1,11 +1,10 @@
 :root {
-    /* Đồng bộ bảng màu với hệ thống */
     --primary-color: #0d6efd;
     --primary-hover: #0069d9;
     --background-color: #f8f9fa;
     --card-background: #ffffff;
     --text-color: #212529;
-    --label-color: #495057; 
+    --label-color: #495057;
     --border-color: #ced4da;
     --box-shadow: 0 4px 13px rgba(0, 0, 0, 0.05);
     --card-radius: 19.25px;
@@ -13,10 +12,9 @@
 }
 
 .newjob {
-    max-width: 900px; 
+    max-width: 900px;
     margin: 0 auto;
     padding: 2.2rem 1.375rem 4rem;
-    /* Đổi font sang Inter */
     font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     color: var(--text-color);
     line-height: 1.6;
@@ -26,8 +24,8 @@
     font-size: 2.2rem;
     font-weight: 700;
     margin: 0 0 1.65rem;
-    color: var(--primary-color); /* Tiêu đề màu xanh */
-    text-align: center; /* Căn giữa tiêu đề cho cân đối */
+    color: var(--primary-color);
+    text-align: center;
 }
 
 .newjob__form {
@@ -36,20 +34,38 @@
     gap: 1.925rem;
 }
 
+.newjob__notice {
+    border-radius: var(--input-radius);
+    padding: 0.9rem 1rem;
+    font-weight: 500;
+}
+
+.newjob__notice--success {
+    background-color: #e8f7ee;
+    border: 1px solid #b7e3c7;
+    color: #1f7a42;
+}
+
+.newjob__notice--error {
+    background-color: #fff0f0;
+    border: 1px solid #f2b8bf;
+    color: #b02a37;
+}
+
 .newjob__card {
     background-color: var(--card-background);
     border: 1px solid #e9ecef;
-    border-radius: var(--card-radius); /* Bo góc 19.25px */
+    border-radius: var(--card-radius);
     padding: 2.2rem;
     box-shadow: var(--box-shadow);
 }
 
 .newjob__card-title {
-    font-size: 1.5rem; /* Tăng size tiêu đề card (khoảng 24px) */
+    font-size: 1.5rem;
     font-weight: 700;
     margin: 0 0 1.5rem;
     padding-bottom: 1rem;
-    border-bottom: 2px solid #f1f3f5; /* Gạch chân dày hơn chút */
+    border-bottom: 2px solid #f1f3f5;
     color: var(--text-color);
 }
 
@@ -64,7 +80,7 @@
 }
 
 .newjob__label {
-    font-size: 1.1rem; /* Tăng size label (khoảng 17.6px) */
+    font-size: 1.1rem;
     font-weight: 600;
     color: var(--label-color);
     margin-bottom: 0.55rem;
@@ -73,19 +89,18 @@
 .newjob__req {
     color: #dc3545;
     margin-left: 4px;
-    font-weight: bold;
+    font-weight: 700;
 }
 
-/* Style input, textarea, select */
 .newjob__input,
 .newjob__textarea,
 .newjob__select-native {
     width: 100%;
     border: 1px solid var(--border-color);
     background-color: #fff;
-    border-radius: var(--input-radius); /* Bo góc 9.5px */
-    padding: 0.85rem 1.1rem; /* Tăng padding để ô input cao và thoáng hơn */
-    font-size: 1.1rem; /* Chữ trong input to hơn (khoảng 17.6px) */
+    border-radius: var(--input-radius);
+    padding: 0.85rem 1.1rem;
+    font-size: 1.1rem;
     font-family: inherit;
     transition: all 0.2s ease;
     color: var(--text-color);
@@ -96,7 +111,7 @@
 .newjob__select-native:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15); /* Hiệu ứng focus xanh lan tỏa */
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15);
 }
 
 .newjob__input::placeholder,
@@ -106,11 +121,10 @@
 }
 
 .newjob__textarea {
+    min-height: 160px;
     resize: vertical;
-    min-height: 160px; /* Tăng chiều cao mặc định textarea */
 }
 
-/* SELECT DROPDOWN */
 .newjob__select {
     position: relative;
 }
@@ -133,7 +147,7 @@
 
 .newjob__grid {
     display: grid;
-    gap: 1.5rem; 
+    gap: 1.5rem;
 }
 
 .newjob__grid--2 {
@@ -148,12 +162,12 @@
 }
 
 .newjob__btn {
-    height: 54px; /* Button cao hơn, dễ bấm */
+    height: 54px;
     padding: 0 2rem;
     border-radius: var(--input-radius);
     border: 1px solid transparent;
     font-weight: 600;
-    font-size: 1.1rem; /* Chữ trong button to hơn */
+    font-size: 1.1rem;
     cursor: pointer;
     font-family: inherit;
     transition: all 0.2s ease-in-out;
@@ -162,13 +176,20 @@
     justify-content: center;
 }
 
+.newjob__btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
 .newjob__btn--save {
     background-color: var(--primary-color);
     color: #fff;
     box-shadow: 0 4px 6px rgba(13, 110, 253, 0.2);
 }
 
-.newjob__btn--save:hover {
+.newjob__btn--save:hover:not(:disabled) {
     background-color: var(--primary-hover);
     transform: translateY(-2px);
     box-shadow: 0 6px 12px rgba(13, 110, 253, 0.25);
@@ -184,20 +205,17 @@
     color: #212529;
 }
 
-
-
-/* Responsive */
 @media (max-width: 768px) {
-    .newjob__grid--2 {
-        grid-template-columns: 1fr;
-    }
-  
     .newjob {
         padding: 1.5rem 1rem 3rem;
     }
 
     .newjob__title {
         font-size: 2rem;
+    }
+
+    .newjob__grid--2 {
+        grid-template-columns: 1fr;
     }
 
     .newjob__actions {
@@ -207,6 +225,4 @@
     .newjob__btn {
         width: 100%;
     }
-
-
 }

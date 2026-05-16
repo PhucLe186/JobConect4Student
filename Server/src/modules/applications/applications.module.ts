@@ -10,8 +10,14 @@ import { Student, StudentSchema } from '../student/student.schema';
 import { User, UserSchema } from '../auth/schema/auth.schema';
 import { Jobs, JobsSchema } from '../jobs/schema/jobs.schema';
 import { Employer, EmployerSchema } from '../employer/employer.schema';
-import { StudentSkills, StudentSkillSchema } from '../skills/schema/StudentSkill.schema';
-import { JobSkills, SkillSchema as JobSkillSchema } from '../skills/schema/JobSkill.schema';
+import {
+  StudentSkills,
+  StudentSkillSchema,
+} from '../skills/schema/StudentSkill.schema';
+import {
+  JobSkills,
+  SkillSchema as JobSkillSchema,
+} from '../skills/schema/JobSkill.schema';
 import { Skills, SkillSchema } from '../skills/schema/skills.schema';
 
 @Module({
