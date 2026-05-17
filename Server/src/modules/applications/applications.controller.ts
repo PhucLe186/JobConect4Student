@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, UseGuards, UseInterceptors, UploadedFile, Param, BadRequestException } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Query, UseGuards, UseInterceptors, UploadedFile, Param, BadRequestException } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
@@ -140,5 +140,24 @@ export class ApplicationsController {
   @Get('employer-candidates')
   async getEmployerCandidates(@Req() req: Request, @Body() body?: { filterCriteria?: any }) {
     return this.applicationsService.getEmployerCandidates(req.user as JwtUser, body?.filterCriteria);
+  }
+
+  // =========================================================
+  // API: HIỂN THỊ CV ƯU TÚ CHO NHÀ TUYỂN DỤNG
+  // GET /applications/top-candidates?jobId=xxx&limit=10
+  // =========================================================
+  @UseGuards(JwtAuthGuard)
+  @Get('top-candidates')
+  async getTopCandidates(
+    @Req() req: Request,
+    @Query('jobId') jobId?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const parsedLimit = limit ? parseInt(limit, 10) : 10;
+    return this.applicationsService.getTopCandidates(
+      req.user as JwtUser,
+      jobId,
+      parsedLimit,
+    );
   }
 }

@@ -13,6 +13,7 @@ import {
   StudentSkillDocument,
 } from '../skills/schema/StudentSkill.schema';
 import { JobSkills, JobSkillDocument } from '../skills/schema/JobSkill.schema';
+import { Skills, SkillDocument } from '../skills/schema/skills.schema';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import FormData from 'form-data';
@@ -40,6 +41,8 @@ export class ApplicationsService {
     private studentSkillModel: Model<StudentSkillDocument>,
     @InjectModel(JobSkills.name)
     private jobSkillModel: Model<JobSkillDocument>,
+    @InjectModel(Skills.name)
+    private skillModel: Model<SkillDocument>,
     private httpService: HttpService,
   ) {}
 
@@ -147,126 +150,172 @@ export class ApplicationsService {
   }
 
   // =================================================================
-  // 1. LẤY TIÊU CHÍ JD TỪ MONGODB (ÁNH XẠ)
+  // 1. LẤY 5 TIÊU CHÍ JD TỪ MONGODB (QUERY DB THẬT)
   // =================================================================
   private async getJdCriteria(jobId: string) {
     const job = await this.jobsModel.findById(jobId).lean();
     if (!job) throw new BadRequestException('Công việc không tồn tại!');
 
+    // Query skills thật từ bảng job_skills -> populate tên từ bảng skills
+    const jobSkillDocs = await this.jobSkillModel
+      .find({ Job_id: new Types.ObjectId(jobId) })
+      .populate('skill_id', 'name')
+      .lean();
+
+    const skillNames: string[] = jobSkillDocs
+      .map((js: any) => js.skill_id?.name || '')
+      .filter((n: string) => n.length > 0);
+
     const criteria = {
-      position: job.title,
-      level: job.level,
-      address: job.location,
-      experience: job.experience,
-      gpa: (job as any).min_gpa || 0,
-      skills: job.requirements || '', // Ép requirements (text) thành skills
+      position: job.title || '',           // Tiêu chí 1: Vị trí
+      level: job.level || '',              // Tiêu chí 2: Cấp bậc
+      address: job.location || '',         // Tiêu chí 3: Địa điểm
+      gpa: (job as any).min_gpa || 0,      // Tiêu chí 4: GPA tối thiểu
+      skills: skillNames,                  // Tiêu chí 5: Mảng skill từ DB thật
+      requirements: job.requirements || '',
     };
+
+    console.log('\n--- [DB] 5 TIÊU CHÍ JD TỪ DATABASE ---');
+    console.log('1. Vị trí:', criteria.position);
+    console.log('2. Cấp bậc:', criteria.level);
+    console.log('3. Địa điểm:', criteria.address);
+    console.log('4. GPA tối thiểu:', criteria.gpa);
+    console.log('5. Skills từ DB:', criteria.skills);
 
     return criteria;
   }
 
   // =================================================================
-  // 2. NESTJS TỰ CHẤM ĐIỂM (REGEX & FUZZY MATCHING THÔNG MINH)
+  // 2. CHẤM ĐIỂM MATCH: 5 TIÊU CHÍ JOB vs 5 TIÊU CHÍ CV (TỪ DB)
   // =================================================================
   private calculateMatchScore(formData: any, jdCriteria: any) {
-    const scores = { position: 0, level: 0, address: 0, gpa: 0, skill: 0 };
+    const details = {
+      position: { score: 0, max: 10, jd: '', cv: '', matched: false },
+      level: { score: 0, max: 20, jd: '', cv: '', matched: false },
+      address: { score: 0, max: 15, jd: '', cv: '', matched: false },
+      gpa: { score: 0, max: 25, jd: 0, cv: 0, matched: false },
+      skills: { score: 0, max: 30, jd: [] as string[], cv: [] as string[], matchedSkills: [] as string[] },
+    };
 
-    // 1. POSITION (10đ)
-    const jdPos = this.normalizeText(jdCriteria.position || '');
+    // --- TIÊU CHÍ 1: VỊ TRÍ (10đ) ---
+    const jdPos = this.normalizeText(jdCriteria.position);
     const formPos = this.normalizeText(formData.position || '');
-    if (
-      jdPos &&
-      formPos &&
-      (jdPos.includes(formPos) || formPos.includes(jdPos))
-    )
-      scores.position = 10;
-
-    // 2. LEVEL (20đ)
-    const jdLevel = this.normalizeText(jdCriteria.level || '');
-    const formLevel = this.normalizeText(formData.level || '');
-    if (
-      jdLevel &&
-      formLevel &&
-      (jdLevel.includes(formLevel) || formLevel.includes(jdLevel))
-    )
-      scores.level = 20;
-
-    // 3. ADDRESS (15đ)
-    const jdAddress = this.normalizeText(jdCriteria.address || '');
-    const formAddress = this.normalizeText(formData.address || '');
-    if (
-      jdAddress &&
-      formAddress &&
-      (jdAddress.includes(formAddress) || formAddress.includes(jdAddress))
-    )
-      scores.address = 15;
-
-    // 4. GPA (25đ)
-    const formGpa = this.parseGpa(formData.gpa);
-    const jdGpa = this.parseGpa(jdCriteria.gpa);
-    if (jdGpa > 0) {
-      scores.gpa =
-        formGpa >= jdGpa ? 25 : Math.round((formGpa / jdGpa) * 25 * 100) / 100;
-    } else {
-      scores.gpa = 25; // JD không yêu cầu GPA thì auto cho full điểm
+    details.position.jd = jdCriteria.position;
+    details.position.cv = formData.position || '';
+    if (jdPos && formPos && (jdPos.includes(formPos) || formPos.includes(jdPos))) {
+      details.position.score = 10;
+      details.position.matched = true;
     }
 
-    // 5. SKILL (30đ) - Chấm điểm Regex & Fuzzy
-    const jdReqText = this.normalizeText(jdCriteria.skills || ''); // Lấy chuỗi requirements
-    const formSkillText = this.normalizeText(formData.skill || '');
+    // --- TIÊU CHÍ 2: CẤP BẬC (20đ) ---
+    const jdLevel = this.normalizeText(jdCriteria.level);
+    const formLevel = this.normalizeText(formData.level || '');
+    details.level.jd = jdCriteria.level;
+    details.level.cv = formData.level || '';
+    if (jdLevel && formLevel && (jdLevel.includes(formLevel) || formLevel.includes(jdLevel))) {
+      details.level.score = 20;
+      details.level.matched = true;
+    } else if (!jdLevel) {
+      details.level.score = 20;
+      details.level.matched = true;
+    }
 
-    if (jdReqText && formSkillText) {
-      // Tách các kỹ năng ứng viên nhập thành mảng
-      const applicantSkills = formSkillText
-        .split(/[,;\-|]/)
-        .map((s) => s.trim())
-        .filter((s) => s.length > 1);
-      let matchedSkillsCount = 0;
+    // --- TIÊU CHÍ 3: ĐỊA ĐIỂM (15đ) ---
+    const jdAddr = this.normalizeText(jdCriteria.address);
+    const formAddr = this.normalizeText(formData.address || '');
+    details.address.jd = jdCriteria.address;
+    details.address.cv = formData.address || '';
+    if (jdAddr && formAddr && (jdAddr.includes(formAddr) || formAddr.includes(jdAddr))) {
+      details.address.score = 15;
+      details.address.matched = true;
+    } else if (!jdAddr) {
+      details.address.score = 15;
+      details.address.matched = true;
+    }
 
-      applicantSkills.forEach((cvSkill) => {
-        let keyword = cvSkill;
-        // Kiểm tra từ điển OCR
+    // --- TIÊU CHÍ 4: GPA (25đ) ---
+    const formGpa = this.parseGpa(formData.gpa);
+    const jdGpa = this.parseGpa(jdCriteria.gpa);
+    details.gpa.jd = jdGpa;
+    details.gpa.cv = formGpa;
+    if (jdGpa > 0) {
+      if (formGpa >= jdGpa) {
+        details.gpa.score = 25;
+        details.gpa.matched = true;
+      } else {
+        details.gpa.score = Math.round((formGpa / jdGpa) * 25 * 100) / 100;
+      }
+    } else {
+      details.gpa.score = 25; // JD không yêu cầu GPA -> full điểm
+      details.gpa.matched = true;
+    }
+
+    // --- TIÊU CHÍ 5: SKILLS (30đ) - So sánh với skills từ DB ---
+    const jdSkills: string[] = Array.isArray(jdCriteria.skills) ? jdCriteria.skills : [];
+    details.skills.jd = jdSkills;
+
+    // Lấy skills từ CV (formData)
+    const cvSkillText = formData.skill || formData.skills || '';
+    const cvSkills: string[] = typeof cvSkillText === 'string'
+      ? cvSkillText.split(/[,;|]/).map((s: string) => s.trim()).filter((s: string) => s.length > 1)
+      : Array.isArray(cvSkillText) ? cvSkillText : [];
+    details.skills.cv = cvSkills;
+
+    if (jdSkills.length > 0 && cvSkills.length > 0) {
+      const matchedSkills: string[] = [];
+
+      cvSkills.forEach((cvSkill) => {
+        let keyword = this.normalizeText(cvSkill);
         for (const [wrong, correct] of Object.entries(this.skillAliases)) {
           if (keyword === wrong) keyword = correct;
         }
 
-        // Tìm kiếm Regex an toàn
-        const safeKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const regex = new RegExp(safeKeyword, 'i');
+        const isMatch = jdSkills.some((jdSkill) => {
+          const normalizedJd = this.normalizeText(jdSkill);
+          if (normalizedJd === keyword) return true;
+          if (normalizedJd.includes(keyword) || keyword.includes(normalizedJd)) return true;
+          const pureJd = this.cleanString(jdSkill);
+          const pureCv = this.cleanString(keyword);
+          return pureCv.length > 2 && (pureJd.includes(pureCv) || pureCv.includes(pureJd));
+        });
 
-        if (regex.test(jdReqText)) {
-          matchedSkillsCount++;
-        } else {
-          // Fuzzy Matching (Bỏ dấu/khoảng trắng)
-          const pureKeyword = this.cleanString(keyword);
-          const pureJd = this.cleanString(jdReqText);
-          if (pureKeyword.length > 2 && pureJd.includes(pureKeyword)) {
-            matchedSkillsCount++;
-          }
-        }
+        if (isMatch) matchedSkills.push(cvSkill);
       });
 
-      // Quy đổi điểm: Cần 3 keyword khớp để đạt 30 điểm
-      const EXPECTED_CORE_SKILLS = 3;
-      scores.skill = Math.min(
-        30,
-        Math.round((matchedSkillsCount / EXPECTED_CORE_SKILLS) * 30),
-      );
-    } else if (!jdReqText) {
-      scores.skill = 30;
+      details.skills.matchedSkills = matchedSkills;
+      const ratio = matchedSkills.length / jdSkills.length;
+      details.skills.score = Math.min(30, Math.round(ratio * 30));
+    } else if (jdSkills.length === 0) {
+      // Fallback: dùng requirements text nếu job không có skills trong DB
+      const reqText = this.normalizeText(jdCriteria.requirements || '');
+      if (reqText && cvSkills.length > 0) {
+        let matchCount = 0;
+        cvSkills.forEach((cvSkill) => {
+          let keyword = this.normalizeText(cvSkill);
+          for (const [wrong, correct] of Object.entries(this.skillAliases)) {
+            if (keyword === wrong) keyword = correct;
+          }
+          const safeKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          if (new RegExp(safeKeyword, 'i').test(reqText)) matchCount++;
+          else if (this.cleanString(keyword).length > 2 && this.cleanString(reqText).includes(this.cleanString(keyword))) matchCount++;
+        });
+        details.skills.score = Math.min(30, Math.round((matchCount / Math.max(cvSkills.length, 3)) * 30));
+      } else {
+        details.skills.score = 30;
+      }
     }
 
-    const total =
-      scores.position +
-      scores.level +
-      scores.address +
-      scores.gpa +
-      scores.skill;
-    console.log('\n--- [NESTJS] CHI TIẾT CHẤM ĐIỂM FORM ---');
-    console.log(scores);
-    console.log(`=> TỔNG ĐIỂM MỚI: ${total}/100\n`);
+    const total = details.position.score + details.level.score + details.address.score + details.gpa.score + details.skills.score;
 
-    return total;
+    console.log('\n--- [NESTJS] CHI TIẾT CHẤM ĐIỂM 5 TIÊU CHÍ ---');
+    console.log('1. Vị trí:', details.position);
+    console.log('2. Cấp bậc:', details.level);
+    console.log('3. Địa điểm:', details.address);
+    console.log('4. GPA:', details.gpa);
+    console.log('5. Skills:', details.skills);
+    console.log(`=> TỔNG ĐIỂM: ${total}/100\n`);
+
+    return { total, details };
   }
 
   // =================================================================
@@ -396,7 +445,7 @@ export class ApplicationsService {
     const jdCriteria = await this.getJdCriteria(jobId);
 
     // 2. NESTJS tự tính toán lại điểm dựa trên Form ứng viên đã sửa
-    const finalScore = this.calculateMatchScore(formData, jdCriteria);
+    const { total: finalScore, details: matchDetails } = this.calculateMatchScore(formData, jdCriteria);
 
     // 3. Lưu vào DB với điểm số MỚI NHẤT
     await this.jobApplyModel.create({
@@ -410,10 +459,10 @@ export class ApplicationsService {
       applied_at: new Date(),
       status: 'sent',
       match_score: finalScore,
-      ai_extracted_data: formData,
+      ai_extracted_data: { ...formData, match_details: matchDetails },
     });
 
-    return { status: 'Ứng tuyển thành công!', match_score: finalScore };
+    return { status: 'Ứng tuyển thành công!', match_score: finalScore, match_details: matchDetails };
   }
 
   // =================================================================
@@ -725,5 +774,168 @@ export class ApplicationsService {
       });
 
     return { candidates };
+  }
+
+  // =================================================================
+  // API: HIỂN THỊ CV ƯU TÚ CHO NHÀ TUYỂN DỤNG (QUERY DB THẬT)
+  // Xếp hạng dựa trên: GPA, số lượng skills, match_score
+  // =================================================================
+  async getTopCandidates(user: JwtUser, jobId?: string, limit = 10) {
+    const { userId } = user;
+
+    // 1. Lấy danh sách job của NTD từ DB
+    const employerJobs = await this.jobsModel
+      .find({ employer_id: new Types.ObjectId(userId) })
+      .select('_id title location level experience')
+      .lean();
+
+    if (employerJobs.length === 0) return { topCandidates: [] };
+
+    // 2. Lọc theo jobId nếu có, không thì lấy tất cả job
+    const targetJobIds = jobId
+      ? [new Types.ObjectId(jobId)]
+      : employerJobs.map((j) => j._id);
+
+    // 3. Query applications từ DB (chỉ lấy status != rejected)
+    const applications = await this.jobApplyModel
+      .find({
+        job_id: { $in: targetJobIds },
+        status: { $ne: 'rejected' },
+      })
+      .sort({ match_score: -1 })
+      .lean();
+
+    if (applications.length === 0) return { topCandidates: [] };
+
+    // 4. Lấy thông tin student, user, skills từ DB
+    const studentUserIds = [...new Set(
+      applications.map((a) => a.student_id?.toString()).filter(Boolean),
+    )];
+    const objectIds = studentUserIds.map((id) => new Types.ObjectId(id));
+
+    const [users, students] = await Promise.all([
+      this.userModel.find({ _id: { $in: objectIds } }).select('name email').lean(),
+      this.studentModel.find({ user_id: { $in: objectIds } }).lean(),
+    ]);
+
+    const userMap = new Map(users.map((u) => [u._id.toString(), u]));
+    const studentMap = new Map(students.map((s) => [s.user_id.toString(), s]));
+
+    // 5. Query skills từ DB cho tất cả student
+    const studentIds = students.map((s) => s._id);
+    const allStudentSkills = studentIds.length > 0
+      ? await this.studentSkillModel
+          .find({ student_id: { $in: studentIds } })
+          .populate('skill_id', 'name')
+          .lean()
+      : [];
+
+    const skillMap = new Map<string, Array<{ name: string; level: number }>>();
+    allStudentSkills.forEach((ss: any) => {
+      const sid = ss.student_id?.toString();
+      if (!sid) return;
+      const list = skillMap.get(sid) || [];
+      list.push({ name: ss.skill_id?.name || '', level: ss.level || 0 });
+      skillMap.set(sid, list);
+    });
+
+    // 6. Nếu có jobId cụ thể, lấy skills yêu cầu của job đó từ DB
+    let jobRequiredSkills: string[] = [];
+    if (jobId) {
+      const jobSkillDocs = await this.jobSkillModel
+        .find({ Job_id: new Types.ObjectId(jobId) })
+        .populate('skill_id', 'name')
+        .lean();
+      jobRequiredSkills = jobSkillDocs
+        .map((js: any) => this.normalizeText(js.skill_id?.name || ''))
+        .filter((n) => n.length > 0);
+    }
+
+    // 7. Tính điểm ưu tú cho mỗi ứng viên
+    const jobMap = new Map(employerJobs.map((j) => [j._id.toString(), j]));
+    const candidateScores = new Map<string, any>();
+
+    applications.forEach((app: any) => {
+      const uid = app.student_id?.toString();
+      if (!uid || candidateScores.has(uid)) return;
+
+      const account = userMap.get(uid);
+      const student = studentMap.get(uid);
+      const studentSkills = student ? skillMap.get(student._id.toString()) || [] : [];
+      const job = jobMap.get(app.job_id?.toString());
+
+      // Tính GPA score (0-100)
+      const gpa = this.parseGpa(student?.gpa);
+      const gpaScore = Math.min(100, (gpa / 4) * 100);
+
+      // Tính skill score (0-100) dựa trên số skill + level
+      let skillScore = 0;
+      if (studentSkills.length > 0) {
+        const avgLevel = studentSkills.reduce((sum, s) => sum + s.level, 0) / studentSkills.length;
+        const skillCountScore = Math.min(50, studentSkills.length * 10);
+        const skillLevelScore = (avgLevel / 5) * 50;
+        skillScore = skillCountScore + skillLevelScore;
+
+        // Bonus nếu match với skills yêu cầu của job
+        if (jobRequiredSkills.length > 0) {
+          const matchedCount = studentSkills.filter((s) =>
+            jobRequiredSkills.some((req) => {
+              const norm = this.normalizeText(s.name);
+              return norm === req || norm.includes(req) || req.includes(norm);
+            }),
+          ).length;
+          const matchRatio = matchedCount / jobRequiredSkills.length;
+          skillScore = skillScore * 0.6 + matchRatio * 100 * 0.4;
+        }
+      }
+
+      // Tổng hợp điểm ưu tú: GPA 30% + Skills 40% + Match Score 30%
+      const matchScore = app.match_score || 0;
+      const excellenceScore = Math.round(
+        gpaScore * 0.3 + skillScore * 0.4 + matchScore * 0.3,
+      );
+
+      candidateScores.set(uid, {
+        id: uid,
+        application_id: app._id?.toString(),
+        name: account?.name || app.full_name || 'Chưa cập nhật',
+        email: account?.email || app.email || '',
+        phone: student?.phone || app.phone || '',
+        avatar: student?.avatar || this.defaultAvatar,
+        school: student?.school || '',
+        major: student?.major || '',
+        gpa,
+        gpa_score: Math.round(gpaScore),
+        skills: studentSkills,
+        skill_score: Math.round(skillScore),
+        match_score: matchScore,
+        excellence_score: excellenceScore,
+        career_goal: student?.career_goal || '',
+        graduation_year: student?.graduation_year || '',
+        cv_file_path: app.cv_file_path || '',
+        applied_job: job?.title || '',
+        applied_at: app.applied_at,
+        status: app.status,
+        ranking_breakdown: {
+          gpa_weight: '30%',
+          skill_weight: '40%',
+          match_weight: '30%',
+          gpa_raw: gpa,
+          skill_count: studentSkills.length,
+          match_raw: matchScore,
+        },
+      });
+    });
+
+    // 8. Sắp xếp theo điểm ưu tú giảm dần, trả về top N
+    const topCandidates = Array.from(candidateScores.values())
+      .sort((a, b) => b.excellence_score - a.excellence_score)
+      .slice(0, limit);
+
+    return {
+      total: candidateScores.size,
+      showing: topCandidates.length,
+      topCandidates,
+    };
   }
 }
