@@ -52,14 +52,12 @@ export class CreateJobDto {
   requirements?: string;
 
   @IsEnum([
-    'Nhân viên',
-    'Trưởng nhóm',
-    'Trưởng/Phó phòng',
-    'Quản lý / Giám sát',
-    'Trưởng chi nhánh',
-    'Phó giám đốc',
-    'Giám đốc',
-    'Thực tập sinh',
+    'Intern',
+    'Fresher',
+    'Junior',
+    'Middle',
+    'Senior',
+    'Lead',
   ])
   @IsOptional()
   level?: string;

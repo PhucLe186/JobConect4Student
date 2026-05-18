@@ -1,3 +1,5 @@
+import { getCanonicalLevelKey, getLevelRank, normalizeJobLevel } from './jobMetadataUtils';
+
 const TEXT_STOP_WORDS = new Set([
     'va',
     'voi',
@@ -18,26 +20,13 @@ const TEXT_STOP_WORDS = new Set([
     'you',
 ]);
 
-const LEVEL_MATCH_MAP = {
-    'Thực tập sinh': ['Thực tập sinh', 'Nhân viên'],
-    'Nhân viên': ['Nhân viên', 'Thực tập sinh', 'Trưởng nhóm'],
-    'Trưởng nhóm': ['Trưởng nhóm', 'Nhân viên', 'Trưởng/Phó phòng'],
-    'Trưởng/Phó phòng': ['Trưởng/Phó phòng', 'Trưởng nhóm', 'Quản lý / Giám sát'],
-    'Quản lý / Giám sát': ['Quản lý / Giám sát', 'Trưởng/Phó phòng', 'Trưởng nhóm'],
-    'Trưởng chi nhánh': ['Trưởng chi nhánh', 'Quản lý / Giám sát'],
-    'Phó giám đốc': ['Phó giám đốc', 'Giám đốc'],
-    'Giám đốc': ['Giám đốc', 'Phó giám đốc'],
-};
-
 const DEFAULT_GPA_BY_LEVEL = {
-    'Thực tập sinh': 2.5,
-    'Nhân viên': 2.7,
-    'Trưởng nhóm': 3.0,
-    'Trưởng/Phó phòng': 3.1,
-    'Quản lý / Giám sát': 3.2,
-    'Trưởng chi nhánh': 3.2,
-    'Phó giám đốc': 3.3,
-    'Giám đốc': 3.4,
+    Intern: 2.5,
+    Fresher: 2.6,
+    Junior: 2.7,
+    Middle: 3.0,
+    Senior: 3.2,
+    Lead: 3.3,
 };
 
 const normalizeText = (value = '') =>
@@ -76,17 +65,17 @@ const extractLocationTokens = (value = '') => {
 
 const getCandidateLevel = (profile = {}) => {
     if (profile.level) {
-        return profile.level;
+        return normalizeJobLevel({ level: profile.level });
     }
 
     const currentYear = new Date().getFullYear();
     const graduationYear = Number(profile.graduation_year);
 
     if (Number.isFinite(graduationYear) && graduationYear >= currentYear) {
-        return 'Thực tập sinh';
+        return 'Intern';
     }
 
-    return 'Nhân viên';
+    return 'Fresher';
 };
 
 const getJobRequiredGpa = (job = {}) => {
@@ -95,7 +84,8 @@ const getJobRequiredGpa = (job = {}) => {
         return directGpa;
     }
 
-    return DEFAULT_GPA_BY_LEVEL[job.level] || 2.7;
+    const normalizedLevel = normalizeJobLevel(job);
+    return DEFAULT_GPA_BY_LEVEL[normalizedLevel] || 2.7;
 };
 
 const getSkillNames = (profile = {}) =>
@@ -144,8 +134,14 @@ const isLevelMatch = (candidateLevel, jobLevel) => {
         return false;
     }
 
-    const acceptedLevels = LEVEL_MATCH_MAP[candidateLevel] || [candidateLevel];
-    return acceptedLevels.includes(jobLevel);
+    const candidateKey = getCanonicalLevelKey(candidateLevel);
+    const jobKey = getCanonicalLevelKey(jobLevel);
+
+    if (!candidateKey || !jobKey) {
+        return false;
+    }
+
+    return Math.abs(getLevelRank(candidateKey) - getLevelRank(jobKey)) <= 1;
 };
 
 export const buildProfileSuggestionCriteria = (profile = {}) => ({
@@ -233,7 +229,7 @@ export const rankJobsByCriteria = (jobs = [], criteria = {}) => {
 
 export const filterJobsBySuggestionCriteria = (jobs = [], filters = {}) =>
     jobs.filter((job) => {
-        const matchesLevel = !filters.level || job.level === filters.level;
+        const matchesLevel = !filters.level || normalizeJobLevel(job) === filters.level;
         const matchesJob =
             !filters.jobKeyword ||
             normalizeText(`${job.title} ${job.description} ${job.industry}`).includes(normalizeText(filters.jobKeyword));

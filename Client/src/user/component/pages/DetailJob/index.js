@@ -5,6 +5,13 @@ import styles from './Job.module.scss';
 import translations from '~/component/Translation';
 import { AuthContext } from '~/context/AuthContext';
 import { createCompanyPlaceholder, mergeJobs, normalizeJob } from '~/user/component/shared/companyData';
+import {
+    extractProgrammingLanguages,
+    getCanonicalLevelKey,
+    getLevelRank,
+    JOB_LEVEL_OPTIONS,
+    normalizeJobLevel,
+} from '~/user/component/shared/jobMetadataUtils';
 import { buildProfileSuggestionCriteria, rankJobsByCriteria } from '~/user/component/shared/jobSuggestionUtils';
 import { analyzeCvMatch } from './cvMatchUtils';
 
@@ -19,8 +26,6 @@ const INITIAL_APPLICATION_FORM = {
     level: '',
     skillsSummary: '',
 };
-const LEVEL_OPTIONS = ['Intern', 'Fresher', 'Junior', 'Middle', 'Senior'];
-const LEVEL_RANK = { intern: 0, fresher: 1, junior: 2, middle: 3, senior: 4 };
 const FORM_SKILL_KEYWORDS = [
     'frontend', 'backend', 'fullstack', 'html', 'css', 'javascript', 'typescript',
     'react', 'vue', 'angular', 'node', 'express', 'nestjs', 'java', 'python', 'php',
@@ -57,18 +62,6 @@ const tokenizeCompare = (value = '') =>
     normalizeCompare(value)
         .split(' ')
         .filter((token) => token.length >= 2);
-
-const findCanonicalLevel = (value = '') => {
-    const normalized = normalizeCompare(value);
-
-    if (!normalized) return '';
-    if (normalized.includes('thuc tap') || normalized.includes('trainee') || normalized.includes('intern')) return 'intern';
-    if (normalized.includes('fresher') || normalized.includes('graduate') || normalized.includes('new grad')) return 'fresher';
-    if (normalized.includes('junior')) return 'junior';
-    if (normalized.includes('middle') || normalized.includes('mid')) return 'middle';
-    if (normalized.includes('senior') || normalized.includes('lead')) return 'senior';
-    return '';
-};
 
 const getCriterionLabel = (key, language) => {
     const labels = {
@@ -112,6 +105,13 @@ const Job = () => {
     const [applyNotice, setApplyNotice] = useState('');
     const [applicationSubmitted, setApplicationSubmitted] = useState(false);
     const isEmployerAccount = user?.type === 'employer';
+    const displayLevel = useMemo(() => normalizeJobLevel(jobData), [jobData]);
+    const programmingLanguages = useMemo(
+        () => (jobData.programmingLanguages?.length ? jobData.programmingLanguages : extractProgrammingLanguages(jobData)),
+        [jobData],
+    );
+    const requirementsTitle = language === 'vi' ? 'Yêu cầu ứng viên' : t.requirements;
+    const experienceLabel = language === 'vi' ? 'Kinh nghiệm' : t.Experience;
     const employerApplyBlockedMessage =
         language === 'vi'
             ? 'Tài khoản nhà tuyển dụng không thể nộp CV ứng tuyển. Vui lòng dùng tài khoản sinh viên/ứng viên.'
@@ -212,11 +212,11 @@ const Job = () => {
                     ? Math.round(30 + (matchedPositionTokens.length / jobTitleTokens.length) * 60)
                     : 65;
 
-        const expectedLevel = findCanonicalLevel(jobData.level);
-        const currentLevel = findCanonicalLevel(applicationForm.level);
+        const expectedLevel = getCanonicalLevelKey(displayLevel);
+        const currentLevel = getCanonicalLevelKey(applicationForm.level);
         const levelDistance =
-            expectedLevel && currentLevel && typeof LEVEL_RANK[expectedLevel] === 'number' && typeof LEVEL_RANK[currentLevel] === 'number'
-                ? Math.abs(LEVEL_RANK[expectedLevel] - LEVEL_RANK[currentLevel])
+            expectedLevel && currentLevel && getLevelRank(expectedLevel) >= 0 && getLevelRank(currentLevel) >= 0
+                ? Math.abs(getLevelRank(expectedLevel) - getLevelRank(currentLevel))
                 : null;
         const levelScore = !expectedLevel ? 65 : !currentLevel ? 30 : levelDistance === 0 ? 92 : levelDistance === 1 ? 72 : 45;
 
@@ -256,11 +256,11 @@ const Job = () => {
                     ? currentLevel
                         ? levelDistance === 0
                             ? language === 'vi' ? `Level bạn chọn đã trùng với mức ${applicationForm.level}.` : `Your selected level matches ${applicationForm.level}.`
-                            : language === 'vi' ? `Bạn chọn ${applicationForm.level}, trong khi tin đăng ưu tiên ${jobData.level}.` : `You selected ${applicationForm.level}, while the role prefers ${jobData.level}.`
+                            : language === 'vi' ? `Bạn chọn ${applicationForm.level}, trong khi tin đăng ưu tiên ${displayLevel}.` : `You selected ${applicationForm.level}, while the role prefers ${displayLevel}.`
                         : language === 'vi' ? 'Bạn chưa chọn level hiện tại.' : 'Current level is still missing.'
                     : language === 'vi' ? 'Tin đăng chưa yêu cầu level cụ thể.' : 'This job does not specify a strict level.',
                 matchedKeywords: levelScore >= 70 && applicationForm.level ? [applicationForm.level] : [],
-                missingKeywords: levelScore < 60 ? [jobData.level || (language === 'vi' ? 'Level yêu cầu' : 'Required level')] : [],
+                missingKeywords: levelScore < 60 ? [displayLevel || (language === 'vi' ? 'Level yêu cầu' : 'Required level')] : [],
             },
             {
                 key: 'position',
@@ -782,7 +782,7 @@ const Job = () => {
                         <p>{jobData.description}</p>
                     </div>
                     <div className={cx('contentSection')}>
-                        <h2>{t.requirements}</h2>
+                        <h2>{requirementsTitle}</h2>
                         <p>{jobData.requirements}</p>
                     </div>
                     <div className={cx('contentSection')}>
@@ -790,12 +790,12 @@ const Job = () => {
                         <div className={cx('skillsContent')}>
                             <div className={cx('skillColumn')}>
                                 <div className={cx('skillItem')}><span>{t.jobType}</span><p>{jobData.job_type}</p></div>
-                                <div className={cx('skillItem')}><span>{t.level}</span><p>{jobData.level || '--'}</p></div>
+                                <div className={cx('skillItem')}><span>{t.level}</span><p>{displayLevel || '--'}</p></div>
                                 <div className={cx('skillItem')}><span>{t.education}</span><p>{t.graduated}</p></div>
                             </div>
                             <div className={cx('skillColumn')}>
-                                <div className={cx('skillItem')}><span>{t.Experience}</span><p>{jobData.experience}</p></div>
-                                <div className={cx('skillItem')}><span>{t.programmingLang}</span><p>C/C++, Java, Python</p></div>
+                                <div className={cx('skillItem')}><span>{experienceLabel}</span><p>{jobData.experience}</p></div>
+                                <div className={cx('skillItem')}><span>{t.programmingLang}</span><p>{programmingLanguages.join(', ') || '--'}</p></div>
                                 <div className={cx('skillItem')}><span>{t.industry}</span><p>{jobData.industry}</p></div>
                             </div>
                         </div>
@@ -961,7 +961,7 @@ const Job = () => {
                                             <label className={cx('popup-label')}>{language === 'vi' ? 'Level hiện tại' : 'Current level'} <span className={cx('required')}>*</span></label>
                                             <select className={cx('popup-select')} value={applicationForm.level} onChange={(event) => setApplicationForm((prev) => ({ ...prev, level: event.target.value }))}>
                                                 <option value="">{language === 'vi' ? 'Chọn level' : 'Choose level'}</option>
-                                                {LEVEL_OPTIONS.map((level) => <option key={level} value={level}>{level}</option>)}
+                                                {JOB_LEVEL_OPTIONS.map((level) => <option key={level} value={level}>{level}</option>)}
                                             </select>
                                         </div>
                                     </div>

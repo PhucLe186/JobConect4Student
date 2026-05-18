@@ -3045,7 +3045,7 @@ function CVBuilder() {
                             </div>
                         </div>
 
-                        <div className={styles.editorCard}>
+                        <div className={`${styles.editorCard} ${styles.editorCardPriority}`}>
                             <h2>Mẫu CV</h2>
                             <p className={styles.editorSubtle}>
                                 Chọn template trước. Mỗi mẫu giữ cùng dữ liệu nhưng có cách trình bày riêng để người

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import classNames from 'classnames/bind';
 import styles from './NewJob.module.scss';
 import { AuthContext } from '~/context/AuthContext';
+import { JOB_LEVEL_OPTIONS } from '~/user/component/shared/jobMetadataUtils';
 
 const cx = classNames.bind(styles);
 
@@ -119,16 +120,7 @@ const experienceOptions = [
   '4 năm trở lên',
 ];
 
-const levelOptions = [
-  'Nhân viên',
-  'Trưởng nhóm',
-  'Trưởng/Phó phòng',
-  'Quản lý / Giám sát',
-  'Trưởng chi nhánh',
-  'Phó giám đốc',
-  'Giám đốc',
-  'Thực tập sinh',
-];
+const levelOptions = JOB_LEVEL_OPTIONS;
 
 const createEmptyForm = () => ({
   title: '',

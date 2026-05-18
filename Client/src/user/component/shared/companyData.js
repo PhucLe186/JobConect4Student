@@ -15,6 +15,7 @@ import SamsungLogo from '~/asset/img/Samsung.png';
 import ShopeeLogo from '~/asset/img/Shopee.png';
 import TiktokLogo from '~/asset/img/TikTok.png';
 import VisaLogo from '~/asset/img/Visa.png';
+import { extractProgrammingLanguages, normalizeJobLevel } from './jobMetadataUtils';
 
 const COMPANY_LOGO_KEYWORDS = [
     { pattern: /adobe/i, logo: AdobeLogo },
@@ -74,7 +75,7 @@ const JOB_TEMPLATES = [
         title: 'Frontend React Developer',
         job_type: 'full-time',
         experience: '2 năm',
-        level: 'Nhân viên',
+        level: 'Junior',
         min_salary: 18000000,
         max_salary: 30000000,
         description: 'Phát triển giao diện web, dashboard và công cụ nội bộ cho các sản phẩm đang tăng trưởng.',
@@ -84,7 +85,7 @@ const JOB_TEMPLATES = [
         title: 'Backend Developer',
         job_type: 'full-time',
         experience: '2 năm',
-        level: 'Nhân viên',
+        level: 'Junior',
         min_salary: 20000000,
         max_salary: 34000000,
         description: 'Xây dựng API, service backend và tối ưu luồng dữ liệu cho hệ thống vận hành.',
@@ -94,7 +95,7 @@ const JOB_TEMPLATES = [
         title: 'Product Designer',
         job_type: 'full-time',
         experience: '1 năm',
-        level: 'Nhân viên',
+        level: 'Junior',
         min_salary: 15000000,
         max_salary: 26000000,
         description: 'Thiết kế luồng người dùng, wireframe và prototype cho sản phẩm web và mobile.',
@@ -104,7 +105,7 @@ const JOB_TEMPLATES = [
         title: 'Data Analyst',
         job_type: 'full-time',
         experience: '1 năm',
-        level: 'Nhân viên',
+        level: 'Junior',
         min_salary: 16000000,
         max_salary: 28000000,
         description: 'Phân tích dữ liệu, xây dựng dashboard và đề xuất cải tiến dựa trên chỉ số kinh doanh.',
@@ -114,7 +115,7 @@ const JOB_TEMPLATES = [
         title: 'QA Automation Engineer',
         job_type: 'full-time',
         experience: '1 năm',
-        level: 'Nhân viên',
+        level: 'Junior',
         min_salary: 17000000,
         max_salary: 29000000,
         description: 'Xây dựng bộ test automation và báo cáo chất lượng cho hệ thống sản phẩm.',
@@ -509,8 +510,10 @@ export const normalizeJob = (job = {}) => {
         experience: job.experience || 'không yêu cầu',
         industry: job.industry || 'Đang cập nhật',
         deadline: job.deadline || '',
+        level: normalizeJobLevel(job),
         requirements: job.requirements || '',
         description: job.description || 'Đang cập nhật mô tả công việc.',
+        programmingLanguages: extractProgrammingLanguages(job),
         logo: getCompanyLogo(companyName, job.logo),
         salaryLabel,
         typeLabel: jobType === 'part-time' ? 'Part-time' : jobType === 'internship' ? 'Internship' : 'Full-time',

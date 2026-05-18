@@ -132,7 +132,8 @@ const LEVEL_ALIASES = [
     { key: 'fresher', label: 'Fresher', terms: ['fresher', 'new grad', 'graduate'] },
     { key: 'junior', label: 'Junior', terms: ['junior'] },
     { key: 'middle', label: 'Middle', terms: ['middle', 'mid', 'mid level', 'mid-level'] },
-    { key: 'senior', label: 'Senior', terms: ['senior', 'lead', 'expert'] },
+    { key: 'senior', label: 'Senior', terms: ['senior', 'expert'] },
+    { key: 'lead', label: 'Lead', terms: ['lead', 'team lead', 'technical lead'] },
 ];
 const LEVEL_RANK = {
     intern: 0,
@@ -140,6 +141,7 @@ const LEVEL_RANK = {
     junior: 2,
     middle: 3,
     senior: 4,
+    lead: 5,
 };
 
 const normalizeText = (value = '') =>
