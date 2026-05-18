@@ -3,6 +3,14 @@
 /node_modules
 /build
 
+# Uploads (file CV, avatar, logo thật - không commit)
+/uploads/cvs/*
+/uploads/avatars/*
+/uploads/logos/*
+!uploads/cvs/.gitkeep
+!uploads/avatars/.gitkeep
+!uploads/logos/.gitkeep
+
 # Logs
 logs
 *.log

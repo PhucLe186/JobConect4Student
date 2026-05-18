@@ -41,20 +41,23 @@ export const AuthProvider = ({ children }) => {
     }, [token]);
 
     useEffect(()=> {
-        const refreshToken= async()=> {
-            try{
-                const res=await api.get('auth/refreshtoken')
-                if(res.data){
-                    setUser(res.data)
-                    setToken(res.data.accesstoken)
-                    setLanguege(res.data.language)
-                 }
-            } catch(err) {
-                console.error('Refresh token failed:', err.response?.data || err.message);
+        const refreshToken = async () => {
+            try {
+                const res = await api.get('auth/refreshtoken');
+                if (res.data) {
+                    setUser(res.data);
+                    setToken(res.data.accesstoken);
+                    setLanguege(res.data.language);
+                }
+            } catch (err) {
+                // 401 = chưa đăng nhập, bình thường không cần log
+                if (err.response?.status !== 401) {
+                    console.error('Refresh token failed:', err.response?.data || err.message);
+                }
                 setUser(null);
                 setToken(null);
-            }  
-        }
+            }
+        };
         refreshToken()
     },[api])
 

@@ -53,6 +53,19 @@ export class ApplicationsController {
   }
 
   // =========================================================
+  // API: PREVIEW SCORE (chấm điểm thật từ form, KHÔNG lưu DB)
+  // =========================================================
+  @UseGuards(JwtAuthGuard)
+  @Post('preview-score/:jobId')
+  async previewScore(
+    @Param('jobId') jobId: string,
+    @Body() formData: any,
+  ) {
+    const result = await this.applicationsService.previewScore(jobId, formData);
+    return { success: true, data: result };
+  }
+
+  // =========================================================
   // API 2: NỘP FORM CHÍNH THỨC (NESTJS TÁI CHẤM ĐIỂM)
   // =========================================================
   @UseGuards(JwtAuthGuard)
@@ -124,6 +137,20 @@ export class ApplicationsController {
     );
   }
 
+  // Fallback không có file CV (AI không chạy)
+  @UseGuards(JwtAuthGuard)
+  @Post('apply-no-file')
+  async applyNoFile(
+    @Body() applicationData: { jobId: string; fullName: string; email: string; phone: string; coverLetter?: string },
+    @Req() req: Request
+  ) {
+    return this.applicationsService.applyWithDetails(
+      applicationData,
+      null as any,
+      req.user as JwtUser
+    );
+  }
+
   @UseGuards(JwtAuthGuard)
   @Get('test')
   async testAuth(@Req() req: Request) {
@@ -138,8 +165,25 @@ export class ApplicationsController {
 
   @UseGuards(JwtAuthGuard)
   @Get('employer-candidates')
-  async getEmployerCandidates(@Req() req: Request, @Body() body?: { filterCriteria?: any }) {
-    return this.applicationsService.getEmployerCandidates(req.user as JwtUser, body?.filterCriteria);
+  async getEmployerCandidates(
+    @Req() req: Request,
+    @Query('minGpa') minGpa?: string,
+    @Query('minMatchScore') minMatchScore?: string,
+    @Query('level') level?: string,
+    @Query('address') address?: string,
+    @Query('skills') skills?: string,
+  ) {
+    const filterCriteria = {
+      ...(minGpa !== undefined && { minGpa: parseFloat(minGpa) }),
+      ...(minMatchScore !== undefined && { minMatchScore: parseFloat(minMatchScore) }),
+      ...(level && { level }),
+      ...(address && { address }),
+      ...(skills && { skills: skills.split(',').map((s) => s.trim()).filter(Boolean) }),
+    };
+    return this.applicationsService.getEmployerCandidates(
+      req.user as JwtUser,
+      Object.keys(filterCriteria).length ? filterCriteria : undefined,
+    );
   }
 
   // =========================================================

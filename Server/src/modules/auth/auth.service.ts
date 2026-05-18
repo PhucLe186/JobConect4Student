@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { JwtService } from '@nestjs/jwt';
@@ -79,10 +79,11 @@ export class AuthService {
       RefreshToken: refreshtoken,
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
     });
+    const isProd = process.env.NODE_ENV === 'production';
     res.cookie('refresh_token', refreshtoken, {
       httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
+      secure: isProd,
+      sameSite: isProd ? 'strict' : 'lax',
       path: '/',
       maxAge: 24 * 60 * 60 * 1000,
     });
@@ -108,18 +109,19 @@ export class AuthService {
   ): Promise<{ accesstoken: string; type: string; language: string }> {
     const token = req.cookies['refresh_token'];
     if (!token) {
-      throw new BadRequestException('token không tồn tại');
+      throw new UnauthorizedException('Chưa đăng nhập');
     }
     const session = await this.RefreshtokenModel.findOne({
       RefreshToken: token,
     });
 
     if (!session) {
-      throw new BadRequestException('token không tồn tại');
+      throw new UnauthorizedException('Phiên đăng nhập không hợp lệ');
     }
 
     if (session.expiresAt < new Date()) {
-      throw new BadRequestException('Token đã hết hạn.');
+      await this.RefreshtokenModel.deleteOne({ RefreshToken: token });
+      throw new UnauthorizedException('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại');
     }
     const user = await this.userModel.findOne({ _id: session.userID });
 

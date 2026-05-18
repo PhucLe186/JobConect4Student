@@ -337,14 +337,14 @@ const Job = () => {
         if (!file) return;
 
         const extension = file.name.split('.').pop()?.toLowerCase();
-        if (!['pdf', 'doc', 'docx'].includes(extension)) {
+        if (!['pdf', 'doc', 'docx', 'png', 'jpg', 'jpeg'].includes(extension)) {
             setUploadedCvName('');
             setUploadedCvFile(null);
             setUploadedCvPath('');
             setCvMatchResult(null);
             setApplyOption('');
             setFormScoreResult(null);
-            setCvAnalysisError(language === 'vi' ? 'Chỉ hỗ trợ file PDF, DOC hoặc DOCX.' : 'Only PDF, DOC, and DOCX files are supported.');
+            setCvAnalysisError(language === 'vi' ? 'Chỉ hỗ trợ file PDF, DOC, DOCX, PNG, JPG.' : 'Only PDF, DOC, DOCX, PNG, and JPG files are supported.');
             event.target.value = '';
             return;
         }
@@ -431,6 +431,24 @@ const Job = () => {
             );
         } catch (error) {
             console.error('Error analyzing CV:', error);
+            const serverMessage = error?.response?.data?.message || '';
+            const isAlreadyApplied =
+                error?.response?.status === 409 ||
+                serverMessage.includes('đã ứng tuyển') ||
+                serverMessage.includes('already applied');
+
+            if (isAlreadyApplied) {
+                setUploadedCvName('');
+                setUploadedCvFile(null);
+                setUploadedCvPath('');
+                setCvMatchResult(null);
+                setApplyOption('');
+                setFormScoreResult(null);
+                setApplyNotice('');
+                setCvAnalysisError(language === 'vi' ? 'Bạn đã ứng tuyển vị trí này rồi!' : 'You have already applied for this position.');
+                return;
+            }
+
             try {
                 const fallbackResult = await analyzeCvMatch(file, jobData);
                 setUploadedCvPath('');
@@ -460,7 +478,7 @@ const Job = () => {
                 setFormScoreResult(null);
                 setApplyNotice('');
                 setCvAnalysisError(
-                    error?.response?.data?.message ||
+                    serverMessage ||
                         (language === 'vi'
                             ? 'Không thể phân tích CV lúc này. Vui lòng thử lại khi dịch vụ AI và Python đang chạy.'
                             : 'The CV could not be analyzed right now. Please make sure the AI and Python services are running.'),
@@ -472,54 +490,63 @@ const Job = () => {
         }
     };
 
-    const handleScoreForm = () => {
+    const handleScoreForm = async () => {
         if (!cvMatchResult) {
             alert(language === 'vi' ? 'Vui lòng upload CV và đợi hệ thống chấm điểm trước.' : 'Please upload your CV and wait for the scoring first.');
             return;
         }
-
         if (!applyOption) {
             alert(language === 'vi' ? 'Vui lòng chọn một cách ứng tuyển.' : 'Please choose an apply option.');
             return;
         }
+        if (applicationSubmitted) return;
+        if (applyOption === 'create') { navigate('/cv_builder'); closeApplyPopup(); return; }
 
-        if (applicationSubmitted) {
-            return;
-        }
-
-        if (applyOption === 'create') {
-            navigate('/cv_builder');
-            closeApplyPopup();
-            return;
-        }
-
-        const requiredFields = [
-            applicationForm.fullName,
-            applicationForm.email,
-            applicationForm.phone,
-            applicationForm.desiredPosition,
-            applicationForm.address,
-            applicationForm.gpa,
-            applicationForm.level,
-            applicationForm.skillsSummary,
-        ];
-
+        const form = applicationForm;
+        const requiredFields = [form.fullName, form.email, form.phone, form.desiredPosition, form.address, form.gpa, form.level, form.skillsSummary];
         if (requiredFields.some((value) => !String(value).trim())) {
-            alert(
-                language === 'vi'
-                    ? 'Vui lòng nhập đầy đủ thông tin form cơ bản trước khi chấm điểm tiếp.'
-                    : 'Please complete the quick form before continuing the second scoring step.',
-            );
+            alert(language === 'vi' ? 'Vui lòng nhập đầy đủ thông tin form cơ bản trước khi chấm điểm tiếp.' : 'Please complete the quick form before continuing the second scoring step.');
             return;
         }
 
-        const result = buildFormScoreResult();
-        setFormScoreResult(result);
-        setApplyNotice(
-            language === 'vi'
-                ? `CV đã được chấm ${cvMatchResult.score}%, và form bổ sung đã sẵn sàng để nộp chấm điểm chính thức.`
-                : `Your CV scored ${cvMatchResult.score}%, and the quick form is now ready for final scoring.`,
-        );
+        // Gọi API thật từ NestJS — không tự tính nữa
+        setIsAnalyzingCv(true);
+        try {
+            const payload = {
+                full_name: form.fullName.trim(),
+                email: form.email.trim(),
+                phone: form.phone.trim(),
+                position: form.desiredPosition.trim(),
+                address: form.address.trim(),
+                gpa: String(form.gpa || '').trim(),
+                level: String(form.level || '').trim(),
+                skill: form.skillsSummary.trim(),
+            };
+            const jobId = String(jobData.id || jobData._id || id || '');
+            const response = await api.post(`applications/preview-score/${jobId}`, payload);
+            const serverResult = response?.data?.data || {};
+            const result = {
+                score: serverResult.score || 0,
+                tone: getToneByScore(serverResult.score || 0),
+                criteriaScores: Array.isArray(serverResult.criteriaScores) ? serverResult.criteriaScores : [],
+                matchedKeywords: Array.isArray(serverResult.matchedKeywords) ? serverResult.matchedKeywords : [],
+                missingKeywords: Array.isArray(serverResult.missingKeywords) ? serverResult.missingKeywords : [],
+                note: language === 'vi'
+                    ? 'Điểm này là điểm THẬT từ server NestJS, cùng thuật toán với điểm lưu vào DB.'
+                    : 'This score is the REAL score from NestJS server, same algorithm as the DB score.',
+            };
+            setFormScoreResult(result);
+            setApplyNotice(
+                language === 'vi'
+                    ? `Form được NestJS chấm được ${result.score}%. Kiểm tra kết quả bên dưới rồi bấm Nộp CV để hoàn tất.`
+                    : `NestJS scored your form ${result.score}%. Review the result below then click Submit to finish.`,
+            );
+        } catch (error) {
+            console.error('Preview score error:', error);
+            alert(language === 'vi' ? 'Không thể chấm điểm lúc này. Vui lòng thử lại.' : 'Unable to score right now. Please try again.');
+        } finally {
+            setIsAnalyzingCv(false);
+        }
     };
 
     const handleSubmitApplication = async () => {
@@ -572,18 +599,14 @@ const Job = () => {
                 );
                 successMessage = serverResult?.status || successMessage;
             } else {
-                const submitData = new FormData();
-                submitData.append('jobId', String(jobData.id || jobData._id || id || ''));
-                submitData.append('fullName', applicationForm.fullName.trim());
-                submitData.append('email', applicationForm.email.trim());
-                submitData.append('phone', applicationForm.phone.trim());
-                submitData.append('coverLetter', coverLetter.trim());
-                submitData.append('cv', uploadedCvFile);
-
-                const response = await api.post('applications/apply-with-details', submitData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                    },
+                // Fallback: AI không chạy, gửi JSON thay vì multipart
+                const jobIdStr = String(jobData.id || jobData._id || id || '');
+                const response = await api.post('applications/apply-no-file', {
+                    jobId: jobIdStr,
+                    fullName: applicationForm.fullName.trim(),
+                    email: applicationForm.email.trim(),
+                    phone: applicationForm.phone.trim(),
+                    coverLetter: coverLetter.trim(),
                 });
 
                 setApplicationSubmitted(true);
@@ -616,8 +639,25 @@ const Job = () => {
         const lowCriteria = (result.criteriaScores || [])
             .filter((criterion) => criterion.score < 60)
             .map((criterion) => getCriterionLabel(criterion.key, language));
-        const highlightKeywords = (result.matchedKeywords || []).slice(0, 3);
-        const missingKeywords = (result.missingKeywords || []).slice(0, 4);
+
+        // Lấy missingKeywords từ criteriaScores trước (chính xác hơn),
+        // fallback về result.missingKeywords nếu không có criteriaScores (kết quả từ server)
+        const missingKeywords = unique(
+            (result.criteriaScores || []).flatMap((c) => c.missingKeywords || [])
+        ).filter(Boolean).slice(0, 4);
+
+        const resolvedMissing = missingKeywords.length > 0
+            ? missingKeywords
+            : (result.missingKeywords || []).filter(Boolean).slice(0, 4);
+
+        const highlightKeywords = unique(
+            (result.criteriaScores || []).flatMap((c) => c.matchedKeywords || [])
+        ).filter(Boolean).slice(0, 3);
+
+        const resolvedHighlight = highlightKeywords.length > 0
+            ? highlightKeywords
+            : (result.matchedKeywords || []).filter(Boolean).slice(0, 3);
+
         const feedback = [];
 
         feedback.push(
@@ -638,11 +678,11 @@ const Job = () => {
                             : 'Feedback: your profile is still weak for this role and should be improved first.',
         );
 
-        if (missingKeywords.length > 0) {
+        if (resolvedMissing.length > 0) {
             feedback.push(
                 language === 'vi'
-                    ? `Đang thiếu hoặc chưa thể hiện rõ: ${missingKeywords.join(', ')}.`
-                    : `Still missing or not clearly shown: ${missingKeywords.join(', ')}.`,
+                    ? `Đang thiếu hoặc chưa thể hiện rõ: ${resolvedMissing.join(', ')}.`
+                    : `Still missing or not clearly shown: ${resolvedMissing.join(', ')}.`,
             );
         }
 
@@ -652,11 +692,11 @@ const Job = () => {
                     ? `Nên ưu tiên cải thiện: ${lowCriteria.join(', ')}.`
                     : `Priority areas to improve: ${lowCriteria.join(', ')}.`,
             );
-        } else if (highlightKeywords.length > 0) {
+        } else if (resolvedHighlight.length > 0) {
             feedback.push(
                 language === 'vi'
-                    ? `Điểm mạnh hiện tại: ${highlightKeywords.join(', ')}.`
-                    : `Current strengths: ${highlightKeywords.join(', ')}.`,
+                    ? `Điểm mạnh hiện tại: ${resolvedHighlight.join(', ')}.`
+                    : `Current strengths: ${resolvedHighlight.join(', ')}.`,
             );
         } else if (result.note) {
             feedback.push(result.note);
@@ -864,7 +904,7 @@ const Job = () => {
 
                             <div className={cx('popup-field')}>
                                 <label className={cx('popup-label')}>{language === 'vi' ? 'Bước 1: Upload CV trước' : 'Step 1: Upload your CV first'} <span className={cx('required')}>*</span></label>
-                                <input className={cx('popup-file-input')} type="file" accept=".pdf,.doc,.docx" onChange={handleCvUpload} />
+                                <input className={cx('popup-file-input')} type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" onChange={handleCvUpload} />
                                 <div className={cx('upload-hint')}>
                                         {language === 'vi'
                                         ? 'Hệ thống đọc file PDF/DOC/DOCX và chấm theo 5 tiêu chí: level, chức vụ, địa chỉ, kỹ năng, GPA.'
@@ -1016,7 +1056,7 @@ const Job = () => {
 
                         <div className={cx('popup-actions')}>
                             <button className={cx('popup-btn', 'popup-btn--cancel')} onClick={closeApplyPopup}>{language === 'vi' ? 'Hủy' : 'Cancel'}</button>
-                            <button className={cx('popup-btn', 'popup-btn--submit')} onClick={handleApplySubmit} disabled={isAnalyzingCv || isSubmittingApplication || !cvMatchResult || !applyOption || applicationSubmitted}>
+                            <button className={cx('popup-btn', 'popup-btn--submit')} onClick={handleApplySubmit} disabled={isAnalyzingCv || isSubmittingApplication || !cvMatchResult || !applyOption}>
                                 {applyOption === 'create'
                                     ? language === 'vi' ? 'Đi đến tạo CV' : 'Go to CV Builder'
                                     : applyOption === 'form'

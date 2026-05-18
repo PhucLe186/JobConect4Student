@@ -154,10 +154,23 @@ function NewJob({ language = 'vi' }) {
   const [form, setForm] = useState(createEmptyForm);
   const [submitting, setSubmitting] = useState(false);
   const [notice, setNotice] = useState({ type: '', text: '' });
+  const [allSkills, setAllSkills] = useState([]);
+  const [selectedSkillIds, setSelectedSkillIds] = useState([]);
   const navigate = useNavigate();
   const { api, user } = useContext(AuthContext);
 
   const t = translations[language] || translations.vi;
+
+  // Load danh sách skills khi mount
+  React.useEffect(() => {
+    api.get('skills').then((res) => setAllSkills(res.data || [])).catch(() => {});
+  }, [api]);
+
+  const toggleSkill = (id) => {
+    setSelectedSkillIds((prev) =>
+      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
+    );
+  };
 
   const onChange = (event) => {
     const { name, value } = event.target;
@@ -203,6 +216,7 @@ function NewJob({ language = 'vi' }) {
         phone: form.phone.trim() || undefined,
         workingHours: form.workingHours.trim() || undefined,
         status: 'draft',
+        skillIds: selectedSkillIds,
       };
 
       await api.post('jobs', payload);
@@ -277,6 +291,52 @@ function NewJob({ language = 'vi' }) {
               value={form.requirements}
               onChange={onChange}
             />
+          </div>
+
+          <div className={cx('newjob__field')}>
+            <label className={cx('newjob__label')}>
+              {language === 'vi' ? 'Kỹ năng yêu cầu' : 'Required Skills'}
+              <span style={{ color: '#888', fontWeight: 400, marginLeft: 6, fontSize: '0.85em' }}>
+                ({language === 'vi' ? 'Dùng để AI chấm điểm CV' : 'Used for AI CV scoring'})
+              </span>
+            </label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: 8 }}>
+              {allSkills.map((skill) => (
+                <label
+                  key={skill._id}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                    padding: '6px 14px', borderRadius: 999, cursor: 'pointer',
+                    border: selectedSkillIds.includes(skill._id)
+                      ? '2px solid #1259c3' : '1px solid #d9e3f0',
+                    background: selectedSkillIds.includes(skill._id)
+                      ? '#eaf2ff' : '#f7faff',
+                    color: selectedSkillIds.includes(skill._id) ? '#1259c3' : '#5f6f85',
+                    fontWeight: selectedSkillIds.includes(skill._id) ? 700 : 400,
+                    fontSize: '0.9rem',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    style={{ display: 'none' }}
+                    checked={selectedSkillIds.includes(skill._id)}
+                    onChange={() => toggleSkill(skill._id)}
+                  />
+                  {skill.name}
+                </label>
+              ))}
+              {allSkills.length === 0 && (
+                <span style={{ color: '#888', fontSize: '0.9rem' }}>
+                  {language === 'vi' ? 'Đang tải danh sách kỹ năng...' : 'Loading skills...'}
+                </span>
+              )}
+            </div>
+            {selectedSkillIds.length > 0 && (
+              <div style={{ marginTop: 8, fontSize: '0.85rem', color: '#1259c3' }}>
+                {language === 'vi' ? 'Đã chọn' : 'Selected'}: {selectedSkillIds.length} {language === 'vi' ? 'kỹ năng' : 'skills'}
+              </div>
+            )}
           </div>
         </section>
 

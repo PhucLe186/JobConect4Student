@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Post,
+  Patch,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -35,7 +36,17 @@ export class JobsController {
 
   @UseGuards(JwtAuthGuard)
   @Post('')
-  async CreateJob(@Req() req: Request, @Body() createJobdto: CreateJobDto) {
-    return this.jobsService.CreateJob(req.user as JwtUser, createJobdto);
+  async CreateJob(
+    @Req() req: Request,
+    @Body() body: CreateJobDto & { skillIds?: string[] },
+  ) {
+    const { skillIds, ...createJobdto } = body;
+    return this.jobsService.CreateJob(req.user as JwtUser, createJobdto, skillIds);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id/publish')
+  async PublishJob(@Param('id') id: string, @Req() req: Request) {
+    return this.jobsService.publishJob(id, req.user as JwtUser);
   }
 }

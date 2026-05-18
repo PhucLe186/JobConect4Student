@@ -93,9 +93,17 @@ const formatDate = (value) => {
     return date.toLocaleDateString('vi-VN');
 };
 
-function JobActionsMenu({ jobId, t }) {
+function JobActionsMenu({ jobId, jobStatus, t, onPublish }) {
     return (
         <div className={cx('job-card__dropdown')}>
+            {jobStatus === 'draft' && (
+                <button
+                    className={cx('job-card__dropdown-item', 'job-card__dropdown-item--publish')}
+                    onClick={() => onPublish(jobId)}
+                >
+                    {t.language === 'en' ? 'Publish' : 'Đăng tuyển'}
+                </button>
+            )}
             <button
                 className={cx('job-card__dropdown-item')}
                 onClick={() => console.log(`Edit job ${jobId}`)}
@@ -124,6 +132,17 @@ function JobManagement({ language = 'vi' }) {
     const navigate = useNavigate();
     const { api, user } = useContext(AuthContext);
     const t = translations[language] || translations.vi;
+
+    const handlePublish = async (jobId) => {
+        try {
+            await api.patch(`jobs/${jobId}/publish`);
+            setJobs((prev) => prev.map((j) => j.id === jobId ? { ...j, status: 'open' } : j));
+            setOpenMenuId(null);
+            alert(language === 'vi' ? 'Đăng tuyển thành công! Sinh viên có thể thấy và ứng tuyển.' : 'Job published! Students can now apply.');
+        } catch (err) {
+            alert(err?.response?.data?.message || (language === 'vi' ? 'Không thể đăng tuyển.' : 'Failed to publish.'));
+        }
+    };
 
     useEffect(() => {
         let mounted = true;
@@ -370,7 +389,7 @@ function JobManagement({ language = 'vi' }) {
                                                     ⋮
                                                 </button>
                                                 {openMenuId === job.id ? (
-                                                    <JobActionsMenu jobId={job.id} t={t} />
+                                                    <JobActionsMenu jobId={job.id} jobStatus={job.status} t={t} onPublish={handlePublish} />
                                                 ) : null}
                                             </div>
                                         </td>

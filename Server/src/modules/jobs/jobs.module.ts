@@ -8,6 +8,7 @@ import { User, UserSchema } from '../auth/schema/auth.schema';
 import { Student, StudentSchema } from '../student/student.schema';
 import { StudentSkills, StudentSkillSchema } from '../skills/schema/StudentSkill.schema';
 import { Skills, SkillSchema } from '../skills/schema/skills.schema';
+import { JobSkills, SkillSchema as JobSkillSchema } from '../skills/schema/JobSkill.schema';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { Skills, SkillSchema } from '../skills/schema/skills.schema';
       { name: Student.name, schema: StudentSchema },
       { name: StudentSkills.name, schema: StudentSkillSchema },
       { name: Skills.name, schema: SkillSchema },
+      { name: JobSkills.name, schema: JobSkillSchema },
     ]),
   ],
   controllers: [JobsController],

@@ -32,10 +32,9 @@ const ApplicationModal = ({ isOpen, onClose, jobData, onSubmit }) => {
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            // Kiểm tra định dạng file
-            const allowedTypes = ['image/png'];
+            const allowedTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
             if (!allowedTypes.includes(file.type)) {
-                alert('Chỉ chấp nhận file PNG');
+                alert('Chỉ chấp nhận file PDF, DOC, DOCX, PNG, JPG');
                 return;
             }
             // Kiểm tra kích thước file (5MB)
@@ -171,11 +170,11 @@ const ApplicationModal = ({ isOpen, onClose, jobData, onSubmit }) => {
                                 id="cv"
                                 name="cv"
                                 onChange={handleFileChange}
-                                accept=".png"
+                                accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
                                 required
                             />
                             <div className={cx('fileUploadText')}>
-                                {formData.cv ? formData.cv.name : 'Chọn file CV (PNG - tối đa 5MB)'}
+                                {formData.cv ? formData.cv.name : 'Chọn file CV (PDF, DOC, DOCX, PNG, JPG - tối đa 5MB)'}
                             </div>
                         </div>
                     </div>

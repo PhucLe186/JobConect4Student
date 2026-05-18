@@ -7,11 +7,9 @@ import { JwtUser } from '../auth/interface/jwt-user.interface';
 import { User, UserDocument } from '../auth/schema/auth.schema';
 import { CreateJobDto } from './dto/CreateJob.dto';
 import { Student, StudentDocument } from '../student/student.schema';
-import {
-  StudentSkills,
-  StudentSkillDocument,
-} from '../skills/schema/StudentSkill.schema';
+import { StudentSkills, StudentSkillDocument } from '../skills/schema/StudentSkill.schema';
 import { Skills, SkillDocument } from '../skills/schema/skills.schema';
+import { JobSkills, JobSkillDocument } from '../skills/schema/JobSkill.schema';
 
 @Injectable()
 export class JobsService {
@@ -19,9 +17,9 @@ export class JobsService {
     @InjectModel(Jobs.name) private jobsModel: Model<JobsDocument>,
     @InjectModel(User.name) private UserModel: Model<UserDocument>,
     @InjectModel(Student.name) private studentModel: Model<StudentDocument>,
-    @InjectModel(StudentSkills.name)
-    private studentSkillModel: Model<StudentSkillDocument>,
+    @InjectModel(StudentSkills.name) private studentSkillModel: Model<StudentSkillDocument>,
     @InjectModel(Skills.name) private skillModel: Model<SkillDocument>,
+    @InjectModel(JobSkills.name) private jobSkillModel: Model<JobSkillDocument>,
   ) {}
 
   private mapJob(job: any): JobsDto {
@@ -51,14 +49,11 @@ export class JobsService {
 
   async Jobs(): Promise<JobsDto[]> {
     const jobs = await this.jobsModel
-      .find()
+      .find({ status: 'open' })  // Chỉ hiển thị job đang mở
       .select(
         'title description employer_id job_type min_salary max_salary location deadline industry department experience requirements level status created_at',
       )
-      .populate({
-        path: 'Employer',
-        select: 'company_name logo',
-      })
+      .populate({ path: 'Employer', select: 'company_name logo' })
       .sort({ created_at: -1 })
       .lean()
       .exec();
@@ -120,6 +115,7 @@ export class JobsService {
   async CreateJob(
     user: JwtUser,
     createJobdto: CreateJobDto,
+    skillIds?: string[],
   ): Promise<{ status: boolean; jobId: string }> {
     const { userId } = user;
 
@@ -129,7 +125,31 @@ export class JobsService {
       status: createJobdto.status || 'draft',
     });
 
+    // Lưu skills vào bảng job_skills nếu có - chỉ insert các skillId tồn tại trong DB
+    if (skillIds && skillIds.length > 0) {
+      const validIds = skillIds.filter((id) => Types.ObjectId.isValid(id));
+      const existingSkills = await this.skillModel
+        .find({ _id: { $in: validIds.map((id) => new Types.ObjectId(id)) } })
+        .select('_id').lean();
+      const existingIdSet = new Set(existingSkills.map((s) => s._id.toString()));
+      const docs = validIds
+        .filter((id) => existingIdSet.has(id))
+        .map((id) => ({ Job_id: job._id, skill_id: new Types.ObjectId(id) }));
+      if (docs.length > 0) await this.jobSkillModel.insertMany(docs);
+    }
+
     return { status: true, jobId: job._id.toString() };
+  }
+
+  async publishJob(jobId: string, user: JwtUser): Promise<{ status: boolean }> {
+    const { userId } = user;
+    const job = await this.jobsModel.findOneAndUpdate(
+      { _id: new Types.ObjectId(jobId), employer_id: new Types.ObjectId(userId) },
+      { status: 'open' },
+      { new: true },
+    );
+    if (!job) throw new Error('Không tìm thấy job hoặc bạn không có quyền');
+    return { status: true };
   }
 
   async suggestedJobs(user: JwtUser): Promise<JobsDto[]> {

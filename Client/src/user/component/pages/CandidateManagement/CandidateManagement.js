@@ -20,18 +20,16 @@ const normalizeText = (value = '') =>
     .toLowerCase()
     .trim();
 
-const isTechMajor = (major = '') => {
-  const normalizedMajor = normalizeText(major);
-  return [
-    'phan mem',
-    'khoa hoc may tinh',
-    'he thong thong tin',
-    'computer science',
-    'data science',
-    'ai',
-    'software',
-    'cntt',
-  ].some((keyword) => normalizedMajor.includes(keyword));
+const isTechMajor = (major = '', careerGoal = '', position = '') => {
+  const techKeywords = [
+    'phan mem', 'khoa hoc may tinh', 'he thong thong tin',
+    'computer science', 'data science', 'ai', 'software', 'cntt',
+    'cong nghe thong tin', 'ky thuat may tinh', 'information technology',
+    'developer', 'engineer', 'frontend', 'backend', 'fullstack',
+  ];
+  const combined = [major, careerGoal, position].join(' ');
+  const normalized = normalizeText(combined);
+  return techKeywords.some((keyword) => normalized.includes(keyword));
 };
 
 const CRITERIA_DEFINITIONS = [
@@ -53,7 +51,7 @@ const CRITERIA_DEFINITIONS = [
   {
     key: 'techMajor',
     labelKey: 'criteriaTechMajor',
-    matches: (candidate) => isTechMajor(candidate.major),
+    matches: (candidate) => isTechMajor(candidate.major, candidate.career_goal, candidate.latestJobTitle),
   },
 ];
 
@@ -286,6 +284,13 @@ function CandidateManagement({ language = 'vi' }) {
         <div className={cx('cands__hero-stat')}>
           <span>{t.resultsLabel}</span>
           <strong>{displayedCandidates.length}</strong>
+          <button
+            type="button"
+            onClick={fetchCandidates}
+            style={{ display: 'block', marginTop: 8, fontSize: '0.8rem', color: 'var(--primary-color)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+          >
+            {language === 'vi' ? '↻ Làm mới' : '↻ Refresh'}
+          </button>
         </div>
       </section>
 
@@ -508,6 +513,19 @@ function CandidateManagement({ language = 'vi' }) {
                   {candidate.career_goal || '-'}
                 </div>
               </div>
+
+              {candidate.cv_file_path ? (
+                <div className={cx('cand-card__cv-action')}>
+                  <a
+                    href={`http://localhost:5000/${candidate.cv_file_path.replace(/\\/g, '/')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cx('cand-card__cv-btn')}
+                  >
+                    📄 {language === 'vi' ? 'Xem CV gốc' : 'View CV'}
+                  </a>
+                </div>
+              ) : null}
             </article>
           );
         })}
