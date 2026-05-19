@@ -449,41 +449,18 @@ const Job = () => {
                 return;
             }
 
-            try {
-                const fallbackResult = await analyzeCvMatch(file, jobData);
-                setUploadedCvPath('');
-                setCvAnalysisError('');
-                setCvMatchResult({
-                    ...fallbackResult,
-                    require_form: true,
-                    status: 'fallback_local',
-                    note:
-                        language === 'vi'
-                            ? 'AI tạm thời chưa sẵn sàng, hệ thống đang dùng kết quả ước tính để bạn tiếp tục nộp CV.'
-                            : 'AI is temporarily unavailable, so the system is using an estimated local score.',
-                });
-                setApplyOption('form');
-                setApplyNotice(
-                    language === 'vi'
-                        ? `AI tạm thời chưa sẵn sàng. Hệ thống đã chấm tạm ${fallbackResult.score}% để bạn vẫn có thể điền form và nộp CV.`
-                        : `AI is temporarily unavailable. The system estimated ${fallbackResult.score}% so you can still complete the form and apply.`,
-                );
-            } catch (fallbackError) {
-                console.error('Local fallback analysis failed:', fallbackError);
-                setUploadedCvName('');
-                setUploadedCvFile(null);
-                setUploadedCvPath('');
-                setCvMatchResult(null);
-                setApplyOption('');
-                setFormScoreResult(null);
-                setApplyNotice('');
-                setCvAnalysisError(
-                    serverMessage ||
-                        (language === 'vi'
-                            ? 'Không thể phân tích CV lúc này. Vui lòng thử lại khi dịch vụ AI và Python đang chạy.'
-                            : 'The CV could not be analyzed right now. Please make sure the AI and Python services are running.'),
-                );
-            }
+            setUploadedCvName('');
+            setUploadedCvFile(null);
+            setUploadedCvPath('');
+            setCvMatchResult(null);
+            setApplyOption('');
+            setFormScoreResult(null);
+            setApplyNotice('');
+            setCvAnalysisError(
+                language === 'vi'
+                    ? 'AI chưa sẵn sàng'
+                    : 'AI is not ready',
+            );
         } finally {
             setIsAnalyzingCv(false);
             event.target.value = '';
@@ -835,7 +812,7 @@ const Job = () => {
                             </div>
                             <div className={cx('skillColumn')}>
                                 <div className={cx('skillItem')}><span>{t.Experience}</span><p>{jobData.experience}</p></div>
-                                <div className={cx('skillItem')}><span>{t.programmingLang}</span><p>C/C++, Java, Python</p></div>
+                                <div className={cx('skillItem')}><span>{t.programmingLang}</span><p>{jobData.requirements}</p></div>
                                 <div className={cx('skillItem')}><span>{t.industry}</span><p>{jobData.industry}</p></div>
                             </div>
                         </div>
@@ -887,8 +864,8 @@ const Job = () => {
             </div>
 
             {showApplyPopup ? (
-                <div className={cx('popup-overlay')} onClick={closeApplyPopup}>
-                    <div className={cx('popup-content', 'popup-content--wide')} onClick={(event) => event.stopPropagation()}>
+                <div className={cx('popup-overlay')}>
+                    <div className={cx('popup-content', 'popup-content--wide')}>
                         <div className={cx('popup-header')}>
                             <h3>{language === 'vi' ? 'Ứng tuyển việc làm' : 'Apply for Job'}</h3>
                             <button className={cx('popup-close')} onClick={closeApplyPopup}>x</button>
@@ -991,7 +968,7 @@ const Job = () => {
                                         </div>
                                         <div className={cx('popup-field')}>
                                             <label className={cx('popup-label')}>{language === 'vi' ? 'Địa chỉ hiện tại' : 'Current address'} <span className={cx('required')}>*</span></label>
-                                            <input className={cx('popup-input')} value={applicationForm.address} onChange={(event) => setApplicationForm((prev) => ({ ...prev, address: event.target.value }))} placeholder={language === 'vi' ? 'Ví dụ: Thủ Đức, TP.HCM' : 'Ex: Thu Duc, Ho Chi Minh City'} />
+                                            <input className={cx('popup-input')} value={applicationForm.address} onChange={(event) => setApplicationForm((prev) => ({ ...prev, address: event.target.value }))} placeholder={language === 'vi' ? 'Ví dụ: Thủ Đức, Hồ Chí Minh' : 'Ex: Thu Duc, Ho Chi Minh City'} />
                                         </div>
                                         <div className={cx('popup-field')}>
                                             <label className={cx('popup-label')}>GPA <span className={cx('required')}>*</span></label>

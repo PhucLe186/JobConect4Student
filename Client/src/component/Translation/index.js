@@ -1,7 +1,7 @@
 const translations={
         vi: {
             Experience:'kinh nghiệm',
-            requirements:"yêu cầu ứng viên",
+            requirements:"Yêu cầu ứng viên",
             from: 'Từ',
             to: 'Đến',
             company: 'Công ty',
