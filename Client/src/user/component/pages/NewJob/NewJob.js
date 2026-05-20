@@ -42,7 +42,7 @@ const translations = {
     selectLevel: 'Chọn cấp bậc',
     selectProvinceFirst: 'Chọn tỉnh thành trước',
     btnBack: 'Quay lại',
-    btnSubmit: 'Lưu vào database',
+    btnSubmit: 'Đăng bài',
     loginRequired: 'Vui lòng đăng nhập bằng tài khoản nhà tuyển dụng để đăng tin.',
     successMessage: 'Đã lưu tin tuyển dụng vào MongoDB Atlas.',
     errorMessage: 'Không thể lưu tin tuyển dụng. Vui lòng kiểm tra đăng nhập và dữ liệu.',
@@ -101,7 +101,7 @@ const departmentOptions = [
 ];
 
 const districtsByProvince = {
-  'TP.HCM': ['Quận 1', 'Quận 3', 'Quận 7', 'Quận Bình Thạnh', 'Quận Tân Bình', 'Quận Phú Nhuận'],
+  'Hồ Chí Minh': ['Quận 1', 'Quận 3', 'Quận 7', 'Quận Bình Thạnh', 'Quận Tân Bình', 'Quận Phú Nhuận'],
   'Hà Nội': ['Ba Đình', 'Hoàn Kiếm', 'Hai Bà Trưng', 'Đống Đa', 'Tây Hồ', 'Cầu Giấy'],
   'Đà Nẵng': ['Hải Châu', 'Thanh Khê', 'Sơn Trà', 'Ngũ Hành Sơn', 'Liên Chiểu', 'Cẩm Lệ'],
   'Cần Thơ': ['Ninh Kiều', 'Bình Thủy', 'Cái Răng', 'Ô Môn', 'Thốt Nốt'],
@@ -163,7 +163,7 @@ function NewJob({ language = 'vi' }) {
 
   // Load danh sách skills khi mount
   React.useEffect(() => {
-    api.get('skills').then((res) => setAllSkills(res.data || [])).catch(() => {});
+    api.get('skills').then((res) => setAllSkills(res.data || [])).catch(() => { });
   }, [api]);
 
   const toggleSkill = (id) => {
@@ -433,7 +433,7 @@ function NewJob({ language = 'vi' }) {
                 className={cx('newjob__input')}
                 name="min_salary"
                 placeholder={t.placeholderSalary}
-                value={form.min_salary}
+                value={form.min_salary ? Number(form.min_salary).toLocaleString('vi-VN') : ''}
                 onChange={onChange}
                 required
               />
@@ -447,7 +447,7 @@ function NewJob({ language = 'vi' }) {
                 className={cx('newjob__input')}
                 name="max_salary"
                 placeholder={t.placeholderSalary}
-                value={form.max_salary}
+                value={form.max_salary ? Number(form.max_salary).toLocaleString('vi-VN') : ''}
                 onChange={onChange}
                 required
               />

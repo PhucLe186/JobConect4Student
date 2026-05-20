@@ -145,7 +145,7 @@ function JobSuggestions() {
                                 className={cx('filter-input')}
                                 value={filters.address}
                                 onChange={(e) => updateFilter('address', e.target.value)}
-                                placeholder={language === 'vi' ? 'Ví dụ: Hà Nội, TP.HCM...' : 'Example: Hanoi'}
+                                placeholder={language === 'vi' ? 'Ví dụ: Hà Nội, Hồ Chí Minh...' : 'Example: Hanoi'}
                             />
                         </div>
 

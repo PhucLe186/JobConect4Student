@@ -424,9 +424,9 @@ const hexToRgb = (hex = '') => {
     const value =
         normalized.length === 3
             ? normalized
-                  .split('')
-                  .map((char) => `${char}${char}`)
-                  .join('')
+                .split('')
+                .map((char) => `${char}${char}`)
+                .join('')
             : normalized;
 
     return {
@@ -1700,9 +1700,8 @@ function CVPreview({ cvData, avatar, compact = false, articleRef = null }) {
                             )}
 
                             <div
-                                className={`${styles.educationAsidePeriod} ${
-                                    isEducationPeriodEmpty ? styles.periodPlaceholder : ''
-                                }`}
+                                className={`${styles.educationAsidePeriod} ${isEducationPeriodEmpty ? styles.periodPlaceholder : ''
+                                    }`}
                             >
                                 {formatPeriod(cvData.education.start, cvData.education.end)}
                             </div>
@@ -1913,9 +1912,8 @@ function CVPreviewDynamic({ cvData, avatar, compact = false, articleRef = null }
                             ) : null}
 
                             <div
-                                className={`${styles.educationAsidePeriod} ${
-                                    isEducationPeriodEmpty ? styles.periodPlaceholder : ''
-                                }`}
+                                className={`${styles.educationAsidePeriod} ${isEducationPeriodEmpty ? styles.periodPlaceholder : ''
+                                    }`}
                             >
                                 {formatPeriod(cvData.education.start, cvData.education.end)}
                             </div>
@@ -2435,9 +2433,9 @@ function CVBuilder() {
             experiences: prev.experiences.map((experience) =>
                 experience.id === id
                     ? {
-                          ...experience,
-                          bullets: experience.bullets.map((bullet, index) => (index === bulletIndex ? value : bullet)),
-                      }
+                        ...experience,
+                        bullets: experience.bullets.map((bullet, index) => (index === bulletIndex ? value : bullet)),
+                    }
                     : experience,
             ),
         }));
@@ -2563,10 +2561,10 @@ function CVBuilder() {
         try {
             const avatarData = avatar
                 ? await createAvatarDataUrl(avatar, {
-                      size: 240,
-                      circular: true,
-                      outputType: 'image/png',
-                  })
+                    size: 240,
+                    circular: true,
+                    outputType: 'image/png',
+                })
                 : '';
 
             const payload = {
@@ -2654,9 +2652,8 @@ function CVBuilder() {
                     <div className={styles.resumeGrid}>
                         {savedResumes.map((resume) => (
                             <button
-                                className={`${styles.resumeCard} ${
-                                    selectedResumeId === resume.id ? styles.resumeCardActive : ''
-                                }`}
+                                className={`${styles.resumeCard} ${selectedResumeId === resume.id ? styles.resumeCardActive : ''
+                                    }`}
                                 type="button"
                                 key={resume.id}
                                 onClick={() => handleLoadResume(resume)}
@@ -2742,6 +2739,105 @@ function CVBuilder() {
                     </div>
 
                     <div className={styles.editorGrid}>
+                        <div className={styles.editorCard}>
+                            <h2>Mẫu CV</h2>
+                            <p className={styles.editorSubtle}>
+                                Chọn template trước. Mỗi mẫu giữ cùng dữ liệu nhưng có cách trình bày riêng để người
+                                dùng lựa chọn.
+                            </p>
+
+                            <div className={styles.templateGrid}>
+                                {CV_TEMPLATES.map((template) => {
+                                    const isActive = cvData.templateId === template.id;
+
+                                    return (
+                                        <button
+                                            className={`${styles.templateOption} ${isActive ? styles.templateOptionActive : ''
+                                                }`}
+                                            type="button"
+                                            key={template.id}
+                                            onClick={() => updateRootField('templateId', template.id)}
+                                        >
+                                            <span className={styles.templateOptionTop}>
+                                                <strong>{template.label}</strong>
+                                                <span className={styles.templatePreviewChip}>
+                                                    {template.previewLabel}
+                                                </span>
+                                            </span>
+                                            <small>{template.description}</small>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
+                            <div className={styles.themeSummary}>
+                                Mẫu đang chọn: <strong>{selectedTemplate.label}</strong>
+                            </div>
+                        </div>
+
+                        <div className={styles.editorCard}>
+                            <h2>Màu CV</h2>
+                            {selectedTemplate.themeMode === 'locked' ? (
+                                <>
+                                    <p className={styles.editorSubtle}>
+                                        Template này khóa sẵn palette để bám đúng form gốc, nên không cho đổi màu thủ công.
+                                    </p>
+                                    <div className={styles.templateLockNotice}>
+                                        Màu đang dùng: <strong>{selectedTemplate.lockedThemeName || 'Fixed palette'}</strong>.
+                                        Nếu muốn đổi màu, hãy chuyển sang Mẫu 1.
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <p className={styles.editorSubtle}>
+                                        Chọn nhanh tone màu để CV nhìn đa dạng hơn mà vẫn giữ nguyên bố cục.
+                                    </p>
+
+                                    <div className={styles.themeGrid}>
+                                        {CV_THEMES.map((theme) => {
+                                            const isActive = cvData.themeId === theme.id;
+
+                                            return (
+                                                <button
+                                                    className={`${styles.themeOption} ${isActive ? styles.themeOptionActive : ''
+                                                        }`}
+                                                    type="button"
+                                                    key={theme.id}
+                                                    onClick={() => updateRootField('themeId', theme.id)}
+                                                    style={{
+                                                        '--theme-strong': theme.colors.section,
+                                                        '--theme-soft': hexToRgbaString(theme.colors.section, 0.08),
+                                                        '--theme-outline': hexToRgbaString(
+                                                            theme.colors.section,
+                                                            0.28,
+                                                        ),
+                                                    }}
+                                                >
+                                                    <span className={styles.themeSwatches}>
+                                                        {theme.swatches.map((swatch) => (
+                                                            <span
+                                                                className={styles.themeSwatch}
+                                                                key={`${theme.id}-${swatch}`}
+                                                                style={{ background: swatch }}
+                                                            />
+                                                        ))}
+                                                    </span>
+                                                    <span className={styles.themeInfo}>
+                                                        <strong>{theme.label}</strong>
+                                                        <small>{theme.description}</small>
+                                                    </span>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+
+                                    <div className={styles.themeSummary}>
+                                        Màu đang chọn: <strong>{selectedTheme.label}</strong>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+
                         <div className={styles.editorCard}>
                             <h2>Thông tin cá nhân</h2>
 
@@ -3043,107 +3139,6 @@ function CVBuilder() {
                                     </div>
                                 ))}
                             </div>
-                        </div>
-
-                        <div className={styles.editorCard}>
-                            <h2>Mẫu CV</h2>
-                            <p className={styles.editorSubtle}>
-                                Chọn template trước. Mỗi mẫu giữ cùng dữ liệu nhưng có cách trình bày riêng để người
-                                dùng lựa chọn.
-                            </p>
-
-                            <div className={styles.templateGrid}>
-                                {CV_TEMPLATES.map((template) => {
-                                    const isActive = cvData.templateId === template.id;
-
-                                    return (
-                                        <button
-                                            className={`${styles.templateOption} ${
-                                                isActive ? styles.templateOptionActive : ''
-                                            }`}
-                                            type="button"
-                                            key={template.id}
-                                            onClick={() => updateRootField('templateId', template.id)}
-                                        >
-                                            <span className={styles.templateOptionTop}>
-                                                <strong>{template.label}</strong>
-                                                <span className={styles.templatePreviewChip}>
-                                                    {template.previewLabel}
-                                                </span>
-                                            </span>
-                                            <small>{template.description}</small>
-                                        </button>
-                                    );
-                                })}
-                            </div>
-
-                            <div className={styles.themeSummary}>
-                                Mẫu đang chọn: <strong>{selectedTemplate.label}</strong>
-                            </div>
-                        </div>
-
-                        <div className={styles.editorCard}>
-                            <h2>Màu CV</h2>
-                            {selectedTemplate.themeMode === 'locked' ? (
-                                <>
-                                    <p className={styles.editorSubtle}>
-                                        Template này khóa sẵn palette để bám đúng form gốc, nên không cho đổi màu thủ công.
-                                    </p>
-                                    <div className={styles.templateLockNotice}>
-                                        Màu đang dùng: <strong>{selectedTemplate.lockedThemeName || 'Fixed palette'}</strong>.
-                                        Nếu muốn đổi màu, hãy chuyển sang Mẫu 1.
-                                    </div>
-                                </>
-                            ) : (
-                                <>
-                                    <p className={styles.editorSubtle}>
-                                        Chọn nhanh tone màu để CV nhìn đa dạng hơn mà vẫn giữ nguyên bố cục.
-                                    </p>
-
-                                    <div className={styles.themeGrid}>
-                                        {CV_THEMES.map((theme) => {
-                                            const isActive = cvData.themeId === theme.id;
-
-                                            return (
-                                                <button
-                                                    className={`${styles.themeOption} ${
-                                                        isActive ? styles.themeOptionActive : ''
-                                                    }`}
-                                                    type="button"
-                                                    key={theme.id}
-                                                    onClick={() => updateRootField('themeId', theme.id)}
-                                                    style={{
-                                                        '--theme-strong': theme.colors.section,
-                                                        '--theme-soft': hexToRgbaString(theme.colors.section, 0.08),
-                                                        '--theme-outline': hexToRgbaString(
-                                                            theme.colors.section,
-                                                            0.28,
-                                                        ),
-                                                    }}
-                                                >
-                                                    <span className={styles.themeSwatches}>
-                                                        {theme.swatches.map((swatch) => (
-                                                            <span
-                                                                className={styles.themeSwatch}
-                                                                key={`${theme.id}-${swatch}`}
-                                                                style={{ background: swatch }}
-                                                            />
-                                                        ))}
-                                                    </span>
-                                                    <span className={styles.themeInfo}>
-                                                        <strong>{theme.label}</strong>
-                                                        <small>{theme.description}</small>
-                                                    </span>
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-
-                                    <div className={styles.themeSummary}>
-                                        Màu đang chọn: <strong>{selectedTheme.label}</strong>
-                                    </div>
-                                </>
-                            )}
                         </div>
 
                         <div className={styles.editorCard}>

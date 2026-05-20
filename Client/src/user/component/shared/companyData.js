@@ -126,7 +126,7 @@ const COMPANY_SEEDS = [
     {
         brand: 'Google Vietnam',
         industry: 'Công nghệ thông tin và nền tảng số',
-        city: 'TP.HCM',
+        city: 'Hồ Chí Minh',
         districts: ['Quận 1', 'Quận 3', 'Bình Thạnh', 'TP. Thủ Đức', 'Tân Bình'],
         streets: ['Lê Lợi', 'Nguyễn Huệ', 'Tôn Đức Thắng', 'Đồng Khởi', 'Võ Văn Kiệt'],
         description: 'Doanh nghiệp công nghệ quốc tế phát triển hệ sinh thái tìm kiếm, cloud, dữ liệu và AI.',
@@ -136,7 +136,7 @@ const COMPANY_SEEDS = [
     {
         brand: 'Grab Vietnam',
         industry: 'Công nghệ và vận tải số',
-        city: 'TP.HCM',
+        city: 'Hồ Chí Minh',
         districts: ['Quận 1', 'Quận 7', 'Phú Nhuận', 'TP. Thủ Đức', 'Bình Thạnh'],
         streets: ['Nguyễn Thị Minh Khai', 'Lê Duẩn', 'Mai Chí Thọ', 'Phạm Viết Chánh', 'Nam Kỳ Khởi Nghĩa'],
         description: 'Hệ sinh thái gọi xe, giao nhận và fintech với đội ngũ vận hành và sản phẩm lớn.',
@@ -176,7 +176,7 @@ const COMPANY_SEEDS = [
     {
         brand: 'Oracle Vietnam',
         industry: 'Cloud, cơ sở dữ liệu và enterprise software',
-        city: 'TP.HCM',
+        city: 'Hồ Chí Minh',
         districts: ['Quận 1', 'Quận 3', 'Quận 4', 'Quận 7', 'TP. Thủ Đức'],
         streets: ['Nguyễn Du', 'Hai Bà Trưng', 'Pasteur', 'Võ Văn Tần', 'Điện Biên Phủ'],
         description: 'Tập trung vào cloud infrastructure, cơ sở dữ liệu và giải pháp vận hành doanh nghiệp.',
@@ -196,7 +196,7 @@ const COMPANY_SEEDS = [
     {
         brand: 'TikTok Vietnam',
         industry: 'Mạng xã hội và nội dung số',
-        city: 'TP.HCM',
+        city: 'Hồ Chí Minh',
         districts: ['Quận 1', 'Quận 2', 'Quận 4', 'Quận 7', 'TP. Thủ Đức'],
         streets: ['Pasteur', 'Nguyễn Bỉnh Khiêm', 'Võ Thị Sáu', 'Lê Thánh Tôn', 'Nguyễn Hữu Cảnh'],
         description: 'Phát triển nền tảng nội dung số, creator tools, ads và giải pháp moderation.',
@@ -226,7 +226,7 @@ const COMPANY_SEEDS = [
     {
         brand: 'IBM Vietnam',
         industry: 'Tư vấn công nghệ, hybrid cloud và data',
-        city: 'TP.HCM',
+        city: 'Hồ Chí Minh',
         districts: ['Quận 1', 'Quận 3', 'Bình Thạnh', 'Quận 7', 'TP. Thủ Đức'],
         streets: ['Lê Thánh Tôn', 'Nguyễn Huệ', 'Cách Mạng Tháng 8', 'Hoàng Văn Thụ', 'Xa Lộ Hà Nội'],
         description: 'Tập trung vào data platform, tư vấn doanh nghiệp và giải pháp tự động hóa.',
@@ -256,7 +256,7 @@ const COMPANY_SEEDS = [
     {
         brand: 'VNG Corporation',
         industry: 'Công nghệ, game và digital product',
-        city: 'TP.HCM',
+        city: 'Hồ Chí Minh',
         districts: ['Quận 7', 'Quận 1', 'TP. Thủ Đức', 'Quận 4', 'Quận 3'],
         streets: ['Nguyễn Văn Linh', 'Huỳnh Tấn Phát', 'Bến Vân Đồn', 'Điện Biên Phủ', 'Cách Mạng Tháng 8'],
         description: 'Công ty công nghệ Việt Nam tập trung vào game, thanh toán, cloud và sản phẩm số.',
@@ -266,7 +266,7 @@ const COMPANY_SEEDS = [
     {
         brand: 'MoMo',
         industry: 'Fintech và thanh toán điện tử',
-        city: 'TP.HCM',
+        city: 'Hồ Chí Minh',
         districts: ['Quận 1', 'Quận 3', 'Quận 10', 'Phú Nhuận', 'TP. Thủ Đức'],
         streets: ['Pasteur', 'Nam Kỳ Khởi Nghĩa', 'Nguyễn Thị Minh Khai', 'Hoàng Văn Thụ', 'Mai Chí Thọ'],
         description: 'Nền tảng ví điện tử và thanh toán số với hệ thống vận hành quy mô lớn.',
