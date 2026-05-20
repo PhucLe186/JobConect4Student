@@ -58,6 +58,46 @@ const tokenizeCompare = (value = '') =>
         .split(' ')
         .filter((token) => token.length >= 2);
 
+const FEEDBACK_NOISE_KEYWORDS = new Set([
+    'ho',
+    'chi',
+    'minh',
+    'thanh',
+    'pho',
+    'tp',
+    'hcm',
+    'ha',
+    'noi',
+    'hn',
+    'city',
+    'district',
+    'ward',
+    'quan',
+    'phuong',
+]);
+
+const formatFeedbackList = (items, language) => {
+    const cleaned = unique(items).filter(Boolean);
+
+    if (!cleaned.length) return '';
+    if (cleaned.length === 1) return cleaned[0];
+
+    const lastSeparator = language === 'vi' ? ' và ' : ' and ';
+    return `${cleaned.slice(0, -1).join(', ')}${lastSeparator}${cleaned[cleaned.length - 1]}`;
+};
+
+const sanitizeFeedbackKeywords = (items) =>
+    unique(items)
+        .map((item) => String(item || '').trim())
+        .filter(Boolean)
+        .filter((item) => {
+            const normalized = normalizeCompare(item);
+
+            if (!normalized) return false;
+            if (normalized.length < 3 && !['ai', 'ui', 'ux', 'qa'].includes(normalized)) return false;
+            return !FEEDBACK_NOISE_KEYWORDS.has(normalized);
+        });
+
 const findCanonicalLevel = (value = '') => {
     const normalized = normalizeCompare(value);
 
@@ -80,6 +120,46 @@ const getCriterionLabel = (key, language) => {
     };
 
     return labels[key] || key;
+};
+
+const getFeedbackCriterionLabel = (key, language) => {
+    const labels = {
+        position: language === 'vi' ? 'vị trí ứng tuyển' : 'target position',
+        level: language === 'vi' ? 'level kinh nghiệm' : 'experience level',
+        address: language === 'vi' ? 'khu vực làm việc' : 'work location',
+        skills: language === 'vi' ? 'kỹ năng chính' : 'core skills',
+        gpa: 'GPA',
+    };
+
+    return labels[key] || getCriterionLabel(key, language);
+};
+
+const getCriterionActionLabel = (key, language, options = {}) => {
+    const skillKeywords = options.skillKeywords || [];
+
+    if (language === 'vi') {
+        if (key === 'position') return 'vị trí mong muốn';
+        if (key === 'level') return 'level kinh nghiệm';
+        if (key === 'address') return 'khu vực có thể làm việc';
+        if (key === 'skills') {
+            return skillKeywords.length > 0
+                ? `kỹ năng nổi bật như ${skillKeywords.join(', ')}`
+                : 'kỹ năng nổi bật';
+        }
+        if (key === 'gpa') return 'GPA hiện tại';
+        return '';
+    }
+
+    if (key === 'position') return 'your target position';
+    if (key === 'level') return 'your experience level';
+    if (key === 'address') return 'your preferred work location';
+    if (key === 'skills') {
+        return skillKeywords.length > 0
+            ? `key skills such as ${skillKeywords.join(', ')}`
+            : 'your key skills';
+    }
+    if (key === 'gpa') return 'your GPA';
+    return '';
 };
 
 const getToneByScore = (score) => {
@@ -637,6 +717,7 @@ const Job = () => {
 
     const handleApplySubmit = handleScoreForm;
 
+    // eslint-disable-next-line no-unused-vars
     const buildFeedbackSummary = (result) => {
         const lowCriteria = (result.criteriaScores || [])
             .filter((criterion) => criterion.score < 60)
@@ -707,6 +788,93 @@ const Job = () => {
         return feedback;
     };
 
+    const buildReadableFeedbackSummary = (result) => {
+        const criteriaScores = Array.isArray(result.criteriaScores) ? result.criteriaScores : [];
+        const lowCriteriaItems = criteriaScores.filter((criterion) => criterion.score < 60);
+        const lowCriterionKeys = lowCriteriaItems.map((criterion) => criterion.key);
+        const lowCriteriaLabels = lowCriterionKeys.map((key) => getFeedbackCriterionLabel(key, language));
+
+        const missingKeywords = sanitizeFeedbackKeywords(
+            criteriaScores.flatMap((criterion) => criterion.missingKeywords || []),
+        ).slice(0, 4);
+
+        const resolvedMissing = missingKeywords.length > 0
+            ? missingKeywords
+            : sanitizeFeedbackKeywords(result.missingKeywords || []).slice(0, 4);
+
+        const highlightKeywords = sanitizeFeedbackKeywords(
+            criteriaScores.flatMap((criterion) => criterion.matchedKeywords || []),
+        ).slice(0, 3);
+
+        const resolvedHighlight = highlightKeywords.length > 0
+            ? highlightKeywords
+            : sanitizeFeedbackKeywords(result.matchedKeywords || []).slice(0, 3);
+
+        const skillKeywords = sanitizeFeedbackKeywords(
+            criteriaScores.find((criterion) => criterion.key === 'skills')?.missingKeywords || [],
+        ).slice(0, 3);
+
+        const actionLabels = unique(
+            lowCriterionKeys.map((key) => getCriterionActionLabel(key, language, { skillKeywords })),
+        ).filter(Boolean);
+
+        const feedback = [];
+
+        feedback.push(
+            language === 'vi'
+                ? result.score >= 80
+                    ? 'Nhận xét: CV đang thể hiện mức độ phù hợp tốt với vị trí này.'
+                    : result.score >= 60
+                        ? 'Nhận xét: CV đã có nền tảng phù hợp, nhưng vẫn còn vài điểm cần làm rõ thêm.'
+                        : result.score >= 40
+                            ? 'Nhận xét: CV mới thể hiện một phần mức độ phù hợp với vị trí này.'
+                            : 'Nhận xét: CV hiện chưa cho thấy mức độ phù hợp rõ ràng với vị trí này.'
+                : result.score >= 80
+                    ? 'Feedback: your CV already shows a strong fit for this role.'
+                    : result.score >= 60
+                        ? 'Feedback: your CV has a solid base, but a few points still need clarification.'
+                        : result.score >= 40
+                            ? 'Feedback: your CV currently shows only a partial match for this role.'
+                            : 'Feedback: your CV does not clearly show a strong match for this role yet.',
+        );
+
+        if (lowCriteriaLabels.length > 0) {
+            feedback.push(
+                language === 'vi'
+                    ? `Các mục cần bổ sung hoặc làm rõ thêm: ${formatFeedbackList(lowCriteriaLabels, language)}.`
+                    : `Areas that still need to be clarified: ${formatFeedbackList(lowCriteriaLabels, language)}.`,
+            );
+
+            if (actionLabels.length > 0) {
+                feedback.push(
+                    language === 'vi'
+                        ? `Bạn nên ghi rõ hơn ${formatFeedbackList(actionLabels, language)} trong CV để hệ thống đánh giá chính xác hơn.`
+                        : `You should make ${formatFeedbackList(actionLabels, language)} clearer in your CV for a more accurate review.`,
+                );
+            }
+
+            return feedback;
+        }
+
+        if (resolvedMissing.length > 0) {
+            feedback.push(
+                language === 'vi'
+                    ? `Bạn có thể bổ sung thêm: ${formatFeedbackList(resolvedMissing, language)}.`
+                    : `You can still add: ${formatFeedbackList(resolvedMissing, language)}.`,
+            );
+        } else if (resolvedHighlight.length > 0) {
+            feedback.push(
+                language === 'vi'
+                    ? `Điểm đang thể hiện khá rõ: ${formatFeedbackList(resolvedHighlight, language)}.`
+                    : `Current strengths shown clearly: ${formatFeedbackList(resolvedHighlight, language)}.`,
+            );
+        } else if (result.note) {
+            feedback.push(result.note);
+        }
+
+        return feedback;
+    };
+
     const renderMatchCard = (result, title, description) => (
         <div
             className={cx('match-card', `match-card--${result.tone}`, {
@@ -726,7 +894,7 @@ const Job = () => {
             </div>
             <p className={cx('match-note')}>{description || result.note}</p>
             <div className={cx('match-feedback')}>
-                {buildFeedbackSummary(result).map((item) => (
+                {buildReadableFeedbackSummary(result).map((item) => (
                     <p key={item} className={cx('match-feedback-item')}>
                         {item}
                     </p>
