@@ -89,6 +89,8 @@ const getToneByScore = (score) => {
     return 'low';
 };
 
+const isPositiveMatchScore = (score) => Number(score) > 80;
+
 const Job = () => {
     const { api, language, user } = useContext(AuthContext);
     const navigate = useNavigate();
@@ -706,7 +708,12 @@ const Job = () => {
     };
 
     const renderMatchCard = (result, title, description) => (
-        <div className={cx('match-card', `match-card--${result.tone}`)}>
+        <div
+            className={cx('match-card', `match-card--${result.tone}`, {
+                'match-card--positive': isPositiveMatchScore(result.score),
+                'match-card--negative': !isPositiveMatchScore(result.score),
+            })}
+        >
             <div className={cx('match-card-header')}>
                 <div>
                     <span className={cx('match-label')}>{title}</span>
