@@ -120,14 +120,11 @@ const experienceOptions = [
 ];
 
 const levelOptions = [
-  'Nhân viên',
-  'Trưởng nhóm',
-  'Trưởng/Phó phòng',
-  'Quản lý / Giám sát',
-  'Trưởng chi nhánh',
-  'Phó giám đốc',
-  'Giám đốc',
-  'Thực tập sinh',
+  'Intern',
+  'Fresher',
+  'Junior',
+  'Middle',
+  'Senior',
 ];
 
 const createEmptyForm = () => ({

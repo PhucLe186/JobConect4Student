@@ -56,7 +56,6 @@ const CRITERIA_DEFINITIONS = [
 ];
 
 const ORDERED_CRITERIA_KEYS = CRITERIA_DEFINITIONS.map((criterion) => criterion.key);
-const DEFAULT_OUTSTANDING_KEYS = ['highGpa', 'english'];
 
 const getOutstandingScore = (candidate) => {
   if (candidate.match_score > 0) {
@@ -112,8 +111,7 @@ function CandidateManagement({ language = 'vi' }) {
       console.error('Error fetching employer candidates:', fetchError);
       setCandidates([]);
       setError(
-        `${t.loadError}: ${
-          fetchError.response?.data?.message || fetchError.message || 'Unknown error'
+        `${t.loadError}: ${fetchError.response?.data?.message || fetchError.message || 'Unknown error'
         }`,
       );
     } finally {
@@ -196,13 +194,7 @@ function CandidateManagement({ language = 'vi' }) {
     });
 
     if (selectedCriteria.length === 0) {
-      const outstandingCandidates = enrichedCandidates.filter((candidate) =>
-        DEFAULT_OUTSTANDING_KEYS.some((criterionKey) =>
-          candidate.matchedCriteriaKeys.includes(criterionKey),
-        ),
-      );
-
-      const pool = outstandingCandidates.length > 0 ? outstandingCandidates : enrichedCandidates;
+      const pool = enrichedCandidates;
 
       return pool.sort(
         (left, right) =>
@@ -414,7 +406,6 @@ function CandidateManagement({ language = 'vi' }) {
 
                   <div className={cx('cand-card__identity')}>
                     <div className={cx('cand-card__name')}>{candidate.name}</div>
-                    <div className={cx('cand-card__role')}>{candidate.major || '-'}</div>
                     <div className={cx('cand-card__school')}>{candidate.school || '-'}</div>
                   </div>
                 </div>
@@ -433,85 +424,94 @@ function CandidateManagement({ language = 'vi' }) {
                 </div>
               </header>
 
-              <div className={cx('cand-card__badges')}>
-                {!hasSelectedCriteria ? (
-                  <span className={cx('cand-card__badge', 'cand-card__badge--outstanding')}>
-                    {t.badgeOutstanding}
+              <div className={cx('cand-card__body')}>
+                {/* Row 1: Position & Career Goal */}
+                <div className={cx('cand-card__row-job')}>
+                  <span className={cx('cand-card__job-title')}>
+                    💼 {candidate.latestJobTitle || candidate.major || t.englishNotUpdated}
                   </span>
+                  {candidate.career_goal && candidate.career_goal !== '-' && (
+                    <span className={cx('cand-card__career-goal')} title={candidate.career_goal}>
+                      🎯 {candidate.career_goal}
+                    </span>
+                  )}
+                </div>
+
+                {/* Row 2: Badges/Tags for Contacts */}
+                <div className={cx('cand-card__contact-row')}>
+                  {candidate.address && candidate.address !== '-' && (
+                    <span className={cx('contact-badge')} title={candidate.address}>
+                      📍 {candidate.address}
+                    </span>
+                  )}
+                  {candidate.phone && candidate.phone !== '-' ? (
+                    <span className={cx('contact-badge')}>
+                      📞 {candidate.phone}
+                    </span>
+                  ) : (
+                    <span className={cx('contact-badge', 'contact-badge--empty')}>
+                      📞 {t.englishNotUpdated}
+                    </span>
+                  )}
+                  {candidate.email && candidate.email !== '-' ? (
+                    <span className={cx('contact-badge', 'contact-badge--email')} title={candidate.email}>
+                      ✉️ <span className={cx('email-text')}>{candidate.email}</span>
+                    </span>
+                  ) : (
+                    <span className={cx('contact-badge', 'contact-badge--empty')}>
+                      ✉️ {t.englishNotUpdated}
+                    </span>
+                  )}
+                </div>
+
+                {/* Row 3: Education/Academic Info */}
+                <div className={cx('cand-card__edu-row')}>
+                  <span className={cx('edu-tag', { 'edu-tag--empty': !candidate.gpa })}>
+                    🎓 GPA: {candidate.gpa || '-'}
+                  </span>
+                  <span className={cx('edu-tag', { 'edu-tag--empty': !candidate.englishLabel || candidate.englishLabel === t.englishNotUpdated })}>
+                    🇬🇧 {t.labelEnglish}: {candidate.englishLabel || t.englishNotUpdated}
+                  </span>
+                  <span className={cx('edu-tag', { 'edu-tag--empty': !candidate.graduation_year || candidate.graduation_year === '-' })}>
+                    📅 {t.labelGraduation}: {candidate.graduation_year || '-'}
+                  </span>
+                </div>
+
+                {/* Row 4: Salary & Applications Meta */}
+                <div className={cx('cand-card__meta-row')}>
+                  {candidate.desired_salary && candidate.desired_salary !== '-' && (
+                    <span className={cx('meta-tag')}>
+                      💵 {candidate.desired_salary}
+                    </span>
+                  )}
+                  <span className={cx('meta-tag')}>
+                    📥 {t.labelApplications}: {candidate.totalApplications || 0}
+                  </span>
+                </div>
+
+                {/* Skills Section */}
+                {candidate.skills.length > 0 ? (
+                  <div className={cx('cand-card__skills')}>
+                    <div className={cx('cand-card__skills-list')}>
+                      {candidate.skills.slice(0, 6).map((skill) => (
+                        <span key={`${candidate.id}-${skill.id}-${skill.level}`} className={cx('cand-card__skill')} title={`${skill.name} (${skill.level}/5)`}>
+                          {skill.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                 ) : null}
 
-                {badgeLabels.map((label) => (
-                  <span key={`${candidate.id}-${label}`} className={cx('cand-card__badge')}>
-                    {label}
-                  </span>
-                ))}
-              </div>
-
-              <div className={cx('cand-card__info')}>
-                <div className={cx('cand-card__info-item')}>
-                  <span className={cx('cand-card__label')}>{t.labelPhone}</span>
-                  <strong>{candidate.phone || '-'}</strong>
-                </div>
-
-                <div className={cx('cand-card__info-item')}>
-                  <span className={cx('cand-card__label')}>{t.labelEmail}</span>
-                  <strong>{candidate.email || '-'}</strong>
-                </div>
-
-                <div className={cx('cand-card__info-item')}>
-                  <span className={cx('cand-card__label')}>{t.labelAddress}</span>
-                  <strong>{candidate.address || '-'}</strong>
-                </div>
-
-                <div className={cx('cand-card__info-item')}>
-                  <span className={cx('cand-card__label')}>{t.labelGraduation}</span>
-                  <strong>{candidate.graduation_year || '-'}</strong>
-                </div>
-
-                <div className={cx('cand-card__info-item')}>
-                  <span className={cx('cand-card__label')}>{t.labelGPA}</span>
-                  <strong>{candidate.gpa || '-'}</strong>
-                </div>
-
-                <div className={cx('cand-card__info-item')}>
-                  <span className={cx('cand-card__label')}>{t.labelEnglish}</span>
-                  <strong>{candidate.englishLabel || t.englishNotUpdated}</strong>
-                </div>
-
-                <div className={cx('cand-card__info-item')}>
-                  <span className={cx('cand-card__label')}>{t.labelSalary}</span>
-                  <strong>{candidate.desired_salary || '-'}</strong>
-                </div>
-
-                <div className={cx('cand-card__info-item')}>
-                  <span className={cx('cand-card__label')}>{t.labelLatestJob}</span>
-                  <strong>{candidate.latestJobTitle || '-'}</strong>
-                </div>
-
-                <div className={cx('cand-card__info-item')}>
-                  <span className={cx('cand-card__label')}>{t.labelApplications}</span>
-                  <strong>{candidate.totalApplications || 0}</strong>
-                </div>
-              </div>
-
-              {candidate.skills.length > 0 ? (
-                <div className={cx('cand-card__skills')}>
-                  <span className={cx('cand-card__label')}>{t.labelSkills}</span>
-                  <div className={cx('cand-card__skills-list')}>
-                    {candidate.skills.slice(0, 6).map((skill) => (
-                      <span key={`${candidate.id}-${skill.id}-${skill.level}`} className={cx('cand-card__skill')}>
-                        {skill.name} ({skill.level}/5)
+                {/* Criteria Badges */}
+                {badgeLabels.length > 0 ? (
+                  <div className={cx('cand-card__badges')}>
+                    {badgeLabels.map((label) => (
+                      <span key={`${candidate.id}-${label}`} className={cx('cand-card__badge')}>
+                        {label}
                       </span>
                     ))}
                   </div>
-                </div>
-              ) : null}
-
-              <div className={cx('cand-card__goal-section')}>
-                <div className={cx('cand-card__goal-label')}>{t.labelGoal}</div>
-                <div className={cx('cand-card__goal-text')}>
-                  {candidate.career_goal || '-'}
-                </div>
+                ) : null}
               </div>
 
               {candidate.cv_file_path ? (

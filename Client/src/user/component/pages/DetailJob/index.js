@@ -497,9 +497,9 @@ const Job = () => {
                 setApplyOption('form');
                 setApplyNotice(
                     result?.message ||
-                        (language === 'vi'
-                            ? `CV đang được AI chấm ${normalizedResult.score}%. Bạn nên bổ sung form để hệ thống chấm lại chính xác hơn.`
-                            : `Your CV scored ${normalizedResult.score}%. Please complete the quick form for a more accurate score.`),
+                    (language === 'vi'
+                        ? `CV đang được AI chấm ${normalizedResult.score}%. Bạn nên bổ sung form để hệ thống chấm lại chính xác hơn.`
+                        : `Your CV scored ${normalizedResult.score}%. Please complete the quick form for a more accurate score.`),
                 );
                 return;
             }
@@ -507,9 +507,9 @@ const Job = () => {
             setApplicationSubmitted(true);
             setApplyNotice(
                 result?.message ||
-                    (language === 'vi'
-                        ? `CV đạt ${normalizedResult.score}% và đã được nộp tự động thành công.`
-                        : `Your CV scored ${normalizedResult.score}% and has been submitted automatically.`),
+                (language === 'vi'
+                    ? `CV đạt ${normalizedResult.score}% và đã được nộp tự động thành công.`
+                    : `Your CV scored ${normalizedResult.score}% and has been submitted automatically.`),
             );
         } catch (error) {
             console.error('Error analyzing CV:', error);
@@ -683,9 +683,9 @@ const Job = () => {
             console.error('Error applying for job:', error);
             alert(
                 error?.response?.data?.message ||
-                    (language === 'vi'
-                        ? 'Có lỗi xảy ra khi nộp hồ sơ ứng tuyển.'
-                        : 'Something went wrong while submitting your application.'),
+                (language === 'vi'
+                    ? 'Có lỗi xảy ra khi nộp hồ sơ ứng tuyển.'
+                    : 'Something went wrong while submitting your application.'),
             );
         } finally {
             setIsSubmittingApplication(false);
@@ -1058,7 +1058,7 @@ const Job = () => {
                                 <label className={cx('popup-label')}>{language === 'vi' ? 'Bước 1: Upload CV trước' : 'Step 1: Upload your CV first'} <span className={cx('required')}>*</span></label>
                                 <input className={cx('popup-file-input')} type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" onChange={handleCvUpload} />
                                 <div className={cx('upload-hint')}>
-                                        {language === 'vi'
+                                    {language === 'vi'
                                         ? 'Hệ thống đọc file PDF/DOC/DOCX và chấm theo 5 tiêu chí: level, chức vụ, địa chỉ, kỹ năng, GPA.'
                                         : 'The system reads PDF/DOC/DOCX files and scores five criteria: level, position, address, skills, and GPA.'}
                                 </div>

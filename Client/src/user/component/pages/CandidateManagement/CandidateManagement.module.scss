@@ -299,12 +299,15 @@
 
 .cands__list {
   display: grid;
-  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
   margin-top: 1.4rem;
 }
 
 .cand-card {
-  padding: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  padding: 1.6rem 1.8rem;
   border: 1px solid rgba(18, 89, 195, 0.12);
   border-radius: 26px;
   background: rgba(255, 255, 255, 0.94);
@@ -320,22 +323,23 @@
 
 .cand-card__header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 1rem;
 }
 
 .cand-card__profile {
   display: flex;
+  align-items: center;
   gap: 1rem;
   min-width: 0;
 }
 
 .cand-card__avatar {
-  width: 72px;
-  height: 72px;
+  width: 60px;
+  height: 60px;
   flex-shrink: 0;
-  border-radius: 22px;
+  border-radius: 16px;
   object-fit: cover;
   border: 1px solid rgba(18, 89, 195, 0.12);
   background: #f1f5f9;
@@ -346,135 +350,204 @@
 }
 
 .cand-card__name {
-  font-size: 1.18rem;
+  font-size: 1.35rem;
   font-weight: 800;
   color: var(--secondary-color);
-}
-
-.cand-card__role {
-  margin-top: 0.2rem;
-  font-weight: 700;
-  color: var(--primary-color);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .cand-card__school {
-  margin-top: 0.2rem;
+  margin-top: 0.15rem;
+  font-size: 1.2rem;
   color: var(--text-muted);
+  font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .cand-card__score {
-  min-width: 110px;
-  padding: 0.85rem 1rem;
-  border-radius: 20px;
-  background: var(--surface-muted);
+  flex-shrink: 0;
+  padding: 0.5rem 0.85rem;
+  border-radius: 14px;
+  background: var(--primary-soft);
   text-align: right;
+  border: 1px solid rgba(18, 89, 195, 0.08);
 }
 
 .cand-card__score-label {
   display: block;
-  font-size: 0.75rem;
-  color: var(--text-muted);
+  font-size: 0.85rem;
+  color: var(--primary-color);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  font-weight: 700;
+  letter-spacing: 0.05em;
 }
 
 .cand-card__score strong {
   display: block;
-  margin-top: 0.25rem;
-  font-size: 1.6rem;
+  margin-top: 0.1rem;
+  font-size: 1.45rem;
+  color: var(--primary-color);
+  font-weight: 800;
+}
+
+.cand-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1.2rem;
+  flex-grow: 1;
+}
+
+.cand-card__row-job {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.cand-card__job-title {
+  font-size: 1.2rem;
+  font-weight: 700;
   color: var(--secondary-color);
 }
 
-.cand-card__badges {
+.cand-card__career-goal {
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  font-weight: 400;
+  line-height: 1.45;
+  background: rgba(18, 89, 195, 0.03);
+  padding: 0.45rem 0.7rem;
+  border-radius: 8px;
+  border-left: 3px solid var(--primary-color);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cand-card__contact-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.55rem;
-  margin-top: 1rem;
+  gap: 0.4rem;
 }
 
-.cand-card__badge {
+.contact-badge {
   display: inline-flex;
   align-items: center;
-  min-height: 34px;
-  padding: 0.4rem 0.8rem;
-  border-radius: 999px;
+  gap: 0.3rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: var(--text-color);
+  font-size: 1.2rem;
+  font-weight: 500;
+  border: 1px solid rgba(18, 89, 195, 0.04);
+}
+
+.contact-badge--email {
+  max-width: 100%;
+}
+
+.email-text {
+  display: inline-block;
+  vertical-align: bottom;
+  word-break: break-all;
+}
+
+.contact-badge--empty {
+  background: rgba(241, 245, 249, 0.6);
+  color: var(--text-muted);
+  opacity: 0.75;
+  font-weight: 400;
+}
+
+.cand-card__edu-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.edu-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 8px;
   background: var(--primary-soft);
   color: var(--primary-color);
-  font-size: 0.88rem;
+  font-size: 1.2rem;
   font-weight: 700;
-}
-
-.cand-card__badge--outstanding {
-  background: rgba(15, 143, 99, 0.12);
-  color: var(--success-color);
-}
-
-.cand-card__info {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 0.85rem;
-  margin-top: 1.15rem;
-}
-
-.cand-card__info-item {
-  padding: 0.85rem 0.95rem;
   border: 1px solid rgba(18, 89, 195, 0.08);
-  border-radius: 18px;
-  background: var(--surface-muted);
 }
 
-.cand-card__label {
-  display: block;
-  margin-bottom: 0.25rem;
-  font-size: 0.82rem;
+.edu-tag--empty {
+  background: #f8fafc;
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  border-color: rgba(18, 89, 195, 0.04);
+  font-weight: 500;
 }
 
-.cand-card__goal-section {
-  margin-top: 1rem;
-  padding: 1rem;
-  border: 1px solid rgba(18, 89, 195, 0.08);
-  border-radius: 20px;
-  background: linear-gradient(135deg, rgba(18, 89, 195, 0.06), rgba(18, 89, 195, 0.02));
+.cand-card__meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
 }
 
-.cand-card__goal-label {
-  font-size: 0.82rem;
-  font-weight: 800;
-  color: var(--primary-color);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.cand-card__goal-text {
-  margin-top: 0.55rem;
-  line-height: 1.7;
-  color: var(--text-color);
+.meta-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 8px;
+  background: rgba(15, 143, 99, 0.08);
+  color: var(--success-color);
+  font-size: 1.2rem;
+  font-weight: 700;
+  border: 1px solid rgba(15, 143, 99, 0.12);
 }
 
 .cand-card__skills {
-  margin-top: 1rem;
+  margin-top: 0.1rem;
 }
 
 .cand-card__skills-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.55rem;
-  margin-top: 0.5rem;
+  gap: 0.35rem;
 }
 
 .cand-card__skill {
   display: inline-flex;
   align-items: center;
-  min-height: 34px;
-  padding: 0.4rem 0.75rem;
-  border-radius: 999px;
-  background: #eef4ff;
+  padding: 0.25rem 0.55rem;
+  border-radius: 6px;
+  background: #f8fafc;
+  border: 1px solid rgba(18, 89, 195, 0.06);
+  color: var(--text-color);
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+.cand-card__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.1rem;
+}
+
+.cand-card__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.55rem;
+  border-radius: 6px;
+  background: var(--primary-soft-strong);
   color: var(--primary-color);
-  font-size: 0.88rem;
-  font-weight: 600;
+  font-size: 1.2rem;
+  font-weight: 700;
 }
 
 .cands__empty {
@@ -488,21 +561,26 @@
 }
 
 @media (max-width: 900px) {
+
   .cands__hero,
   .cands__mode,
   .cand-card__header {
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
   }
 
   .cands__hero-stat,
-  .cands__mode-summary,
-  .cand-card__score {
-    width: 100%;
-    text-align: left;
+  .cands__mode-summary {
+    width: auto;
+    text-align: right;
   }
 
   .cands__controls {
     grid-template-columns: 1fr;
+  }
+
+  .cands__list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -513,45 +591,50 @@
 
   .cands__panel,
   .cand-card {
-    padding: 1.1rem;
+    padding: 1.2rem;
     border-radius: 22px;
   }
 
   .cand-card__profile {
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
   }
 
   .cand-card__avatar {
-    width: 64px;
-    height: 64px;
-    border-radius: 18px;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
   }
 
-  .cand-card__info {
+  .cands__list {
     grid-template-columns: 1fr;
   }
 }
 
 .cand-card__cv-action {
-  margin-top: 1rem;
+  margin-top: 1.15rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(18, 89, 195, 0.08);
 }
 
 .cand-card__cv-btn {
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.4rem;
-  padding: 0.6rem 1.2rem;
-  border-radius: 999px;
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 14px;
   background: linear-gradient(135deg, #1259c3, #1f73e0);
   color: #ffffff;
-  font-size: 0.9rem;
+  font-size: 1.2rem;
   font-weight: 700;
   text-decoration: none;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 6px 16px rgba(18, 89, 195, 0.25);
+  box-shadow: 0 4px 12px rgba(18, 89, 195, 0.15);
 }
 
 .cand-card__cv-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 24px rgba(18, 89, 195, 0.35);
+  box-shadow: 0 8px 20px rgba(18, 89, 195, 0.25);
 }

@@ -19,25 +19,19 @@ const TEXT_STOP_WORDS = new Set([
 ]);
 
 const LEVEL_MATCH_MAP = {
-    'Thực tập sinh': ['Thực tập sinh', 'Nhân viên'],
-    'Nhân viên': ['Nhân viên', 'Thực tập sinh', 'Trưởng nhóm'],
-    'Trưởng nhóm': ['Trưởng nhóm', 'Nhân viên', 'Trưởng/Phó phòng'],
-    'Trưởng/Phó phòng': ['Trưởng/Phó phòng', 'Trưởng nhóm', 'Quản lý / Giám sát'],
-    'Quản lý / Giám sát': ['Quản lý / Giám sát', 'Trưởng/Phó phòng', 'Trưởng nhóm'],
-    'Trưởng chi nhánh': ['Trưởng chi nhánh', 'Quản lý / Giám sát'],
-    'Phó giám đốc': ['Phó giám đốc', 'Giám đốc'],
-    'Giám đốc': ['Giám đốc', 'Phó giám đốc'],
+    'Intern': ['Intern', 'Fresher'],
+    'Fresher': ['Fresher', 'Intern', 'Junior'],
+    'Junior': ['Junior', 'Fresher', 'Middle'],
+    'Middle': ['Middle', 'Junior', 'Senior'],
+    'Senior': ['Senior', 'Middle'],
 };
 
 const DEFAULT_GPA_BY_LEVEL = {
-    'Thực tập sinh': 2.5,
-    'Nhân viên': 2.7,
-    'Trưởng nhóm': 3.0,
-    'Trưởng/Phó phòng': 3.1,
-    'Quản lý / Giám sát': 3.2,
-    'Trưởng chi nhánh': 3.2,
-    'Phó giám đốc': 3.3,
-    'Giám đốc': 3.4,
+    'Intern': 2.5,
+    'Fresher': 2.7,
+    'Junior': 3.0,
+    'Middle': 3.1,
+    'Senior': 3.3,
 };
 
 const normalizeText = (value = '') =>
@@ -83,10 +77,10 @@ const getCandidateLevel = (profile = {}) => {
     const graduationYear = Number(profile.graduation_year);
 
     if (Number.isFinite(graduationYear) && graduationYear >= currentYear) {
-        return 'Thực tập sinh';
+        return 'Intern';
     }
 
-    return 'Nhân viên';
+    return 'Fresher';
 };
 
 const getJobRequiredGpa = (job = {}) => {
