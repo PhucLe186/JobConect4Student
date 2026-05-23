@@ -193,10 +193,27 @@ function CandidateManagement({ language = 'vi' }) {
       };
     });
 
+    let pool = [];
     if (selectedCriteria.length === 0) {
-      const pool = enrichedCandidates;
+      pool = enrichedCandidates;
+    } else {
+      pool = enrichedCandidates.filter((candidate) =>
+        selectedCriteria.every((criterionKey) =>
+          candidate.matchedCriteriaKeys.includes(criterionKey),
+        ),
+      );
+    }
 
-      return pool.sort(
+    // Lấy 3 ứng viên có GPA cao nhất trong danh sách đã lọc lên đầu trang
+    const sortedByGpa = [...pool].sort((left, right) => right.gpa - left.gpa);
+    const top3 = sortedByGpa.slice(0, 3);
+    const top3Ids = new Set(top3.map((c) => c.id));
+
+    const remaining = pool.filter((c) => !top3Ids.has(c.id));
+
+    let sortedRemaining = [];
+    if (selectedCriteria.length === 0) {
+      sortedRemaining = remaining.sort(
         (left, right) =>
           right.match_score - left.match_score ||
           right.outstandingScore - left.outstandingScore ||
@@ -204,15 +221,8 @@ function CandidateManagement({ language = 'vi' }) {
           right.englishScore - left.englishScore ||
           Number(right.graduation_year) - Number(left.graduation_year),
       );
-    }
-
-    return enrichedCandidates
-      .filter((candidate) =>
-        selectedCriteria.every((criterionKey) =>
-          candidate.matchedCriteriaKeys.includes(criterionKey),
-        ),
-      )
-      .sort(
+    } else {
+      sortedRemaining = remaining.sort(
         (left, right) =>
           right.selectedCriteriaCount - left.selectedCriteriaCount ||
           right.match_score - left.match_score ||
@@ -220,6 +230,9 @@ function CandidateManagement({ language = 'vi' }) {
           right.englishScore - left.englishScore ||
           right.outstandingScore - left.outstandingScore,
       );
+    }
+
+    return [...top3, ...sortedRemaining];
   }, [filteredBySearch, selectedCriteria]);
 
   const hasSelectedCriteria = selectedCriteria.length > 0;

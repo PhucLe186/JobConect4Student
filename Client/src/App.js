@@ -1,13 +1,24 @@
-import { Fragment } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Fragment, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { publicRoutes } from '~/routes';
 import Default from '~/user/component/default';
 import { AuthProvider } from '~/context/AuthContext';
+
+function ScrollToTop() {
+    const { pathname } = useLocation();
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [pathname]);
+
+    return null;
+}
 
 function App() {
     return (
         
                 <Router>
+                    <ScrollToTop />
                     <AuthProvider>               
                         <Routes>
                             {publicRoutes.map((route, idx) => {
