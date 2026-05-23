@@ -345,12 +345,256 @@ const LEGACY_ROLE_LEVEL_AT_END_PATTERN =
 
 const trimValue = (value = '') => value.toString().trim();
 
-const getCvTheme = (themeId) => CV_THEME_MAP[themeId] || CV_THEME_MAP[DEFAULT_THEME_ID];
+const rgbToHsl = (r, g, b) => {
+    r /= 255;
+    g /= 255;
+    b /= 255;
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h = 0, s = 0;
+    const l = (max + min) / 2;
+
+    if (max !== min) {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+            default: break;
+        }
+        h /= 6;
+    }
+
+    return [Math.round(h * 360), Math.round(s * 100), Math.round(l * 100)];
+};
+
+const hslToHex = (h, s, l) => {
+    s /= 100;
+    l /= 100;
+    const k = (n) => (n + h / 30) % 12;
+    const a = s * Math.min(l, 1 - l);
+    const f = (n) => {
+        const kVal = k(n);
+        const color = l - a * Math.max(-1, Math.min(kVal - 3, 9 - kVal, 1));
+        return Math.round(255 * color).toString(16).padStart(2, '0');
+    };
+    return `#${f(0)}${f(8)}${f(4)}`;
+};
+
+const hexToHsv = (hex = '') => {
+    const { r, g, b } = hexToRgb(hex);
+    const rNorm = r / 255;
+    const gNorm = g / 255;
+    const bNorm = b / 255;
+    const max = Math.max(rNorm, gNorm, bNorm);
+    const min = Math.min(rNorm, gNorm, bNorm);
+    const d = max - min;
+    let h = 0;
+    const s = max === 0 ? 0 : d / max;
+    const v = max;
+
+    if (max !== min) {
+        switch (max) {
+            case rNorm: h = (gNorm - bNorm) / d + (gNorm < bNorm ? 6 : 0); break;
+            case gNorm: h = (bNorm - rNorm) / d + 2; break;
+            case bNorm: h = (rNorm - gNorm) / d + 4; break;
+            default: break;
+        }
+        h /= 6;
+    }
+
+    return {
+        h: Math.round(h * 360),
+        s: Math.round(s * 100),
+        v: Math.round(v * 100)
+    };
+};
+
+const hsvToHex = (h, s, v) => {
+    s /= 100;
+    v /= 100;
+    const k = (n) => (n + h / 60) % 6;
+    const f = (n) => {
+        const kVal = k(n);
+        return v * (1 - s * Math.max(0, Math.min(kVal, 4 - kVal, 1)));
+    };
+    const r = Math.round(255 * f(5));
+    const g = Math.round(255 * f(3));
+    const b = Math.round(255 * f(1));
+    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+};
+
+const generateThemeFromColor = (hexColor) => {
+    try {
+        const { r, g, b } = hexToRgb(hexColor);
+        const [h, s, l] = rgbToHsl(r, g, b);
+
+        const leftStart = hslToHex(h, s, Math.max(10, Math.min(l, 35)));
+        const leftEnd = hslToHex(h, s, Math.max(5, Math.min(l - 12, 22)));
+        const badge = hslToHex(h, s, Math.max(15, Math.min(l + 5, 50)));
+        const section = hslToHex(h, s, Math.max(15, Math.min(l, 40)));
+        const sectionLine = hslToHex(h, s, Math.max(10, Math.min(l - 10, 26)));
+
+        const rightStart = hslToHex(h, Math.min(s, 12), 97);
+        const rightMid = '#ffffff';
+        const rightEnd = hslToHex(h, Math.min(s, 12), 95);
+
+        const shapePrimary = hslToHex(h, Math.min(s, 24), 86);
+        const shapeSecondary = hslToHex(h, Math.min(s, 24), 92);
+
+        return {
+            id: hexColor,
+            label: 'Màu tùy chỉnh',
+            description: hexColor,
+            swatches: [leftStart, badge, shapePrimary],
+            colors: {
+                leftStart,
+                leftEnd,
+                badge,
+                section,
+                sectionLine,
+                rightStart,
+                rightMid,
+                rightEnd,
+                shapePrimary,
+                shapeSecondary,
+            },
+        };
+    } catch (e) {
+        console.error('Error generating theme:', e);
+        return CV_THEME_MAP[DEFAULT_THEME_ID];
+    }
+};
+
+const getCvTheme = (themeId) => {
+    if (themeId && themeId.startsWith('#')) {
+        return generateThemeFromColor(themeId);
+    }
+    return CV_THEME_MAP[themeId] || CV_THEME_MAP[DEFAULT_THEME_ID];
+};
+
 const getCvTemplate = (templateId) => CV_TEMPLATE_MAP[templateId] || CV_TEMPLATE_MAP[DEFAULT_TEMPLATE_ID];
 const getEffectiveTheme = (cvData = {}) =>
     getCvTemplate(cvData.templateId).themeMode === 'locked'
         ? getCvTemplate(cvData.templateId).lockedTheme || DESIGNER_THEME
         : getCvTheme(cvData.themeId);
+
+const CustomColorPicker = ({ value, onChange }) => {
+    const [hsv, setHsv] = useState({ h: 0, s: 100, v: 100 });
+    const svRef = useRef(null);
+    const hueRef = useRef(null);
+
+    useEffect(() => {
+        if (value && value.startsWith('#')) {
+            const parsed = hexToHsv(value);
+            setHsv(parsed);
+        } else {
+            const theme = CV_THEME_MAP[value];
+            if (theme && theme.colors && theme.colors.section) {
+                const parsed = hexToHsv(theme.colors.section);
+                setHsv(parsed);
+            }
+        }
+    }, [value]);
+
+    const updateColor = (newHsv) => {
+        setHsv(newHsv);
+        const hex = hsvToHex(newHsv.h, newHsv.s, newHsv.v);
+        onChange(hex);
+    };
+
+    const handleSvMove = (e) => {
+        if (!svRef.current) return;
+        const rect = svRef.current.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+        let sVal = ((clientX - rect.left) / rect.width) * 100;
+        let vVal = (1 - (clientY - rect.top) / rect.height) * 100;
+
+        sVal = Math.max(0, Math.min(100, sVal));
+        vVal = Math.max(0, Math.min(100, vVal));
+
+        updateColor({ ...hsv, s: Math.round(sVal), v: Math.round(vVal) });
+    };
+
+    const handleHueMove = (e) => {
+        if (!hueRef.current) return;
+        const rect = hueRef.current.getBoundingClientRect();
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+        let percent = (clientY - rect.top) / rect.height;
+        percent = Math.max(0, Math.min(1, percent));
+        const hVal = percent * 360;
+
+        updateColor({ ...hsv, h: Math.round(hVal) });
+    };
+
+    const handleSvMouseDown = (e) => {
+        handleSvMove(e);
+        const handleMouseMove = (moveEvent) => {
+            handleSvMove(moveEvent);
+        };
+        const handleMouseUp = () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('mouseup', handleMouseUp);
+    };
+
+    const handleHueMouseDown = (e) => {
+        handleHueMove(e);
+        const handleMouseMove = (moveEvent) => {
+            handleHueMove(moveEvent);
+        };
+        const handleMouseUp = () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('mouseup', handleMouseUp);
+    };
+
+    const { h, s, v } = hsv;
+
+    return (
+        <div className={styles.colorPickerContainer}>
+            {/* Hue Slider (Vertical) */}
+            <div
+                ref={hueRef}
+                className={styles.hueSlider}
+                onMouseDown={handleHueMouseDown}
+                onTouchStart={handleHueMouseDown}
+            >
+                <div
+                    className={styles.hueHandle}
+                    style={{ top: `${(h / 360) * 100}%` }}
+                />
+            </div>
+
+            {/* Saturation-Value Box */}
+            <div
+                ref={svRef}
+                className={styles.svBox}
+                style={{ backgroundColor: `hsl(${h}, 100%, 50%)` }}
+                onMouseDown={handleSvMouseDown}
+                onTouchStart={handleSvMouseDown}
+            >
+                <div className={styles.svSaturationGradient} />
+                <div className={styles.svValueGradient} />
+                <div
+                    className={styles.svHandle}
+                    style={{
+                        left: `${s}%`,
+                        top: `${100 - v}%`,
+                    }}
+                />
+            </div>
+        </div>
+    );
+};
 
 const splitLegacyHeadline = (headline = '') => {
     const normalizedHeadline = trimValue(headline);
@@ -2790,8 +3034,16 @@ function CVBuilder() {
                             ) : (
                                 <>
                                     <p className={styles.editorSubtle}>
-                                        Chọn nhanh tone màu để CV nhìn đa dạng hơn mà vẫn giữ nguyên bố cục.
+                                        Kéo chọn màu tự do hoặc chọn nhanh các tone màu gợi ý bên dưới.
                                     </p>
+
+                                    {/* Custom Color Picker */}
+                                    <CustomColorPicker
+                                        value={cvData.themeId}
+                                        onChange={(hex) => updateRootField('themeId', hex)}
+                                    />
+
+                                    <h3 style={{ fontSize: '13px', margin: '20px 0 10px', color: '#5f656b' }}>Gợi ý màu</h3>
 
                                     <div className={styles.themeGrid}>
                                         {CV_THEMES.map((theme) => {
