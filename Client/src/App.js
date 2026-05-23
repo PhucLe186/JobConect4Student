@@ -16,36 +16,36 @@ function ScrollToTop() {
 
 function App() {
     return (
-        
-                <Router>
-                    <ScrollToTop />
-                    <AuthProvider>               
-                        <Routes>
-                            {publicRoutes.map((route, idx) => {
-                                let Layout = Default;
 
-                                const Page = route.component;
-                                if (route.layout === null) {
-                                    Layout = Fragment;
-                                } else if (route.layout) {
-                                    Layout = route.layout;
+        <Router>
+            <ScrollToTop />
+            <AuthProvider>
+                <Routes>
+                    {publicRoutes.map((route, idx) => {
+                        let Layout = Default;
+
+                        const Page = route.component;
+                        if (route.layout === null) {
+                            Layout = Fragment;
+                        } else if (route.layout) {
+                            Layout = route.layout;
+                        }
+                        return (
+                            <Route
+                                key={idx}
+                                path={route.path}
+                                element={
+                                    <Layout>
+                                        <Page />
+                                    </Layout>
                                 }
-                                return (
-                                    <Route
-                                        key={idx}
-                                        path={route.path}
-                                        element={
-                                            <Layout>
-                                                <Page />
-                                            </Layout>
-                                        }
-                                    />
-                                );
-                            })}
-                        </Routes>
-                    </AuthProvider>
-                </Router>
-        
+                            />
+                        );
+                    })}
+                </Routes>
+            </AuthProvider>
+        </Router>
+
     );
 }
 

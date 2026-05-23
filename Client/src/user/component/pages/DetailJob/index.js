@@ -477,6 +477,7 @@ const Job = () => {
         setFormScoreResult(null);
         setApplyNotice('');
         setApplicationSubmitted(false);
+        setApplicationForm(INITIAL_APPLICATION_FORM);
 
         try {
             const submitData = new FormData();
@@ -586,6 +587,7 @@ const Job = () => {
         setFormScoreResult(null);
         setApplyNotice('');
         setApplicationSubmitted(false);
+        setApplicationForm(INITIAL_APPLICATION_FORM);
 
         try {
             const response = await api.post(`applications/apply-cv-builder/${jobData.id || jobData._id || id}`, {
@@ -1230,7 +1232,7 @@ const Job = () => {
                                         >
                                             <option value="">{language === 'vi' ? '--- Chọn một CV ---' : '--- Select a CV ---'}</option>
                                             {myResumes.map(cv => (
-                                                <option key={cv._id} value={cv._id}>
+                                                <option key={cv.id || cv._id} value={cv.id || cv._id}>
                                                     {cv.title || cv.cv_data?.title || (language === 'vi' ? 'CV Chưa Đặt Tên' : 'Untitled CV')} {cv.is_active ? (language === 'vi' ? '(CV chính)' : '(Main CV)') : ''}
                                                 </option>
                                             ))}

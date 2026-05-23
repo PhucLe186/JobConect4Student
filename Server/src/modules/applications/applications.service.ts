@@ -285,6 +285,9 @@ export class ApplicationsService {
   // GỌI API SANG PYTHON
   // =================================================================
   async analyzeCVDraft(jobId: string, cvFile: Express.Multer.File) {
+    if (!Types.ObjectId.isValid(jobId)) {
+      throw new BadRequestException('ID công việc không hợp lệ');
+    }
     const jdCriteria = await this.getJdCriteria(jobId);
 
     const form = new FormData();
@@ -312,6 +315,12 @@ export class ApplicationsService {
   async smartApplyJob(jobId: string, user: JwtUser, cvFile: Express.Multer.File) {
     const { userId } = user;
     this.ensureStudentRole(user);
+    if (!Types.ObjectId.isValid(jobId)) {
+      throw new BadRequestException('ID công việc không hợp lệ');
+    }
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('ID người dùng không hợp lệ');
+    }
     await this.ensureNotApplied(jobId, userId);
 
     const aiResponse = await this.analyzeCVDraft(jobId, cvFile);
@@ -365,16 +374,24 @@ export class ApplicationsService {
   async smartApplyCvBuilder(jobId: string, user: JwtUser, cvId: string) {
     const { userId } = user;
     this.ensureStudentRole(user);
+    if (!Types.ObjectId.isValid(jobId)) {
+      throw new BadRequestException('ID công việc không hợp lệ');
+    }
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('ID người dùng không hợp lệ');
+    }
+    if (!Types.ObjectId.isValid(cvId)) {
+      throw new BadRequestException('ID CV không hợp lệ');
+    }
     await this.ensureNotApplied(jobId, userId);
 
     const cv = await this.CVModel.findOne({ _id: new Types.ObjectId(cvId), student_id: new Types.ObjectId(userId) });
     if (!cv) throw new BadRequestException('CV không tồn tại');
 
     const cvData = cv.cv_data || {};
+    
+    // Only extract 5 fields from the builder CV: position, gpa, address, level, and skill
     const formData = {
-      full_name: cvData.fullName || '',
-      email: cvData.contacts?.email || '',
-      phone: cvData.contacts?.phone || '',
       position: cvData.desiredPosition || cvData.headline || '',
       address: cvData.contacts?.address || '',
       gpa: cvData.education?.gpa || '',
@@ -383,9 +400,30 @@ export class ApplicationsService {
     };
 
     const jdCriteria = await this.getJdCriteria(jobId);
+
+    console.log('\n======================================================================');
+    console.log('📡 [NESTJS -> CV BUILDER] SO SÁNH GIỮA JD VÀ CV MARKDOWN (DATABASE)');
+    console.log(`- Job ID: ${jobId}`);
+    console.log(`- CV ID (Markdown): ${cvId} (Title: "${cv.title}")`);
+    console.log('----------------------------------------------------------------------');
+    console.log('📁 [JD CRITERIA] Dữ liệu JD lấy từ DB:', JSON.stringify(jdCriteria, null, 2));
+    console.log('📁 [CV MARKDOWN] Dữ liệu CV trích xuất từ cv_data:', JSON.stringify(formData, null, 2));
+    console.log('======================================================================\n');
+
     const { total: finalScore, details: matchDetails } = this.calculateMatchScore(formData, jdCriteria);
 
+    console.log('\n======================================================================');
+    console.log(`🏆 [KẾT QUẢ SO SÁNH] Điểm số cuối cùng: ${finalScore}/100`);
+    console.log('======================================================================\n');
+
     const PASS_THRESHOLD = 60;
+    
+    // Fallback/Resolve profile information from system for required name/email/phone
+    const applicantProfile = await this.getApplicantProfile(userId);
+    const finalEmail = applicantProfile.email;
+    const finalPhone = applicantProfile.phone;
+    const finalName = applicantProfile.fullName;
+
     if (finalScore < PASS_THRESHOLD) {
       return {
         status: 'low_score',
@@ -393,14 +431,14 @@ export class ApplicationsService {
         require_form: true,
         match_score: finalScore,
         cvId: cvId,
-        formData: formData,
+        formData: {
+          ...formData,
+          full_name: finalName,
+          email: finalEmail,
+          phone: finalPhone,
+        },
       };
     }
-
-    const applicantProfile = await this.getApplicantProfile(userId);
-    const finalEmail = formData.email || applicantProfile.email;
-    const finalPhone = formData.phone || applicantProfile.phone;
-    const finalName = formData.full_name || applicantProfile.fullName;
 
     await this.jobApplyModel.create({
       job_id: new Types.ObjectId(jobId),
@@ -416,9 +454,6 @@ export class ApplicationsService {
       ai_extracted_data: {
         ...formData,
         match_details: matchDetails,
-        school: cvData.education?.school || applicantProfile.school || '',
-        major: cvData.education?.major || applicantProfile.major || '',
-        graduation_year: cvData.education?.end || applicantProfile.graduation_year || '',
       },
     });
 
@@ -431,6 +466,15 @@ export class ApplicationsService {
   async submitFinalCV(jobId: string, user: JwtUser, cvFilePath: string, formData: any, cvId?: string) {
     const { userId } = user;
     this.ensureStudentRole(user);
+    if (!Types.ObjectId.isValid(jobId)) {
+      throw new BadRequestException('ID công việc không hợp lệ');
+    }
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('ID người dùng không hợp lệ');
+    }
+    if (cvId && !Types.ObjectId.isValid(cvId)) {
+      throw new BadRequestException('ID CV không hợp lệ');
+    }
 
     const fullName = formData.full_name || formData.fullName;
     if (!fullName) throw new BadRequestException('Thiếu họ tên');
