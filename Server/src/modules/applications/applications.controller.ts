@@ -53,6 +53,21 @@ export class ApplicationsController {
   }
 
   // =========================================================
+  // API 1.5: SƠ DUYỆT BẰNG CV BUILDER
+  // =========================================================
+  @UseGuards(JwtAuthGuard)
+  @Post('apply-cv-builder/:jobId')
+  async applyCvBuilder(
+    @Param('jobId') jobId: string,
+    @Body('cvId') cvId: string,
+    @Req() req: Request,
+  ) {
+    if (!cvId) throw new BadRequestException('Vui lòng cung cấp ID của CV');
+    const result = await this.applicationsService.smartApplyCvBuilder(jobId, req.user as JwtUser, cvId);
+    return { success: true, data: result };
+  }
+
+  // =========================================================
   // API: PREVIEW SCORE (chấm điểm thật từ form, KHÔNG lưu DB)
   // =========================================================
   @UseGuards(JwtAuthGuard)
@@ -77,8 +92,9 @@ export class ApplicationsController {
     const result = await this.applicationsService.submitFinalCV(
       submitDto.jobId,
       req.user as JwtUser,
-      submitDto.cvFilePath,
-      submitDto.formData
+      submitDto.cvFilePath || '',
+      submitDto.formData,
+      submitDto.cvId
     );
     return { success: true, data: result };
   }

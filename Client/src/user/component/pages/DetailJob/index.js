@@ -193,11 +193,33 @@ const Job = () => {
     const [cvAnalysisError, setCvAnalysisError] = useState('');
     const [applyNotice, setApplyNotice] = useState('');
     const [applicationSubmitted, setApplicationSubmitted] = useState(false);
+    
+    // CV Builder states
+    const [myResumes, setMyResumes] = useState([]);
+    const [selectedCvId, setSelectedCvId] = useState('');
+    const [applyMethod, setApplyMethod] = useState('upload'); // 'upload' or 'builder'
+
     const isEmployerAccount = user?.type === 'employer';
     const employerApplyBlockedMessage =
         language === 'vi'
             ? 'Tài khoản nhà tuyển dụng không thể nộp CV ứng tuyển. Vui lòng dùng tài khoản sinh viên/ứng viên.'
             : 'Employer accounts cannot submit job applications. Please use a student/candidate account.';
+
+    useEffect(() => {
+        if (showApplyPopup && !isEmployerAccount && user) {
+            const fetchResumes = async () => {
+                try {
+                    const response = await api.get('resume');
+                    if (response.data && Array.isArray(response.data)) {
+                        setMyResumes(response.data);
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi tải danh sách CV:', error);
+                }
+            };
+            fetchResumes();
+        }
+    }, [showApplyPopup, isEmployerAccount, user, api]);
 
     const popupIntro = useMemo(() => {
         if (language === 'vi') {
@@ -232,6 +254,8 @@ const Job = () => {
         setCvAnalysisError('');
         setApplyNotice('');
         setApplicationSubmitted(false);
+        setApplyMethod('upload');
+        setSelectedCvId('');
     };
 
     const handleOpenApplyPopup = () => {
@@ -549,6 +573,100 @@ const Job = () => {
         }
     };
 
+    const handleSelectCvBuilder = async () => {
+        if (!selectedCvId) {
+            alert(language === 'vi' ? 'Vui lòng chọn một CV từ danh sách.' : 'Please select a CV from the list.');
+            return;
+        }
+
+        setIsAnalyzingCv(true);
+        setCvAnalysisError('');
+        setCvMatchResult(null);
+        setApplyOption('');
+        setFormScoreResult(null);
+        setApplyNotice('');
+        setApplicationSubmitted(false);
+
+        try {
+            const response = await api.post(`applications/apply-cv-builder/${jobData.id || jobData._id || id}`, {
+                cvId: selectedCvId
+            });
+
+            const result = response?.data?.data || {};
+            const normalizedResult = toClientScoreResult(
+                result,
+                language === 'vi'
+                    ? 'Đây là kết quả chấm tự động từ hệ thống dựa trên CV của bạn và JD.'
+                    : 'This is the screening result based on your Builder CV and the job description.',
+            );
+
+            setCvMatchResult({
+                ...normalizedResult,
+                require_form: Boolean(result?.require_form),
+                status: result?.status || '',
+            });
+
+            if (result?.formData) {
+                setApplicationForm((prev) => ({
+                    ...prev,
+                    fullName: result.formData.full_name || result.formData.fullName || prev.fullName,
+                    email: result.formData.email || prev.email,
+                    phone: result.formData.phone || prev.phone,
+                    desiredPosition: result.formData.position || prev.desiredPosition || jobData.title || '',
+                    address: result.formData.address || prev.address,
+                    gpa: result.formData.gpa || prev.gpa,
+                    level: result.formData.level || prev.level,
+                    skillsSummary: result.formData.skill || prev.skillsSummary,
+                }));
+            }
+
+            if (result?.require_form) {
+                setApplyOption('form');
+                setApplyNotice(
+                    result?.message ||
+                    (language === 'vi'
+                        ? `CV đang được chấm ${normalizedResult.score}%. Bạn nên bổ sung form để hệ thống chấm lại chính xác hơn.`
+                        : `Your CV scored ${normalizedResult.score}%. Please complete the quick form for a more accurate score.`),
+                );
+                return;
+            }
+
+            setApplicationSubmitted(true);
+            setApplyNotice(
+                result?.message ||
+                (language === 'vi'
+                    ? `CV đạt ${normalizedResult.score}% và đã được nộp tự động thành công.`
+                    : `Your CV scored ${normalizedResult.score}% and has been submitted automatically.`),
+            );
+        } catch (error) {
+            console.error('Error analyzing CV Builder:', error);
+            const serverMessage = error?.response?.data?.message || '';
+            const isAlreadyApplied =
+                error?.response?.status === 409 ||
+                serverMessage.includes('đã ứng tuyển') ||
+                serverMessage.includes('already applied');
+
+            if (isAlreadyApplied) {
+                setCvMatchResult(null);
+                setApplyOption('');
+                setFormScoreResult(null);
+                setApplyNotice('');
+                setCvAnalysisError(language === 'vi' ? 'Bạn đã ứng tuyển vị trí này rồi!' : 'You have already applied for this position.');
+                return;
+            }
+
+            setCvMatchResult(null);
+            setApplyOption('');
+            setFormScoreResult(null);
+            setApplyNotice('');
+            setCvAnalysisError(
+                error?.response?.data?.message || (language === 'vi' ? 'Có lỗi xảy ra khi chấm điểm CV.' : 'Error occurred while scoring CV.')
+            );
+        } finally {
+            setIsAnalyzingCv(false);
+        }
+    };
+
     const handleScoreForm = async () => {
         if (!cvMatchResult) {
             alert(language === 'vi' ? 'Vui lòng upload CV và đợi hệ thống chấm điểm trước.' : 'Please upload your CV and wait for the scoring first.');
@@ -619,8 +737,13 @@ const Job = () => {
             return;
         }
 
-        if (!uploadedCvPath && !uploadedCvFile) {
+        if (applyMethod === 'upload' && !uploadedCvPath && !uploadedCvFile) {
             alert(language === 'vi' ? 'Thiếu file CV đã upload để nộp hồ sơ.' : 'The uploaded CV file is missing for submission.');
+            return;
+        }
+
+        if (applyMethod === 'builder' && !selectedCvId) {
+            alert(language === 'vi' ? 'Thiếu CV từ CV Builder để nộp hồ sơ.' : 'The Builder CV is missing for submission.');
             return;
         }
 
@@ -634,18 +757,25 @@ const Job = () => {
         try {
             let successMessage = language === 'vi' ? 'Ứng tuyển thành công!' : 'Application submitted successfully!';
 
-            if (uploadedCvPath) {
-                const response = await api.post('applications/submit-final', {
+            if (uploadedCvPath || (applyMethod === 'builder' && selectedCvId)) {
+                const payload = {
                     jobId: String(jobData.id || jobData._id || id || ''),
-                    cvFilePath: uploadedCvPath,
                     formData: buildFormPayload(applicationForm),
-                });
+                };
+                
+                if (applyMethod === 'builder') {
+                    payload.cvId = selectedCvId;
+                } else {
+                    payload.cvFilePath = uploadedCvPath;
+                }
+
+                const response = await api.post('applications/submit-final', payload);
 
                 const serverResult = response?.data?.data || {};
                 const normalizedResult = toClientScoreResult(
                     serverResult,
                     language === 'vi'
-                        ? 'Đây là điểm cuối cùng sau khi NestJS chấm lại từ form bổ sung.'
+                        ? 'Đây là điểm cuối cùng sau khi hệ thống chấm lại từ form bổ sung.'
                         : 'This is the final score after the server rescored your quick form.',
                 );
 
@@ -1055,20 +1185,71 @@ const Job = () => {
                             <div className={cx('apply-intro')}>{popupIntro}</div>
 
                             <div className={cx('popup-field')}>
-                                <label className={cx('popup-label')}>{language === 'vi' ? 'Bước 1: Upload CV trước' : 'Step 1: Upload your CV first'} <span className={cx('required')}>*</span></label>
-                                <input className={cx('popup-file-input')} type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" onChange={handleCvUpload} />
-                                <div className={cx('upload-hint')}>
-                                    {language === 'vi'
-                                        ? 'Hệ thống đọc file PDF/DOC/DOCX và chấm theo 5 tiêu chí: level, chức vụ, địa chỉ, kỹ năng, GPA.'
-                                        : 'The system reads PDF/DOC/DOCX files and scores five criteria: level, position, address, skills, and GPA.'}
+                                <label className={cx('popup-label')}>{language === 'vi' ? 'Bước 1: Chọn CV ứng tuyển' : 'Step 1: Choose your CV'} <span className={cx('required')}>*</span></label>
+                                
+                                <div className={cx('cv-options')} style={{ marginBottom: '15px' }}>
+                                    <label className={cx('cv-option')}>
+                                        <input type="radio" name="applyMethod" value="upload" checked={applyMethod === 'upload'} onChange={() => { setApplyMethod('upload'); setCvMatchResult(null); setApplyNotice(''); setApplicationSubmitted(false); setApplyOption(''); setFormScoreResult(null); }} />
+                                        <span>{language === 'vi' ? 'Tải CV từ máy tính' : 'Upload CV from computer'}</span>
+                                    </label>
+                                    <label className={cx('cv-option')}>
+                                        <input type="radio" name="applyMethod" value="builder" checked={applyMethod === 'builder'} onChange={() => { setApplyMethod('builder'); setCvMatchResult(null); setApplyNotice(''); setApplicationSubmitted(false); setApplyOption(''); setFormScoreResult(null); }} />
+                                        <span>{language === 'vi' ? 'Chọn CV đã tạo trên nền tảng' : 'Choose CV from Builder'}</span>
+                                    </label>
                                 </div>
 
-                                {uploadedCvName ? (
-                                    <div className={cx('uploaded-file')}>
-                                        <i className="fas fa-file-alt"></i>
-                                        <span>{uploadedCvName}</span>
-                                    </div>
-                                ) : null}
+                                {applyMethod === 'upload' ? (
+                                    <>
+                                        <input className={cx('popup-file-input')} type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" onChange={handleCvUpload} />
+                                        <div className={cx('upload-hint')}>
+                                            {language === 'vi'
+                                                ? 'Hệ thống đọc file PDF/DOC/DOCX và chấm theo 5 tiêu chí: level, chức vụ, địa chỉ, kỹ năng, GPA.'
+                                                : 'The system reads PDF/DOC/DOCX files and scores five criteria: level, position, address, skills, and GPA.'}
+                                        </div>
+
+                                        {uploadedCvName ? (
+                                            <div className={cx('uploaded-file')}>
+                                                <i className="fas fa-file-alt"></i>
+                                                <span>{uploadedCvName}</span>
+                                            </div>
+                                        ) : null}
+                                    </>
+                                ) : (
+                                    <>
+                                        <select 
+                                            className={cx('popup-select')} 
+                                            value={selectedCvId} 
+                                            onChange={(e) => {
+                                                setSelectedCvId(e.target.value);
+                                                setCvMatchResult(null);
+                                                setApplyNotice('');
+                                                setApplicationSubmitted(false);
+                                                setApplyOption('');
+                                                setFormScoreResult(null);
+                                            }}
+                                        >
+                                            <option value="">{language === 'vi' ? '--- Chọn một CV ---' : '--- Select a CV ---'}</option>
+                                            {myResumes.map(cv => (
+                                                <option key={cv._id} value={cv._id}>
+                                                    {cv.title || cv.cv_data?.title || (language === 'vi' ? 'CV Chưa Đặt Tên' : 'Untitled CV')} {cv.is_active ? (language === 'vi' ? '(CV chính)' : '(Main CV)') : ''}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <button 
+                                            className={cx('popup-btn', 'popup-btn--apply')} 
+                                            style={{ marginTop: '10px' }} 
+                                            onClick={handleSelectCvBuilder}
+                                            disabled={!selectedCvId || isAnalyzingCv}
+                                        >
+                                            {language === 'vi' ? 'Chấm điểm CV này' : 'Score this CV'}
+                                        </button>
+                                        {myResumes.length === 0 && (
+                                            <div className={cx('upload-hint')} style={{ color: 'red', marginTop: '10px' }}>
+                                                {language === 'vi' ? 'Bạn chưa có CV nào trên hệ thống. Vui lòng tạo CV trước hoặc tải lên từ máy tính.' : 'You have no CVs on the system. Please create a CV or upload from your computer.'}
+                                            </div>
+                                        )}
+                                    </>
+                                )}
 
                                 {cvAnalysisError ? <div className={cx('apply-notice', 'apply-notice--error')}>{cvAnalysisError}</div> : null}
 

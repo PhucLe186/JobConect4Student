@@ -15,7 +15,8 @@ class FormDataDto {
 
 export class SubmitFinalCVDto {
   @IsString() @IsNotEmpty() jobId: string;
-  @IsString() @IsNotEmpty() cvFilePath: string;
+  @IsString() @IsOptional() cvFilePath?: string;
+  @IsString() @IsOptional() cvId?: string;
   @ValidateNested()
   @Type(() => FormDataDto)
   formData: FormDataDto;

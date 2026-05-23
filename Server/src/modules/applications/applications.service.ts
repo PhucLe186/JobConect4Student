@@ -360,9 +360,75 @@ export class ApplicationsService {
   }
 
   // =================================================================
+  // [VÒNG 1] AUTO-SCREENING BẰNG CV BUILDER
+  // =================================================================
+  async smartApplyCvBuilder(jobId: string, user: JwtUser, cvId: string) {
+    const { userId } = user;
+    this.ensureStudentRole(user);
+    await this.ensureNotApplied(jobId, userId);
+
+    const cv = await this.CVModel.findOne({ _id: new Types.ObjectId(cvId), student_id: new Types.ObjectId(userId) });
+    if (!cv) throw new BadRequestException('CV không tồn tại');
+
+    const cvData = cv.cv_data || {};
+    const formData = {
+      full_name: cvData.fullName || '',
+      email: cvData.contacts?.email || '',
+      phone: cvData.contacts?.phone || '',
+      position: cvData.desiredPosition || cvData.headline || '',
+      address: cvData.contacts?.address || '',
+      gpa: cvData.education?.gpa || '',
+      level: cvData.desiredLevel || '',
+      skill: Array.isArray(cvData.skills) ? cvData.skills.join(', ') : '',
+    };
+
+    const jdCriteria = await this.getJdCriteria(jobId);
+    const { total: finalScore, details: matchDetails } = this.calculateMatchScore(formData, jdCriteria);
+
+    const PASS_THRESHOLD = 60;
+    if (finalScore < PASS_THRESHOLD) {
+      return {
+        status: 'low_score',
+        message: `Hệ thống đánh giá độ phù hợp của CV bạn chọn là ${finalScore}/100. Vui lòng kiểm tra và bổ sung thông tin trên Form!`,
+        require_form: true,
+        match_score: finalScore,
+        cvId: cvId,
+        formData: formData,
+      };
+    }
+
+    const applicantProfile = await this.getApplicantProfile(userId);
+    const finalEmail = formData.email || applicantProfile.email;
+    const finalPhone = formData.phone || applicantProfile.phone;
+    const finalName = formData.full_name || applicantProfile.fullName;
+
+    await this.jobApplyModel.create({
+      job_id: new Types.ObjectId(jobId),
+      student_id: new Types.ObjectId(userId),
+      cv_id: new Types.ObjectId(cvId),
+      full_name: finalName,
+      email: finalEmail,
+      phone: finalPhone,
+      cover_letter: 'Tự động ứng tuyển qua hệ thống AI Smart Matching (CV Builder)',
+      applied_at: new Date(),
+      status: 'sent',
+      match_score: finalScore,
+      ai_extracted_data: {
+        ...formData,
+        match_details: matchDetails,
+        school: cvData.education?.school || applicantProfile.school || '',
+        major: cvData.education?.major || applicantProfile.major || '',
+        graduation_year: cvData.education?.end || applicantProfile.graduation_year || '',
+      },
+    });
+
+    return { status: 'success', message: 'CV của bạn rất xuất sắc! Đã tự động ứng tuyển thành công.', require_form: false, match_score: finalScore };
+  }
+
+  // =================================================================
   // [VÒNG 2] NỘP FORM CHÍNH THỨC
   // =================================================================
-  async submitFinalCV(jobId: string, user: JwtUser, cvFilePath: string, formData: any) {
+  async submitFinalCV(jobId: string, user: JwtUser, cvFilePath: string, formData: any, cvId?: string) {
     const { userId } = user;
     this.ensureStudentRole(user);
 
@@ -371,11 +437,12 @@ export class ApplicationsService {
     if (!formData.email) throw new BadRequestException('Thiếu email');
     if (!formData.phone) throw new BadRequestException('Thiếu số điện thoại');
 
-    // Validate cvFilePath tồn tại trên ổ cứng
-    if (!cvFilePath) throw new BadRequestException('Thiếu đường dẫn file CV');
-    const safePath = path.resolve('./uploads/cvs', path.basename(cvFilePath));
-    if (!safePath.startsWith(path.resolve('./uploads/cvs')) || !fs.existsSync(safePath)) {
-      throw new BadRequestException('File CV không tồn tại hoặc đường dẫn không hợp lệ');
+    if (!cvFilePath && !cvId) throw new BadRequestException('Thiếu đường dẫn file CV hoặc CV từ Builder');
+    if (cvFilePath) {
+      const safePath = path.resolve('./uploads/cvs', path.basename(cvFilePath));
+      if (!safePath.startsWith(path.resolve('./uploads/cvs')) || !fs.existsSync(safePath)) {
+        throw new BadRequestException('File CV không tồn tại hoặc đường dẫn không hợp lệ');
+      }
     }
 
     await this.ensureNotApplied(jobId, userId);
@@ -384,10 +451,10 @@ export class ApplicationsService {
     const { total: finalScore, details: matchDetails } = this.calculateMatchScore(formData, jdCriteria);
 
     const studentProfile = await this.getApplicantProfile(userId);
-    await this.jobApplyModel.create({
+    
+    const applyData: any = {
       job_id: new Types.ObjectId(jobId),
       student_id: new Types.ObjectId(userId),
-      cv_file_path: cvFilePath,
       full_name: fullName,
       email: formData.email,
       phone: formData.phone,
@@ -402,7 +469,16 @@ export class ApplicationsService {
         major: studentProfile.major || '',
         graduation_year: studentProfile.graduation_year || '',
       },
-    });
+    };
+
+    if (cvFilePath) {
+      applyData.cv_file_path = cvFilePath;
+    }
+    if (cvId) {
+      applyData.cv_id = new Types.ObjectId(cvId);
+    }
+
+    await this.jobApplyModel.create(applyData);
 
     return { status: 'Ứng tuyển thành công!', match_score: finalScore, match_details: matchDetails };
   }
