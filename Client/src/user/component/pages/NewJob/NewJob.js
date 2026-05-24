@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import classNames from 'classnames/bind';
 import styles from './NewJob.module.scss';
 import { AuthContext } from '~/context/AuthContext';
@@ -9,6 +9,7 @@ const cx = classNames.bind(styles);
 const translations = {
   vi: {
     pageTitle: 'Đăng tin tuyển dụng mới',
+    editPageTitle: 'Chỉnh sửa tin tuyển dụng',
     sectionBasic: 'Thông tin cơ bản',
     sectionDetail: 'Chi tiết công việc',
     sectionContact: 'Thông tin liên hệ',
@@ -43,12 +44,14 @@ const translations = {
     selectProvinceFirst: 'Chọn tỉnh thành trước',
     btnBack: 'Quay lại',
     btnSubmit: 'Đăng bài',
+    btnEditSubmit: 'Lưu thay đổi',
     loginRequired: 'Vui lòng đăng nhập bằng tài khoản nhà tuyển dụng để đăng tin.',
     successMessage: 'Đã lưu tin tuyển dụng vào MongoDB Atlas.',
     errorMessage: 'Không thể lưu tin tuyển dụng. Vui lòng kiểm tra đăng nhập và dữ liệu.',
   },
   en: {
     pageTitle: 'Post New Job',
+    editPageTitle: 'Edit Job Posting',
     sectionBasic: 'Basic Information',
     sectionDetail: 'Job Details',
     sectionContact: 'Contact Information',
@@ -83,6 +86,7 @@ const translations = {
     selectProvinceFirst: 'Select province first',
     btnBack: 'Back',
     btnSubmit: 'Save to database',
+    btnEditSubmit: 'Update job',
     loginRequired: 'Please sign in as an employer to post a job.',
     successMessage: 'Job was saved to MongoDB Atlas.',
     errorMessage: 'Unable to save this job. Please check login and input data.',
@@ -102,11 +106,11 @@ const departmentOptions = [
 
 const districtsByProvince = {
   'Hồ Chí Minh': ['Quận 1', 'Quận 3', 'Quận 7', 'Quận Bình Thạnh', 'Quận Tân Bình', 'Quận Phú Nhuận'],
-  'Hà Nội': ['Ba Đình', 'Hoàn Kiếm', 'Hai Bà Trưng', 'Đống Đa', 'Tây Hồ', 'Cầu Giấy'],
-  'Đà Nẵng': ['Hải Châu', 'Thanh Khê', 'Sơn Trà', 'Ngũ Hành Sơn', 'Liên Chiểu', 'Cẩm Lệ'],
-  'Cần Thơ': ['Ninh Kiều', 'Bình Thủy', 'Cái Răng', 'Ô Môn', 'Thốt Nốt'],
-  'Hải Phòng': ['Hồng Bàng', 'Ngô Quyền', 'Lê Chân', 'Hải An', 'Kiến An'],
-  'Biên Hòa': ['Trung Dũng', 'Quyết Thắng', 'Thống Nhất', 'Tân Hòa', 'Tân Hiệp'],
+  'Hà Nội': ['Quận Ba Đình', 'Quận Hoàn Kiếm', 'Quận Hai Bà Trưng', 'Quận Đống Đa', 'Quận Tây Hồ', 'Quận Cầu Giấy'],
+  'Đà Nẵng': ['Quận Hải Châu', 'Quận Thanh Khê', 'Quận Sơn Trà', 'Quận Ngũ Hành Sơn', 'Quận Liên Chiểu', 'Quận Cẩm Lệ'],
+  'Cần Thơ': ['Quận Ninh Kiều', 'Quận Bình Thủy', 'Quận Cái Răng', 'Quận Ô Môn', 'Quận Thốt Nốt'],
+  'Hải Phòng': ['Quận Hồng Bàng', 'Quận Ngô Quyền', 'Quận Lê Chân', 'Quận Hải An', 'Quận Kiến An'],
+  'Biên Hòa': ['Phường Trung Dũng', 'Phường Quyết Thắng', 'Phường Thống Nhất', 'Phường Tân Hòa', 'Phường Tân Hiệp'],
 };
 
 const experienceOptions = [
@@ -143,11 +147,16 @@ const createEmptyForm = () => ({
   deadline: '',
   phone: '',
   workingHours: '',
+  status: 'draft',
+  min_gpa: '',
 });
 
 const sanitizeSalary = (value) => value.replace(/[^\d]/g, '');
 
 function NewJob({ language = 'vi' }) {
+  const { id } = useParams();
+  const isEditMode = !!id;
+
   const [form, setForm] = useState(createEmptyForm);
   const [submitting, setSubmitting] = useState(false);
   const [notice, setNotice] = useState({ type: '', text: '' });
@@ -162,6 +171,65 @@ function NewJob({ language = 'vi' }) {
   React.useEffect(() => {
     api.get('skills').then((res) => setAllSkills(res.data || [])).catch(() => { });
   }, [api]);
+
+  // Load chi tiết tin tuyển dụng nếu là chế độ edit
+  React.useEffect(() => {
+    if (isEditMode) {
+      api.get(`jobs/${id}`)
+        .then((res) => {
+          const jobData = res.data;
+          if (jobData) {
+            // Phân tách location thành quận huyện và tỉnh thành
+            const parts = (jobData.location || '').split(', ');
+            let district = '';
+            let province = '';
+            if (parts.length >= 2) {
+              district = parts[0].trim();
+              province = parts[1].trim();
+            } else if (parts.length === 1) {
+              province = parts[0].trim();
+            }
+
+            // Định dạng deadline thành YYYY-MM-DD
+            const dateObj = new Date(jobData.deadline);
+            const formattedDeadline = !isNaN(dateObj.getTime())
+              ? dateObj.toISOString().split('T')[0]
+              : '';
+
+            setForm({
+              title: jobData.title || '',
+              description: jobData.description || '',
+              requirements: jobData.requirements || '',
+              job_type: jobData.job_type || '',
+              min_salary: String(jobData.min_salary || ''),
+              max_salary: String(jobData.max_salary || ''),
+              industry: jobData.industry || '',
+              department: jobData.department || '',
+              province: province,
+              district: district,
+              experience: jobData.experience || '',
+              level: jobData.level || '',
+              deadline: formattedDeadline,
+              phone: jobData.phone || '',
+              workingHours: jobData.workingHours || '',
+              status: jobData.status || 'draft',
+              min_gpa: jobData.min_gpa !== undefined ? String(jobData.min_gpa) : '',
+            });
+
+            if (jobData.skillIds) {
+              setSelectedSkillIds(jobData.skillIds);
+            }
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+          setNotice({
+            type: 'error',
+            text: language === 'vi' ? 'Không thể tải chi tiết tin đăng.' : 'Failed to load job details.',
+          });
+        });
+    }
+  }, [api, id, isEditMode, language]);
 
   const toggleSkill = (id) => {
     setSelectedSkillIds((prev) =>
@@ -212,12 +280,21 @@ function NewJob({ language = 'vi' }) {
         deadline: form.deadline,
         phone: form.phone.trim() || undefined,
         workingHours: form.workingHours.trim() || undefined,
-        status: 'draft',
+        status: form.status || 'draft',
         skillIds: selectedSkillIds,
+        min_gpa: form.min_gpa ? Number(form.min_gpa) : 0,
       };
 
-      await api.post('jobs', payload);
-      setNotice({ type: 'success', text: t.successMessage });
+      if (isEditMode) {
+        await api.put(`jobs/${id}`, payload);
+        setNotice({
+          type: 'success',
+          text: language === 'vi' ? 'Đã cập nhật tin tuyển dụng thành công.' : 'Job posting updated successfully.',
+        });
+      } else {
+        await api.post('jobs', payload);
+        setNotice({ type: 'success', text: t.successMessage });
+      }
       setForm(createEmptyForm());
       setTimeout(() => navigate('/NTDJobManagement'), 800);
     } catch (error) {
@@ -237,7 +314,7 @@ function NewJob({ language = 'vi' }) {
 
   return (
     <div className={cx('newjob')}>
-      <h1 className={cx('newjob__title')}>{t.pageTitle}</h1>
+      <h1 className={cx('newjob__title')}>{isEditMode ? t.editPageTitle : t.pageTitle}</h1>
 
       <form className={cx('newjob__form')} onSubmit={onSubmit}>
         {notice.text ? (
@@ -521,6 +598,23 @@ function NewJob({ language = 'vi' }) {
 
             <div className={cx('newjob__field')}>
               <label className={cx('newjob__label')}>
+                {language === 'vi' ? 'GPA tối thiểu' : 'Minimum GPA'}
+              </label>
+              <input
+                className={cx('newjob__input')}
+                type="number"
+                step="0.01"
+                min="0"
+                max="4"
+                name="min_gpa"
+                placeholder={language === 'vi' ? 'Ví dụ: 2.5' : 'Ex: 2.5'}
+                value={form.min_gpa}
+                onChange={onChange}
+              />
+            </div>
+
+            <div className={cx('newjob__field')}>
+              <label className={cx('newjob__label')}>
                 {t.labelDeadline} <span className={cx('newjob__req')}>*</span>
               </label>
               <input
@@ -582,7 +676,7 @@ function NewJob({ language = 'vi' }) {
             type="submit"
             disabled={submitting}
           >
-            {submitting ? 'Saving...' : t.btnSubmit}
+            {submitting ? (isEditMode ? 'Updating...' : 'Saving...') : (isEditMode ? t.btnEditSubmit : t.btnSubmit)}
           </button>
         </div>
       </form>

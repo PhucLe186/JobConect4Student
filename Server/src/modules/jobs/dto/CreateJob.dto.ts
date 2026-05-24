@@ -64,4 +64,7 @@ export class CreateJobDto {
   @IsEnum(['open', 'close', 'draft'])
   @IsOptional()
   status?: string;
+
+  @IsOptional()
+  min_gpa?: number;
 }

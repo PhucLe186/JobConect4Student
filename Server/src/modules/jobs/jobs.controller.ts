@@ -5,6 +5,8 @@ import {
   Param,
   Post,
   Patch,
+  Put,
+  Delete,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -48,5 +50,22 @@ export class JobsController {
   @Patch(':id/publish')
   async PublishJob(@Param('id') id: string, @Req() req: Request) {
     return this.jobsService.publishJob(id, req.user as JwtUser);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put(':id')
+  async UpdateJob(
+    @Param('id') id: string,
+    @Req() req: Request,
+    @Body() body: CreateJobDto & { skillIds?: string[] },
+  ) {
+    const { skillIds, ...updateJobDto } = body;
+    return this.jobsService.UpdateJob(id, req.user as JwtUser, updateJobDto, skillIds);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id')
+  async DeleteJob(@Param('id') id: string, @Req() req: Request) {
+    return this.jobsService.deleteJob(id, req.user as JwtUser);
   }
 }

@@ -93,7 +93,7 @@ const formatDate = (value) => {
     return date.toLocaleDateString('vi-VN');
 };
 
-function JobActionsMenu({ jobId, jobStatus, t, onPublish }) {
+function JobActionsMenu({ jobId, jobStatus, t, onPublish, onEdit, onDelete }) {
     return (
         <div className={cx('job-card__dropdown')}>
             {jobStatus === 'draft' && (
@@ -106,13 +106,13 @@ function JobActionsMenu({ jobId, jobStatus, t, onPublish }) {
             )}
             <button
                 className={cx('job-card__dropdown-item')}
-                onClick={() => console.log(`Edit job ${jobId}`)}
+                onClick={() => onEdit(jobId)}
             >
                 {t.actionEdit}
             </button>
             <button
                 className={cx('job-card__dropdown-item')}
-                onClick={() => console.log(`Delete job ${jobId}`)}
+                onClick={() => onDelete(jobId)}
             >
                 {t.actionDelete}
             </button>
@@ -141,6 +141,28 @@ function JobManagement({ language = 'vi' }) {
             alert(language === 'vi' ? 'Đăng tuyển thành công! Sinh viên có thể thấy và ứng tuyển.' : 'Job published! Students can now apply.');
         } catch (err) {
             alert(err?.response?.data?.message || (language === 'vi' ? 'Không thể đăng tuyển.' : 'Failed to publish.'));
+        }
+    };
+
+    const handleEdit = (jobId) => {
+        navigate(`/edit-job/${jobId}`);
+    };
+
+    const handleDelete = async (jobId) => {
+        const confirmDelete = window.confirm(
+            language === 'vi'
+                ? 'Bạn có chắc chắn muốn xóa tin tuyển dụng này?'
+                : 'Are you sure you want to delete this job post?',
+        );
+        if (!confirmDelete) return;
+
+        try {
+            await api.delete(`jobs/${jobId}`);
+            setJobs((prev) => prev.filter((j) => j.id !== jobId));
+            setOpenMenuId(null);
+            alert(language === 'vi' ? 'Xóa tin tuyển dụng thành công!' : 'Job deleted successfully!');
+        } catch (err) {
+            alert(err?.response?.data?.message || (language === 'vi' ? 'Không thể xóa tin tuyển dụng.' : 'Failed to delete job.'));
         }
     };
 
@@ -389,7 +411,14 @@ function JobManagement({ language = 'vi' }) {
                                                     ⋮
                                                 </button>
                                                 {openMenuId === job.id ? (
-                                                    <JobActionsMenu jobId={job.id} jobStatus={job.status} t={t} onPublish={handlePublish} />
+                                                    <JobActionsMenu
+                                                        jobId={job.id}
+                                                        jobStatus={job.status}
+                                                        t={t}
+                                                        onPublish={handlePublish}
+                                                        onEdit={handleEdit}
+                                                        onDelete={handleDelete}
+                                                    />
                                                 ) : null}
                                             </div>
                                         </td>

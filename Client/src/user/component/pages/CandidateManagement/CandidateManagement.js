@@ -204,9 +204,9 @@ function CandidateManagement({ language = 'vi' }) {
       );
     }
 
-    // Lấy 3 ứng viên có GPA cao nhất trong danh sách đã lọc lên đầu trang
-    const sortedByGpa = [...pool].sort((left, right) => right.gpa - left.gpa);
-    const top3 = sortedByGpa.slice(0, 3);
+    // Lấy 3 ứng viên có điểm ưu tiên cao nhất trong danh sách đã lọc lên đầu trang
+    const sortedByOutstanding = [...pool].sort((left, right) => right.outstandingScore - left.outstandingScore);
+    const top3 = sortedByOutstanding.slice(0, 3).map((c) => ({ ...c, isTop3: true }));
     const top3Ids = new Set(top3.map((c) => c.id));
 
     const remaining = pool.filter((c) => !top3Ids.has(c.id));
@@ -220,7 +220,7 @@ function CandidateManagement({ language = 'vi' }) {
           right.gpa - left.gpa ||
           right.englishScore - left.englishScore ||
           Number(right.graduation_year) - Number(left.graduation_year),
-      );
+      ).map((c) => ({ ...c, isTop3: false }));
     } else {
       sortedRemaining = remaining.sort(
         (left, right) =>
@@ -229,7 +229,7 @@ function CandidateManagement({ language = 'vi' }) {
           right.gpa - left.gpa ||
           right.englishScore - left.englishScore ||
           right.outstandingScore - left.outstandingScore,
-      );
+      ).map((c) => ({ ...c, isTop3: false }));
     }
 
     return [...top3, ...sortedRemaining];
@@ -261,16 +261,24 @@ function CandidateManagement({ language = 'vi' }) {
             selectedCriteria.includes(criterion.key) &&
             candidate.matchedCriteriaKeys.includes(criterion.key),
         )
-        .map((criterion) => criterion.label);
+        .map((criterion) => {
+          if (criterion.key === 'techMajor') {
+            return candidate.isTop3 ? t.badgeOutstanding : null;
+          }
+          if (criterion.key === 'highGpa') {
+            return null;
+          }
+          return criterion.label;
+        })
+        .filter(Boolean);
     }
 
     return [
-      candidate.matchedCriteriaKeys.includes('highGpa') ? t.badgePriorityGpa : null,
       candidate.matchedCriteriaKeys.includes('english') ? t.badgePriorityEnglish : null,
       candidate.matchedCriteriaKeys.includes('recentGraduate')
         ? t.badgeRecentGraduate
         : null,
-      candidate.matchedCriteriaKeys.includes('techMajor') ? t.badgeTechMajor : null,
+      candidate.isTop3 ? t.badgeOutstanding : null,
     ].filter(Boolean);
   };
 
@@ -527,15 +535,24 @@ function CandidateManagement({ language = 'vi' }) {
                 ) : null}
               </div>
 
-              {candidate.cv_file_path ? (
-                <div className={cx('cand-card__cv-action')}>
+              {candidate.cv_file_base64 || candidate.cv_file_path ? (
+                <div className={cx('cand-card__cv-action')} style={{ display: 'flex', gap: '8px' }}>
                   <a
-                    href={`http://localhost:5000/${candidate.cv_file_path.replace(/\\/g, '/')}`}
+                    href={candidate.cv_file_base64 || `http://localhost:5000/${candidate.cv_file_path.replace(/\\/g, '/')}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={cx('cand-card__cv-btn')}
+                    style={{ flex: 1 }}
                   >
                     📄 {language === 'vi' ? 'Xem CV gốc' : 'View CV'}
+                  </a>
+                  <a
+                    href={candidate.cv_file_base64 || `http://localhost:5000/${candidate.cv_file_path.replace(/\\/g, '/')}`}
+                    download={`CV_${candidate.name.replace(/\s+/g, '_')}_original`}
+                    className={cx('cand-card__cv-btn')}
+                    style={{ flex: 1, background: 'linear-gradient(135deg, #10b981, #059669)', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.15)' }}
+                  >
+                    📥 {language === 'vi' ? 'Tải CV' : 'Download CV'}
                   </a>
                 </div>
               ) : null}

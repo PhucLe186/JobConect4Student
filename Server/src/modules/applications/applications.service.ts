@@ -117,6 +117,38 @@ export class ApplicationsService {
     if (existing) throw new ConflictException('Bạn đã ứng tuyển vị trí này rồi!');
   }
 
+  private getFileBase64DataUrl(filePath: string): string {
+    try {
+      if (!filePath) return '';
+      const resolvedPath = path.resolve(filePath);
+      if (!fs.existsSync(resolvedPath)) {
+        return '';
+      }
+      const fileBuffer = fs.readFileSync(resolvedPath);
+      const ext = path.extname(resolvedPath).toLowerCase();
+      let mimeType = 'application/octet-stream';
+      if (ext === '.pdf') mimeType = 'application/pdf';
+      else if (ext === '.png') mimeType = 'image/png';
+      else if (ext === '.jpg' || ext === '.jpeg') mimeType = 'image/jpeg';
+      else if (ext === '.doc') mimeType = 'application/msword';
+      else if (ext === '.docx') mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      
+      return `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
+    } catch (error) {
+      console.error('Error converting file to base64:', error);
+      return '';
+    }
+  }
+
+  private cleanAddress(text: string): string {
+    let normalized = this.normalizeText(text);
+    const keywords = ["thanh pho", "tp", "tinh", "quan", "huyen", "phuong", "xa", "thi xa"];
+    for (const kw of keywords) {
+      normalized = normalized.split(kw).join("");
+    }
+    return normalized.trim();
+  }
+
   // =================================================================
   // 1. LẤY 5 TIÊU CHÍ JD TỪ MONGODB (ĐÃ FIX LỖI SKILL RỖNG)
   // =================================================================
@@ -196,14 +228,14 @@ export class ApplicationsService {
     }
 
     // --- TIÊU CHÍ 3: ĐỊA ĐIỂM (15đ) ---
-    const jdAddr = this.normalizeText(jdCriteria.address);
-    const formAddr = this.normalizeText(formData.address || '');
+    const jdAddr = this.cleanAddress(jdCriteria.address);
+    const formAddr = this.cleanAddress(formData.address || '');
     details.address.jd = jdCriteria.address;
     details.address.cv = formData.address || '';
     if (jdAddr) {
       const ratio = fuzz.partial_ratio(jdAddr, formAddr);
       if (ratio >= 60) { details.address.score = 15; details.address.matched = true; }
-      console.log(`[3. Địa điểm] JD: "${jdAddr}" | Form: "${formAddr}" => Ratio: ${ratio}% | Điểm: ${details.address.score}/15`);
+      console.log(`[3. Địa điểm] JD (Đã sạch): "${jdAddr}" | Form (Đã sạch): "${formAddr}" => Ratio: ${ratio}% | Điểm: ${details.address.score}/15`);
     }
 
     // --- TIÊU CHÍ 4: GPA (25đ) ---
@@ -215,7 +247,7 @@ export class ApplicationsService {
       if (formGpa >= jdGpa) {
         details.gpa.score = 25; details.gpa.matched = true;
       } else {
-        details.gpa.score = Math.round((formGpa / jdGpa) * 25 * 100) / 100;
+        details.gpa.score = Math.round((formGpa / jdGpa) * 25);
       }
       console.log(`[4. GPA] JD Yêu cầu: ${jdGpa} | CV Có: ${formGpa} | Điểm: ${details.gpa.score}/25`);
     } else {
@@ -223,33 +255,47 @@ export class ApplicationsService {
     }
 
     // --- TIÊU CHÍ 5: SKILLS (30đ) ---
-    let jdSkills: string[] = [];
+    let jdSkillsRaw: string[] = [];
     if (Array.isArray(jdCriteria.skills)) {
-      jdSkills = jdCriteria.skills.map((s: string) => this.normalizeText(s)).filter((s: string) => s.length > 1);
+      jdSkillsRaw = jdCriteria.skills.map((s: any) => String(s).trim());
     } else if (typeof jdCriteria.skills === 'string' && jdCriteria.skills.length > 0) {
-      // Nếu skill là string (fallback từ requirements), cắt theo dấu phẩy, chấm phẩy, xuống dòng
-      jdSkills = jdCriteria.skills.split(/[,;\n|]/).map(s => this.normalizeText(s)).filter(s => s.length > 1);
+      jdSkillsRaw = jdCriteria.skills.split(/[,;\n|]/).map((s: string) => s.trim());
     }
-    
-    details.skills.jd = jdSkills;
-    const cvSkillRaw = formData.skill || formData.skills || '';
-    const cvSkillText = this.normalizeText(typeof cvSkillRaw === 'string' ? cvSkillRaw : (cvSkillRaw as string[]).join(', '));
-    details.skills.cv = [cvSkillText];
+    // Loại bỏ các skill rỗng sau khi strip và normalize
+    jdSkillsRaw = jdSkillsRaw.filter((s: string) => this.normalizeText(s).length >= 1);
 
-    if (jdSkills.length > 0) {
-      const matched = jdSkills.filter((s) => {
-        const ratio = fuzz.partial_ratio(s, cvSkillText);
-        console.log(`  - Xét skill JD "${s}" trong đoạn "${cvSkillText.substring(0, 30)}..." => Ratio: ${ratio}%`);
-        return ratio >= 80;
-      });
+    details.skills.jd = jdSkillsRaw;
+    const cvSkillRaw = formData.skill || formData.skills || '';
+    const cvSkillRawText = Array.isArray(cvSkillRaw) ? cvSkillRaw.join(', ') : String(cvSkillRaw || '');
+    const cvSkillText = this.normalizeText(cvSkillRawText);
+    details.skills.cv = [cvSkillRawText];
+
+    if (jdSkillsRaw.length > 0) {
+      const paddedCv = ` ${cvSkillText.replace(/[,;/|]/g, ' ')} `;
+      const matched: string[] = [];
+      
+      for (const rawS of jdSkillsRaw) {
+        const s = this.normalizeText(rawS);
+        if (s.length <= 3) {
+          if (paddedCv.includes(` ${s} `)) {
+            matched.push(rawS);
+          }
+        } else {
+          const ratio = fuzz.partial_ratio(s, cvSkillText);
+          if (ratio >= 80) {
+            matched.push(rawS);
+          }
+        }
+      }
+      
       details.skills.matchedSkills = matched;
-      details.skills.score = Math.round((matched.length / jdSkills.length) * 30 * 100) / 100;
-      console.log(`[5. Skills] JD có ${jdSkills.length} skills | Khớp ${matched.length} skills | Điểm: ${details.skills.score}/30`);
+      details.skills.score = Math.round((matched.length / jdSkillsRaw.length) * 30);
+      console.log(`[5. Skills] JD có ${jdSkillsRaw.length} skills | Khớp ${matched.length} skills | Điểm: ${details.skills.score}/30`);
     } else {
       console.log(`[5. Skills] JD không yêu cầu skills | Điểm: 0/30`);
     }
 
-    const total = details.position.score + details.level.score + details.address.score + details.gpa.score + details.skills.score;
+    const total = Math.round(details.position.score + details.level.score + details.address.score + details.gpa.score + details.skills.score);
     console.log('======================================================');
     console.log(`🏆 TỔNG ĐIỂM CHUNG CUỘC NESTJS: ${total}/100`);
     console.log('======================================================\n');
@@ -334,38 +380,54 @@ export class ApplicationsService {
     const finalName = rawData.full_name || rawData.fullName || applicantProfile.fullName;
 
     const PASS_THRESHOLD = 60;
+    const AUTO_APPLY_THRESHOLD = 90;
+    const isAutoApply = pythonScore >= AUTO_APPLY_THRESHOLD;
 
-    if (pythonScore < PASS_THRESHOLD) {
-      return {
-        status: 'low_score',
-        message: `Hệ thống AI đánh giá độ phù hợp của bạn là ${pythonScore}/100. Vui lòng kiểm tra và bổ sung thông tin trên Form!`,
-        require_form: true,
+    if (isAutoApply) {
+      const jdCriteria = await this.getJdCriteria(jobId);
+      const { details: matchDetails } = this.calculateMatchScore(
+        { ...rawData, email: finalEmail, phone: finalPhone, full_name: finalName },
+        jdCriteria
+      );
+
+      const applyData: any = {
+        job_id: new Types.ObjectId(jobId),
+        student_id: new Types.ObjectId(userId),
+        full_name: finalName,
+        email: finalEmail,
+        phone: finalPhone,
+        cover_letter: '',
+        applied_at: new Date(),
+        status: 'sent',
         match_score: pythonScore,
-        cvFilePath: cvFile.path,
-        formData: { ...rawData, email: finalEmail, phone: finalPhone, full_name: finalName },
+        cv_file_path: cvFile.path,
+        cv_file_base64: this.getFileBase64DataUrl(cvFile.path),
+        ai_extracted_data: {
+          ...rawData,
+          email: finalEmail,
+          phone: finalPhone,
+          full_name: finalName,
+          match_details: matchDetails,
+          school: applicantProfile.school || '',
+          major: applicantProfile.major || '',
+          graduation_year: applicantProfile.graduation_year || '',
+        },
       };
+      await this.jobApplyModel.create(applyData);
     }
 
-    await this.jobApplyModel.create({
-      job_id: new Types.ObjectId(jobId),
-      student_id: new Types.ObjectId(userId),
-      cv_file_path: cvFile.path,
-      full_name: finalName,
-      email: finalEmail,
-      phone: finalPhone,
-      cover_letter: 'Tự động ứng tuyển qua hệ thống AI Smart Matching',
-      applied_at: new Date(),
-      status: 'sent',
+    return {
+      status: isAutoApply ? 'auto_applied' : (pythonScore >= PASS_THRESHOLD ? 'success' : 'low_score'),
+      message: isAutoApply
+        ? `CV đạt điểm xuất sắc ${pythonScore}/100 và đã được nộp tự động thành công! Bạn có thể xem lại thông tin bên dưới.`
+        : (pythonScore >= PASS_THRESHOLD
+            ? `Hệ thống AI đánh giá độ phù hợp của bạn là ${pythonScore}/100. Hãy kiểm tra thông tin bên dưới trước khi nộp.`
+            : `Hệ thống AI đánh giá độ phù hợp của bạn là ${pythonScore}/100. Vui lòng kiểm tra và bổ sung thông tin trên Form!`),
+      require_form: true,
       match_score: pythonScore,
-      ai_extracted_data: {
-        ...rawData,
-        school: rawData.school || applicantProfile.school || '',
-        major: rawData.major || applicantProfile.major || '',
-        graduation_year: rawData.graduation_year || applicantProfile.graduation_year || '',
-      },
-    });
-
-    return { status: 'success', message: 'CV của bạn rất xuất sắc! Đã tự động ứng tuyển thành công.', require_form: false, match_score: pythonScore };
+      cvFilePath: cvFile.path,
+      formData: { ...rawData, email: finalEmail, phone: finalPhone, full_name: finalName },
+    };
   }
 
   // =================================================================
@@ -417,6 +479,8 @@ export class ApplicationsService {
     console.log('======================================================================\n');
 
     const PASS_THRESHOLD = 60;
+    const AUTO_APPLY_THRESHOLD = 90;
+    const isAutoApply = finalScore >= AUTO_APPLY_THRESHOLD;
     
     // Fallback/Resolve profile information from system for required name/email/phone
     const applicantProfile = await this.getApplicantProfile(userId);
@@ -424,40 +488,49 @@ export class ApplicationsService {
     const finalPhone = applicantProfile.phone;
     const finalName = applicantProfile.fullName;
 
-    if (finalScore < PASS_THRESHOLD) {
-      return {
-        status: 'low_score',
-        message: `Hệ thống đánh giá độ phù hợp của CV bạn chọn là ${finalScore}/100. Vui lòng kiểm tra và bổ sung thông tin trên Form!`,
-        require_form: true,
+    if (isAutoApply) {
+      const applyData: any = {
+        job_id: new Types.ObjectId(jobId),
+        student_id: new Types.ObjectId(userId),
+        full_name: finalName,
+        email: finalEmail,
+        phone: finalPhone,
+        cover_letter: '',
+        applied_at: new Date(),
+        status: 'sent',
         match_score: finalScore,
-        cvId: cvId,
-        formData: {
+        cv_id: new Types.ObjectId(cvId),
+        ai_extracted_data: {
           ...formData,
-          full_name: finalName,
           email: finalEmail,
           phone: finalPhone,
+          full_name: finalName,
+          match_details: matchDetails,
+          school: applicantProfile.school || '',
+          major: applicantProfile.major || '',
+          graduation_year: applicantProfile.graduation_year || '',
         },
       };
+      await this.jobApplyModel.create(applyData);
     }
 
-    await this.jobApplyModel.create({
-      job_id: new Types.ObjectId(jobId),
-      student_id: new Types.ObjectId(userId),
-      cv_id: new Types.ObjectId(cvId),
-      full_name: finalName,
-      email: finalEmail,
-      phone: finalPhone,
-      cover_letter: 'Tự động ứng tuyển qua hệ thống AI Smart Matching (CV Builder)',
-      applied_at: new Date(),
-      status: 'sent',
+    return {
+      status: isAutoApply ? 'auto_applied' : (finalScore >= PASS_THRESHOLD ? 'success' : 'low_score'),
+      message: isAutoApply
+        ? `Hệ thống đánh giá độ phù hợp của CV bạn chọn là ${finalScore}/100 và đã được nộp tự động thành công! Bạn có thể xem lại thông tin bên dưới.`
+        : (finalScore >= PASS_THRESHOLD
+            ? `Hệ thống đánh giá độ phù hợp của CV bạn chọn là ${finalScore}/100. Hãy kiểm tra thông tin bên dưới trước khi nộp.`
+            : `Hệ thống đánh giá độ phù hợp của CV bạn chọn là ${finalScore}/100. Vui lòng kiểm tra và bổ sung thông tin trên Form!`),
+      require_form: true,
       match_score: finalScore,
-      ai_extracted_data: {
+      cvId: cvId,
+      formData: {
         ...formData,
-        match_details: matchDetails,
+        full_name: finalName,
+        email: finalEmail,
+        phone: finalPhone,
       },
-    });
-
-    return { status: 'success', message: 'CV của bạn rất xuất sắc! Đã tự động ứng tuyển thành công.', require_form: false, match_score: finalScore };
+    };
   }
 
   // =================================================================
@@ -517,6 +590,7 @@ export class ApplicationsService {
 
     if (cvFilePath) {
       applyData.cv_file_path = cvFilePath;
+      applyData.cv_file_base64 = this.getFileBase64DataUrl(cvFilePath);
     }
     if (cvId) {
       applyData.cv_id = new Types.ObjectId(cvId);
@@ -541,6 +615,7 @@ export class ApplicationsService {
         job_id: new Types.ObjectId(jobid),
         student_id: new Types.ObjectId(userId),
         cv_file_path: cvFile.path,
+        cv_file_base64: this.getFileBase64DataUrl(cvFile.path),
         full_name: applicantProfile.fullName,
         email: applicantProfile.email,
         phone: applicantProfile.phone,
@@ -579,6 +654,7 @@ export class ApplicationsService {
       job_id: new Types.ObjectId(jobId),
       student_id: new Types.ObjectId(userId),
       cv_file_path: cvFile?.path || '',
+      cv_file_base64: cvFile?.path ? this.getFileBase64DataUrl(cvFile.path) : '',
       full_name: fullName || applicantProfile.fullName,
       email: email || applicantProfile.email,
       phone: phone || applicantProfile.phone,
@@ -675,7 +751,7 @@ export class ApplicationsService {
         const extractedData = application.ai_extracted_data || {};
         candidatesByUserId.set(applicantUserId, {
           id: applicantUserId, application_id: application._id?.toString() || '', cv_id: application.cv_id?.toString() || '',
-          cv_file_path: application.cv_file_path || '', name: extractedData.full_name || application.full_name || account?.name || 'Chưa cập nhật',
+          cv_file_path: application.cv_file_path || '', cv_file_base64: application.cv_file_base64 || '', name: extractedData.full_name || application.full_name || account?.name || 'Chưa cập nhật',
           email: extractedData.email || application.email || account?.email || '', phone: extractedData.phone || application.phone || student?.phone || '',
           address: extractedData.address || student?.address || '', gpa: extractedData.gpa ? this.parseGpa(extractedData.gpa) : gpa,
           avatar: student?.avatar || this.defaultAvatar, school: student?.school || extractedData.school || '', major: student?.major || extractedData.major || '',
@@ -777,7 +853,7 @@ export class ApplicationsService {
         email: account?.email || app.email || '', phone: student?.phone || app.phone || '', avatar: student?.avatar || this.defaultAvatar,
         school: student?.school || '', major: student?.major || '', gpa, gpa_score: Math.round(gpaScore), skills: studentSkills,
         skill_score: Math.round(skillScore), match_score: matchScore, excellence_score: excellenceScore, career_goal: student?.career_goal || '',
-        graduation_year: student?.graduation_year || '', cv_file_path: app.cv_file_path || '', applied_job: job?.title || '',
+        graduation_year: student?.graduation_year || '', cv_file_path: app.cv_file_path || '', cv_file_base64: app.cv_file_base64 || '', applied_job: job?.title || '',
         applied_at: app.applied_at, status: app.status, ranking_breakdown: { gpa_weight: '30%', skill_weight: '40%', match_weight: '30%', gpa_raw: gpa, skill_count: studentSkills.length, match_raw: matchScore },
       });
     });

@@ -17,6 +17,9 @@ export class job_applications {
   @Prop({ type: String })
   cv_file_path?: string;
 
+  @Prop({ type: String })
+  cv_file_base64?: string;
+
   @Prop({ type: String, required: true })
   full_name: string;
 

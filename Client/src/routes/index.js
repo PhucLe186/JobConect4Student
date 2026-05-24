@@ -47,6 +47,7 @@ const publicRoutes = [
     { path: routesconfig.NTDJobManagement, component: NTDJobManagement, layout: Default  },
     { path: routesconfig.NTDprofile, component: NTDProfile, layout: Default  },
     { path: routesconfig.NewJob, component: NewJob, layout: Default  },
+    { path: routesconfig.EditJob, component: NewJob, layout: Default  },
     /*****************************************Admin_Page**********************************************************/
     { path: routesconfig.adminlogin, component: AdminLogin, layout: null },
     { path: routesconfig.dashboard, component: Dashboard, layout: AdminLayout },

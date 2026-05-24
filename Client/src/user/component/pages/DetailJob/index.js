@@ -6,7 +6,7 @@ import translations from '~/component/Translation';
 import { AuthContext } from '~/context/AuthContext';
 import { createCompanyPlaceholder, mergeJobs, normalizeJob } from '~/user/component/shared/companyData';
 import { buildProfileSuggestionCriteria, rankJobsByCriteria } from '~/user/component/shared/jobSuggestionUtils';
-import { analyzeCvMatch } from './cvMatchUtils';
+
 
 const cx = classNames.bind(styles);
 const INITIAL_APPLICATION_FORM = {
@@ -20,13 +20,6 @@ const INITIAL_APPLICATION_FORM = {
     skillsSummary: '',
 };
 const LEVEL_OPTIONS = ['Intern', 'Fresher', 'Junior', 'Middle', 'Senior'];
-const LEVEL_RANK = { intern: 0, fresher: 1, junior: 2, middle: 3, senior: 4 };
-const FORM_SKILL_KEYWORDS = [
-    'frontend', 'backend', 'fullstack', 'html', 'css', 'javascript', 'typescript',
-    'react', 'vue', 'angular', 'node', 'express', 'nestjs', 'java', 'python', 'php',
-    'laravel', 'mysql', 'sql', 'mongodb', 'docker', 'git', 'figma', 'english',
-    'communication', 'teamwork',
-];
 const MAX_CV_FILE_SIZE = 5 * 1024 * 1024;
 
 if (!document.querySelector('link[href*="fontawesome"]')) {
@@ -53,10 +46,7 @@ const normalizeCompare = (value = '') =>
 
 const unique = (items) => Array.from(new Set((items || []).filter(Boolean)));
 
-const tokenizeCompare = (value = '') =>
-    normalizeCompare(value)
-        .split(' ')
-        .filter((token) => token.length >= 2);
+
 
 const FEEDBACK_NOISE_KEYWORDS = new Set([
     'ho',
@@ -98,17 +88,7 @@ const sanitizeFeedbackKeywords = (items) =>
             return !FEEDBACK_NOISE_KEYWORDS.has(normalized);
         });
 
-const findCanonicalLevel = (value = '') => {
-    const normalized = normalizeCompare(value);
 
-    if (!normalized) return '';
-    if (normalized.includes('thuc tap') || normalized.includes('trainee') || normalized.includes('intern')) return 'intern';
-    if (normalized.includes('fresher') || normalized.includes('graduate') || normalized.includes('new grad')) return 'fresher';
-    if (normalized.includes('junior')) return 'junior';
-    if (normalized.includes('middle') || normalized.includes('mid')) return 'middle';
-    if (normalized.includes('senior') || normalized.includes('lead')) return 'senior';
-    return '';
-};
 
 const getCriterionLabel = (key, language) => {
     const labels = {
@@ -304,138 +284,7 @@ const Job = () => {
         cover_letter: coverLetter.trim(),
     });
 
-    const buildFormScoreResult = () => {
-        const normalizedDesiredPosition = normalizeCompare(applicationForm.desiredPosition);
-        const normalizedJobTitle = normalizeCompare(jobData.title);
-        const desiredTokens = tokenizeCompare(applicationForm.desiredPosition);
-        const jobTitleTokens = tokenizeCompare(jobData.title);
-        const matchedPositionTokens = jobTitleTokens.filter((token) => desiredTokens.includes(token));
-        const missingPositionTokens = jobTitleTokens.filter((token) => !desiredTokens.includes(token));
-        const positionScore =
-            normalizedDesiredPosition && normalizedJobTitle && normalizedDesiredPosition.includes(normalizedJobTitle)
-                ? 95
-                : jobTitleTokens.length > 0
-                    ? Math.round(30 + (matchedPositionTokens.length / jobTitleTokens.length) * 60)
-                    : 65;
 
-        const expectedLevel = findCanonicalLevel(jobData.level);
-        const currentLevel = findCanonicalLevel(applicationForm.level);
-        const levelDistance =
-            expectedLevel && currentLevel && typeof LEVEL_RANK[expectedLevel] === 'number' && typeof LEVEL_RANK[currentLevel] === 'number'
-                ? Math.abs(LEVEL_RANK[expectedLevel] - LEVEL_RANK[currentLevel])
-                : null;
-        const levelScore = !expectedLevel ? 65 : !currentLevel ? 30 : levelDistance === 0 ? 92 : levelDistance === 1 ? 72 : 45;
-
-        const addressTokens = tokenizeCompare(applicationForm.address);
-        const jobAddressTokens = tokenizeCompare(jobData.location);
-        const matchedAddressTokens = jobAddressTokens.filter((token) => addressTokens.includes(token));
-        const addressScore =
-            addressTokens.length > 0 && normalizeCompare(applicationForm.address).includes(normalizeCompare(jobData.location))
-                ? 92
-                : jobAddressTokens.length > 0
-                    ? matchedAddressTokens.length > 0
-                        ? Math.round(35 + (matchedAddressTokens.length / jobAddressTokens.length) * 45)
-                        : 28
-                    : 65;
-
-        const normalizedSkills = normalizeCompare(applicationForm.skillsSummary);
-        const normalizedJobContent = normalizeCompare(`${jobData.title || ''} ${jobData.requirements || ''} ${jobData.description || ''}`);
-        const expectedSkillTerms = FORM_SKILL_KEYWORDS.filter((keyword) => normalizedJobContent.includes(keyword)).slice(0, 8);
-        const matchedSkillTerms = expectedSkillTerms.filter((keyword) => normalizedSkills.includes(keyword));
-        const missingSkillTerms = expectedSkillTerms.filter((keyword) => !normalizedSkills.includes(keyword));
-        const skillsScore =
-            expectedSkillTerms.length > 0
-                ? Math.round(30 + (matchedSkillTerms.length / expectedSkillTerms.length) * 65)
-                : applicationForm.skillsSummary.trim().length >= 20
-                    ? 70
-                    : 45;
-
-        const rawGpa = Number(applicationForm.gpa || 0);
-        const normalizedGpa = rawGpa > 4 && rawGpa <= 10 ? (rawGpa / 10) * 4 : rawGpa;
-        const gpaScore = normalizedGpa >= 3.4 ? 94 : normalizedGpa >= 3.0 ? 82 : normalizedGpa >= 2.6 ? 65 : normalizedGpa > 0 ? 48 : 30;
-
-        const criteriaScores = [
-            {
-                key: 'level',
-                score: levelScore,
-                detail: expectedLevel
-                    ? currentLevel
-                        ? levelDistance === 0
-                            ? language === 'vi' ? `Level bạn chọn đã trùng với mức ${applicationForm.level}.` : `Your selected level matches ${applicationForm.level}.`
-                            : language === 'vi' ? `Bạn chọn ${applicationForm.level}, trong khi tin đăng ưu tiên ${jobData.level}.` : `You selected ${applicationForm.level}, while the role prefers ${jobData.level}.`
-                        : language === 'vi' ? 'Bạn chưa chọn level hiện tại.' : 'Current level is still missing.'
-                    : language === 'vi' ? 'Tin đăng chưa yêu cầu level cụ thể.' : 'This job does not specify a strict level.',
-                matchedKeywords: levelScore >= 70 && applicationForm.level ? [applicationForm.level] : [],
-                missingKeywords: levelScore < 60 ? [jobData.level || (language === 'vi' ? 'Level yêu cầu' : 'Required level')] : [],
-            },
-            {
-                key: 'position',
-                score: positionScore,
-                detail: matchedPositionTokens.length > 0
-                    ? language === 'vi'
-                        ? `Form đã có ${matchedPositionTokens.length}/${jobTitleTokens.length || 1} từ khóa trùng với chức vụ ${jobData.title || '--'}.`
-                        : `The form matches ${matchedPositionTokens.length}/${jobTitleTokens.length || 1} position keywords from ${jobData.title || '--'}.`
-                    : language === 'vi'
-                        ? `Chức vụ bạn nhập chưa sát với vị trí ${jobData.title || '--'}.`
-                        : `The entered position is not close to ${jobData.title || '--'} yet.`,
-                matchedKeywords: matchedPositionTokens,
-                missingKeywords: missingPositionTokens.slice(0, 3),
-            },
-            {
-                key: 'address',
-                score: addressScore,
-                detail: matchedAddressTokens.length > 0
-                    ? language === 'vi'
-                        ? `Địa chỉ bạn nhập đang gần với khu vực ${jobData.location || '--'}.`
-                        : `The provided address is close to ${jobData.location || '--'}.`
-                    : language === 'vi'
-                        ? `Địa chỉ bạn nhập chưa gần rõ với nơi làm việc ${jobData.location || '--'}.`
-                        : `The provided address is not clearly close to ${jobData.location || '--'}.`,
-                matchedKeywords: matchedAddressTokens,
-                missingKeywords: addressScore < 60 ? [jobData.location || (language === 'vi' ? 'Địa chỉ làm việc' : 'Work location')] : [],
-            },
-            {
-                key: 'skills',
-                score: skillsScore,
-                detail: matchedSkillTerms.length > 0
-                    ? language === 'vi'
-                        ? `Form đã khớp ${matchedSkillTerms.length}/${expectedSkillTerms.length || 1} kỹ năng nổi bật.`
-                        : `The form matches ${matchedSkillTerms.length}/${expectedSkillTerms.length || 1} highlighted skills.`
-                    : language === 'vi'
-                        ? 'Kỹ năng bạn nhập chưa bắt được nhóm kỹ năng chính của công việc.'
-                        : 'The entered skills do not capture the key skills of this job yet.',
-                matchedKeywords: matchedSkillTerms,
-                missingKeywords: missingSkillTerms.slice(0, 4),
-            },
-            {
-                key: 'gpa',
-                score: gpaScore,
-                detail: rawGpa
-                    ? language === 'vi'
-                        ? `Hệ thống ghi nhận GPA ${applicationForm.gpa}${rawGpa > 4 ? '/10' : '/4'}.`
-                        : `The system recorded GPA ${applicationForm.gpa}${rawGpa > 4 ? '/10' : '/4'}.`
-                    : language === 'vi'
-                        ? 'Bạn chưa nhập GPA.'
-                        : 'GPA is missing.',
-                matchedKeywords: gpaScore >= 70 && applicationForm.gpa ? [`GPA ${applicationForm.gpa}`] : [],
-                missingKeywords: gpaScore < 60 ? ['GPA'] : [],
-            },
-        ];
-
-        const finalScore = Math.round(criteriaScores.reduce((sum, item) => sum + item.score, 0) / criteriaScores.length);
-
-        return {
-            score: finalScore,
-            tone: getToneByScore(finalScore),
-            criteriaScores,
-            matchedKeywords: unique(criteriaScores.flatMap((item) => item.matchedKeywords)).slice(0, 8),
-            missingKeywords: unique(criteriaScores.flatMap((item) => item.missingKeywords)).slice(0, 8),
-            note:
-                language === 'vi'
-                    ? 'Điểm này là lượt chấm tiếp theo từ form bổ sung bạn vừa điền, vẫn theo 5 tiêu chí tương tự CV.'
-                    : 'This is the follow-up score from the extra form, using the same five criteria as the CV step.',
-        };
-    };
 
     const handleCvUpload = async (event) => {
         const file = event.target.files?.[0];
@@ -499,7 +348,7 @@ const Job = () => {
 
             setCvMatchResult({
                 ...normalizedResult,
-                require_form: Boolean(result?.require_form),
+                require_form: true,
                 status: result?.status || '',
             });
             setUploadedCvPath(result?.cvFilePath || '');
@@ -518,24 +367,18 @@ const Job = () => {
                 }));
             }
 
-            if (result?.require_form) {
-                setApplyOption('form');
-                setApplyNotice(
-                    result?.message ||
-                    (language === 'vi'
-                        ? `CV đang được AI chấm ${normalizedResult.score}%. Bạn nên bổ sung form để hệ thống chấm lại chính xác hơn.`
-                        : `Your CV scored ${normalizedResult.score}%. Please complete the quick form for a more accurate score.`),
-                );
-                return;
+            setApplyOption('form');
+            setFormScoreResult(normalizedResult);
+            if (result?.status === 'auto_applied') {
+                setApplicationSubmitted(true);
             }
-
-            setApplicationSubmitted(true);
             setApplyNotice(
                 result?.message ||
                 (language === 'vi'
-                    ? `CV đạt ${normalizedResult.score}% và đã được nộp tự động thành công.`
-                    : `Your CV scored ${normalizedResult.score}% and has been submitted automatically.`),
+                    ? `CV đang được AI chấm ${normalizedResult.score}%. Bạn nên bổ sung form để hệ thống chấm lại chính xác hơn.`
+                    : `Your CV scored ${normalizedResult.score}%. Please complete the quick form for a more accurate score.`),
             );
+            return;
         } catch (error) {
             console.error('Error analyzing CV:', error);
             const serverMessage = error?.response?.data?.message || '';
@@ -604,7 +447,7 @@ const Job = () => {
 
             setCvMatchResult({
                 ...normalizedResult,
-                require_form: Boolean(result?.require_form),
+                require_form: true,
                 status: result?.status || '',
             });
 
@@ -622,24 +465,18 @@ const Job = () => {
                 }));
             }
 
-            if (result?.require_form) {
-                setApplyOption('form');
-                setApplyNotice(
-                    result?.message ||
-                    (language === 'vi'
-                        ? `CV đang được chấm ${normalizedResult.score}%. Bạn nên bổ sung form để hệ thống chấm lại chính xác hơn.`
-                        : `Your CV scored ${normalizedResult.score}%. Please complete the quick form for a more accurate score.`),
-                );
-                return;
+            setApplyOption('form');
+            setFormScoreResult(normalizedResult);
+            if (result?.status === 'auto_applied') {
+                setApplicationSubmitted(true);
             }
-
-            setApplicationSubmitted(true);
             setApplyNotice(
                 result?.message ||
                 (language === 'vi'
-                    ? `CV đạt ${normalizedResult.score}% và đã được nộp tự động thành công.`
-                    : `Your CV scored ${normalizedResult.score}% and has been submitted automatically.`),
+                    ? `CV đang được chấm ${normalizedResult.score}%. Bạn nên bổ sung form để hệ thống chấm lại chính xác hơn.`
+                    : `Your CV scored ${normalizedResult.score}%. Please complete the quick form for a more accurate score.`),
             );
+            return;
         } catch (error) {
             console.error('Error analyzing CV Builder:', error);
             const serverMessage = error?.response?.data?.message || '';
@@ -1379,11 +1216,13 @@ const Job = () => {
                                     <button
                                         className={cx('popup-btn', 'popup-btn--apply')}
                                         onClick={handleSubmitApplication}
-                                        disabled={isAnalyzingCv || isSubmittingApplication}
+                                        disabled={isAnalyzingCv || isSubmittingApplication || applicationSubmitted}
                                     >
                                         {isSubmittingApplication
                                             ? language === 'vi' ? 'Đang nộp CV...' : 'Submitting CV...'
-                                            : language === 'vi' ? 'Nộp CV ứng tuyển' : 'Submit application'}
+                                            : applicationSubmitted
+                                                ? language === 'vi' ? 'Đã nộp CV thành công' : 'Application submitted'
+                                                : language === 'vi' ? 'Nộp CV ứng tuyển' : 'Submit application'}
                                     </button>
                                 </div>
                             ) : null}
@@ -1391,7 +1230,7 @@ const Job = () => {
 
                         <div className={cx('popup-actions')}>
                             <button className={cx('popup-btn', 'popup-btn--cancel')} onClick={closeApplyPopup}>{language === 'vi' ? 'Hủy' : 'Cancel'}</button>
-                            <button className={cx('popup-btn', 'popup-btn--submit')} onClick={handleApplySubmit} disabled={isAnalyzingCv || isSubmittingApplication || !cvMatchResult || !applyOption}>
+                            <button className={cx('popup-btn', 'popup-btn--submit')} onClick={handleApplySubmit} disabled={isAnalyzingCv || isSubmittingApplication || !cvMatchResult || !applyOption || applicationSubmitted}>
                                 {applyOption === 'create'
                                     ? language === 'vi' ? 'Đi đến tạo CV' : 'Go to CV Builder'
                                     : applyOption === 'form'

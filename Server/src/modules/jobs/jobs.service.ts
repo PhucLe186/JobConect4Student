@@ -44,6 +44,7 @@ export class JobsService {
       level: job.level,
       status: job.status,
       created_at: job.created_at,
+      min_gpa: job.min_gpa || 0,
     };
   }
 
@@ -98,6 +99,13 @@ export class JobsService {
       return null;
     }
 
+    const jobSkills = await this.jobSkillModel
+      .find({ Job_id: new Types.ObjectId(id) })
+      .select('skill_id')
+      .lean()
+      .exec();
+    const skillIds = jobSkills.map((js: any) => js.skill_id?.toString?.() || '');
+
     const employer = (detailJob as any).Employer;
 
     return {
@@ -109,6 +117,7 @@ export class JobsService {
       email: employer?.User?.email || '',
       employer_name: employer?.User?.name || '',
       department: detailJob.department || '',
+      skillIds,
     };
   }
 
@@ -123,6 +132,7 @@ export class JobsService {
       ...createJobdto,
       employer_id: new Types.ObjectId(userId),
       status: createJobdto.status || 'draft',
+      min_gpa: createJobdto.min_gpa ? Number(createJobdto.min_gpa) : 0,
     });
 
     // Lưu skills vào bảng job_skills nếu có - chỉ insert các skillId tồn tại trong DB
@@ -149,6 +159,66 @@ export class JobsService {
       { new: true },
     );
     if (!job) throw new Error('Không tìm thấy job hoặc bạn không có quyền');
+    return { status: true };
+  }
+
+  async UpdateJob(
+    jobId: string,
+    user: JwtUser,
+    updateJobDto: CreateJobDto,
+    skillIds?: string[],
+  ): Promise<{ status: boolean }> {
+    const { userId } = user;
+
+    const updatedJob = await this.jobsModel.findOneAndUpdate(
+      { _id: new Types.ObjectId(jobId), employer_id: new Types.ObjectId(userId) },
+      {
+        $set: {
+          ...updateJobDto,
+          min_gpa: updateJobDto.min_gpa ? Number(updateJobDto.min_gpa) : 0,
+        },
+      },
+      { new: true },
+    );
+
+    if (!updatedJob) {
+      throw new Error('Không tìm thấy job hoặc bạn không có quyền chỉnh sửa');
+    }
+
+    // Xóa liên kết skill cũ trong JobSkills
+    await this.jobSkillModel.deleteMany({ Job_id: updatedJob._id });
+
+    // Lưu skills mới vào JobSkills nếu có
+    if (skillIds && skillIds.length > 0) {
+      const validIds = skillIds.filter((id) => Types.ObjectId.isValid(id));
+      const existingSkills = await this.skillModel
+        .find({ _id: { $in: validIds.map((id) => new Types.ObjectId(id)) } })
+        .select('_id')
+        .lean();
+      const existingIdSet = new Set(existingSkills.map((s) => s._id.toString()));
+      const docs = validIds
+        .filter((id) => existingIdSet.has(id))
+        .map((id) => ({ Job_id: updatedJob._id, skill_id: new Types.ObjectId(id) }));
+      if (docs.length > 0) await this.jobSkillModel.insertMany(docs);
+    }
+
+    return { status: true };
+  }
+
+  async deleteJob(jobId: string, user: JwtUser): Promise<{ status: boolean }> {
+    const { userId } = user;
+    const deletedJob = await this.jobsModel.findOneAndDelete({
+      _id: new Types.ObjectId(jobId),
+      employer_id: new Types.ObjectId(userId),
+    });
+
+    if (!deletedJob) {
+      throw new Error('Không tìm thấy job hoặc bạn không có quyền xóa');
+    }
+
+    // Xóa liên kết skill trong JobSkills
+    await this.jobSkillModel.deleteMany({ Job_id: deletedJob._id });
+
     return { status: true };
   }
 

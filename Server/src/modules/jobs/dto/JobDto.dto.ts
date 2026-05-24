@@ -17,4 +17,5 @@ export class JobsDto {
   level?: string;
   status?: string;
   created_at?: Date;
+  min_gpa?: number;
 }

@@ -26,7 +26,8 @@ const Routes = {
     CandidateManagement:"/CandidateManagement",
     NTDJobManagement:'/NTDJobManagement',
     NTDprofile:'/NTDprofile',
-    NewJob:'/newjob'
+    NewJob:'/newjob',
+    EditJob:'/edit-job/:id'
 };
 
 export default Routes;
