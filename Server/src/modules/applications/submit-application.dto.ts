@@ -11,12 +11,20 @@ class FormDataDto {
   @IsString() @IsOptional() address?: string;
   @IsString() @IsOptional() skill?: string;
   @IsString() @IsOptional() cover_letter?: string;
+  @IsString() @IsOptional() experience?: string;
 }
 
 export class SubmitFinalCVDto {
   @IsString() @IsNotEmpty() jobId: string;
   @IsString() @IsOptional() cvFilePath?: string;
   @IsString() @IsOptional() cvId?: string;
+  
+  @IsOptional()
+  rawAiExtractedData?: any;
+
+  @IsOptional()
+  commitmentAccepted?: boolean;
+
   @ValidateNested()
   @Type(() => FormDataDto)
   formData: FormDataDto;

@@ -47,6 +47,21 @@ export class job_applications {
 
   @Prop({ type: Object, default: {} })
   ai_extracted_data: Record<string, any>; // Lưu cục dữ liệu JSON ứng viên đã xác nhận trên Form
+
+  // ==========================================
+  // CÁC TRƯỜNG CHO CƠ CHẾ ĐỐI SOÁT VÀ CẢNH BÁO ĐỘ LỆCH DỮ LIỆU (ANOMALY DETECTION)
+  // ==========================================
+  @Prop({ type: Object, default: {} })
+  raw_ai_extracted_data?: Record<string, any>; // Lưu dữ liệu JSON gốc từ AI OCR (chưa sửa)
+
+  @Prop({ type: String, enum: ['none', 'low', 'flagged_yellow', 'flagged_red'], default: 'none' })
+  deviation_status?: string; // Trạng thái lệch dữ liệu (Cảnh báo gian lận)
+
+  @Prop({ type: Object, default: {} })
+  deviation_details?: Record<string, any>; // Chi tiết các cảnh báo sai lệch dữ liệu
+
+  @Prop({ type: Boolean, default: false })
+  commitment_accepted?: boolean; // Ứng viên cam kết dữ liệu khớp với CV gốc
 }
 
 export const jobApplySchema = SchemaFactory.createForClass(job_applications);

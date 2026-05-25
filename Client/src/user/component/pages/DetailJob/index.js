@@ -18,6 +18,7 @@ const INITIAL_APPLICATION_FORM = {
     gpa: '',
     level: '',
     skillsSummary: '',
+    experience: '',
 };
 const LEVEL_OPTIONS = ['Intern', 'Fresher', 'Junior', 'Middle', 'Senior'];
 const MAX_CV_FILE_SIZE = 5 * 1024 * 1024;
@@ -173,6 +174,8 @@ const Job = () => {
     const [cvAnalysisError, setCvAnalysisError] = useState('');
     const [applyNotice, setApplyNotice] = useState('');
     const [applicationSubmitted, setApplicationSubmitted] = useState(false);
+    const [rawAiExtractedData, setRawAiExtractedData] = useState(null);
+    const [commitmentAccepted, setCommitmentAccepted] = useState(false);
     
     // CV Builder states
     const [myResumes, setMyResumes] = useState([]);
@@ -236,6 +239,8 @@ const Job = () => {
         setApplicationSubmitted(false);
         setApplyMethod('upload');
         setSelectedCvId('');
+        setRawAiExtractedData(null);
+        setCommitmentAccepted(false);
     };
 
     const handleOpenApplyPopup = () => {
@@ -282,6 +287,7 @@ const Job = () => {
         level: String(formState.level || '').trim(),
         skill: formState.skillsSummary.trim(),
         cover_letter: coverLetter.trim(),
+        experience: String(formState.experience || '0').trim(),
     });
 
 
@@ -354,6 +360,7 @@ const Job = () => {
             setUploadedCvPath(result?.cvFilePath || '');
 
             if (result?.formData) {
+                setRawAiExtractedData(result.formData);
                 setApplicationForm((prev) => ({
                     ...prev,
                     fullName: result.formData.full_name || result.formData.fullName || prev.fullName,
@@ -364,6 +371,7 @@ const Job = () => {
                     gpa: result.formData.gpa || prev.gpa,
                     level: result.formData.level || prev.level,
                     skillsSummary: result.formData.skill || prev.skillsSummary,
+                    experience: result.formData.experience || prev.experience || '0',
                 }));
             }
 
@@ -452,6 +460,7 @@ const Job = () => {
             });
 
             if (result?.formData) {
+                setRawAiExtractedData(result.formData);
                 setApplicationForm((prev) => ({
                     ...prev,
                     fullName: result.formData.full_name || result.formData.fullName || prev.fullName,
@@ -462,6 +471,7 @@ const Job = () => {
                     gpa: result.formData.gpa || prev.gpa,
                     level: result.formData.level || prev.level,
                     skillsSummary: result.formData.skill || prev.skillsSummary,
+                    experience: result.formData.experience || prev.experience || '0',
                 }));
             }
 
@@ -586,6 +596,13 @@ const Job = () => {
             return;
         }
 
+        if (!commitmentAccepted) {
+            alert(language === 'vi' 
+                ? 'Vui lòng xác nhận cam kết dữ liệu chỉnh sửa khớp với CV gốc.' 
+                : 'Please confirm that the edited data matches your original CV.');
+            return;
+        }
+
         if (!formScoreResult) {
             alert(language === 'vi' ? 'Vui lòng chấm điểm form bổ sung trước khi nộp hồ sơ.' : 'Please score the quick form before submitting.');
             return;
@@ -600,6 +617,8 @@ const Job = () => {
                 const payload = {
                     jobId: String(jobData.id || jobData._id || id || ''),
                     formData: buildFormPayload(applicationForm),
+                    rawAiExtractedData: rawAiExtractedData,
+                    commitmentAccepted: commitmentAccepted,
                 };
                 
                 if (applyMethod === 'builder') {
@@ -1176,6 +1195,10 @@ const Job = () => {
                                                 {LEVEL_OPTIONS.map((level) => <option key={level} value={level}>{level}</option>)}
                                             </select>
                                         </div>
+                                        <div className={cx('popup-field')}>
+                                            <label className={cx('popup-label')}>{language === 'vi' ? 'Số năm kinh nghiệm' : 'Years of Experience'} <span className={cx('required')}>*</span></label>
+                                            <input className={cx('popup-input')} type="number" min="0" max="40" value={applicationForm.experience} onChange={(event) => setApplicationForm((prev) => ({ ...prev, experience: event.target.value }))} placeholder={language === 'vi' ? 'Ví dụ: 2' : 'Ex: 2'} />
+                                        </div>
                                     </div>
 
                                     <div className={cx('popup-field')}>
@@ -1186,6 +1209,21 @@ const Job = () => {
                                     <div className={cx('popup-field')}>
                                         <label className={cx('popup-label')}>{language === 'vi' ? 'Giới thiệu thêm (tùy chọn)' : 'Additional note (optional)'}</label>
                                         <textarea className={cx('popup-textarea')} rows={4} value={coverLetter} onChange={(event) => setCoverLetter(event.target.value)} placeholder={language === 'vi' ? 'Bạn có thể viết ngắn gọn về mục tiêu hoặc điểm mạnh của mình...' : 'You can briefly describe your goals or strengths...'} />
+                                    </div>
+
+                                    <div className={cx('popup-field')} style={{ marginTop: '20px', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                                        <input 
+                                            type="checkbox" 
+                                            id="commitment-checkbox" 
+                                            checked={commitmentAccepted} 
+                                            onChange={(e) => setCommitmentAccepted(e.target.checked)} 
+                                            style={{ marginTop: '4px', cursor: 'pointer', width: '16px', height: '16px' }}
+                                        />
+                                        <label htmlFor="commitment-checkbox" style={{ fontSize: '0.9rem', cursor: 'pointer', userSelect: 'none', color: '#dc2626', fontWeight: '600', lineHeight: '1.4' }}>
+                                            {language === 'vi' 
+                                                ? 'Tôi cam kết dữ liệu chỉnh sửa khớp với CV gốc, mọi gian lận sẽ dẫn đến việc hủy bỏ kết quả ứng tuyển.' 
+                                                : 'I commit that the edited data matches the original CV, any fraud will lead to disqualification.'}
+                                        </label>
                                     </div>
                                 </>
                             ) : null}

@@ -67,6 +67,169 @@ export class ApplicationsService {
     return Number.isFinite(gpa) ? gpa : 0;
   }
 
+  private estimateOriginalExperience(skillsText: string, levelText: string): number {
+    const normalized = this.normalizeText(skillsText + ' ' + levelText);
+    
+    // 1. Try to find explicit numbers like "3 năm kinh nghiệm", "5 years experience", "2 yrs"
+    const expRegexes = [
+      /(\d+)\s*(?:năm\s*kinh\s*nghiệm|nam\s*kinh\s*nghiem|năm|nam|year|yr)/i,
+      /(?:kinh\s*nghiệm|kinh\s*nghiem|experience)\s*(?:của|of)?\s*(\d+)\s*(?:năm|nam|year|yr)/i
+    ];
+    for (const regex of expRegexes) {
+      const match = normalized.match(regex);
+      if (match) {
+        const parsed = parseInt(match[1], 10);
+        if (parsed > 0 && parsed <= 30) {
+          return parsed;
+        }
+      }
+    }
+
+    // 2. Fallback based on career level
+    if (normalized.includes('intern')) return 0;
+    if (normalized.includes('fresher')) return 0;
+    if (normalized.includes('junior')) return 1;
+    if (normalized.includes('middle') || normalized.includes('mid')) return 3;
+    if (normalized.includes('senior')) return 5;
+    if (normalized.includes('lead')) return 7;
+    if (normalized.includes('manager')) return 8;
+
+    return 0; // Default to 0 if not found
+  }
+
+  private detectDeviation(formData: any, rawAi: any) {
+    const warnings: string[] = [];
+    let levelWarning = '';
+    let gpaWarning = '';
+    let skillsWarning = '';
+    let expWarning = '';
+
+    const rawGpa = this.parseGpa(rawAi?.gpa);
+    const formGpa = this.parseGpa(formData?.gpa);
+    
+    const rawLevel = this.normalizeText(rawAi?.level || '');
+    const formLevel = this.normalizeText(formData?.level || '');
+
+    const rawSkillText = this.normalizeText(rawAi?.skill || rawAi?.skills || '');
+    const formSkillText = this.normalizeText(formData?.skill || formData?.skills || '');
+
+    const rawExp = parseInt(rawAi?.experience || '0', 10);
+    const formExp = parseInt(formData?.experience || '0', 10);
+
+    // 1. GPA inflation check
+    if (formGpa > rawGpa && rawGpa > 0) {
+      const diff = formGpa - rawGpa;
+      if (diff > 0.5) {
+        gpaWarning = `Tăng điểm GPA nghiêm trọng từ ${rawGpa} lên ${formGpa} (+${diff.toFixed(1)} điểm)`;
+        warnings.push(gpaWarning);
+      } else if (diff > 0.2) {
+        gpaWarning = `Tăng điểm GPA nhẹ từ ${rawGpa} lên ${formGpa} (+${diff.toFixed(1)} điểm)`;
+        warnings.push(gpaWarning);
+      }
+    }
+
+    // 2. Level inflation check
+    const levelWeights: Record<string, number> = {
+      'intern': 0, 'fresher': 1, 'junior': 2, 'middle': 3, 'mid': 3, 'senior': 4, 'lead': 5, 'manager': 6
+    };
+    const rawWeight = levelWeights[rawLevel] !== undefined ? levelWeights[rawLevel] : -1;
+    const formWeight = levelWeights[formLevel] !== undefined ? levelWeights[formLevel] : -1;
+
+    if (formWeight > rawWeight && rawWeight >= 0) {
+      const diff = formWeight - rawWeight;
+      if (diff >= 3) {
+        levelWarning = `Khai khống cấp bậc nghiêm trọng từ ${rawAi?.level || 'N/A'} lên ${formData?.level || 'N/A'} (tăng ${diff} bậc)`;
+        warnings.push(levelWarning);
+      } else if (diff >= 2) {
+        levelWarning = `Tăng cấp bậc không trung thực từ ${rawAi?.level || 'N/A'} lên ${formData?.level || 'N/A'} (tăng ${diff} bậc)`;
+        warnings.push(levelWarning);
+      }
+    }
+
+    // 3. Experience inflation check
+    if (formExp > rawExp) {
+      const diff = formExp - rawExp;
+      if (diff >= 3) {
+        expWarning = `Khai khống số năm kinh nghiệm nghiêm trọng từ ${rawExp} năm lên ${formExp} năm (khai thêm ${diff} năm)`;
+        warnings.push(expWarning);
+      } else if (diff >= 2) {
+        expWarning = `Tăng khống số năm kinh nghiệm từ ${rawExp} năm lên ${formExp} năm (khai thêm ${diff} năm)`;
+        warnings.push(expWarning);
+      }
+    }
+
+    // 4. Skills inflation check (Arbitrary skills additions)
+    const splitSkills = (text: string): string[] => {
+      return text
+        .split(/[,;\n|•·]/)
+        .map(s => s.trim())
+        .filter(s => s.length > 1);
+    };
+
+    const rawSkillsList = splitSkills(rawSkillText);
+    const formSkillsList = splitSkills(formSkillText);
+
+    const addedSkills: string[] = [];
+    for (const skill of formSkillsList) {
+      const normSkill = this.normalizeText(skill);
+      const isMatched = rawSkillsList.some(rawS => {
+        const normRaw = this.normalizeText(rawS);
+        return normRaw.includes(normSkill) || normSkill.includes(normRaw) || fuzz.partial_ratio(normRaw, normSkill) >= 80;
+      });
+      if (!isMatched) {
+        addedSkills.push(skill);
+      }
+    }
+
+    if (addedSkills.length >= 5) {
+      skillsWarning = `Khai khống hàng loạt kỹ năng mới tinh không có trong CV gốc: ${addedSkills.join(', ')}`;
+      warnings.push(skillsWarning);
+    } else if (addedSkills.length >= 3) {
+      skillsWarning = `Thêm nhiều kỹ năng mới chưa được đối soát trong CV gốc: ${addedSkills.join(', ')}`;
+      warnings.push(skillsWarning);
+    }
+
+    // Calculate final status
+    let deviation_status = 'none';
+    
+    const hasSevereInflation = 
+      (formGpa - rawGpa > 0.5 && rawGpa > 0) || 
+      (formWeight - rawWeight >= 3 && rawWeight >= 0) || 
+      (formExp - rawExp >= 3) || 
+      addedSkills.length >= 5;
+
+    const hasMediumInflation = 
+      (formGpa - rawGpa > 0.2 && rawGpa > 0) || 
+      (formWeight - rawWeight >= 2 && rawWeight >= 0) || 
+      (formExp - rawExp >= 2) || 
+      addedSkills.length >= 3;
+
+    if (hasSevereInflation) {
+      deviation_status = 'flagged_red';
+    } else if (hasMediumInflation) {
+      deviation_status = 'flagged_yellow';
+    } else if (warnings.length > 0 || addedSkills.length > 0) {
+      deviation_status = 'low';
+    }
+
+    return {
+      deviation_status,
+      warnings,
+      addedSkills,
+      details: {
+        originalGpa: rawGpa,
+        editedGpa: formGpa,
+        originalLevel: rawAi?.level || 'N/A',
+        editedLevel: formData?.level || 'N/A',
+        originalExperience: rawExp,
+        editedExperience: formExp,
+        originalSkills: rawAi?.skill || rawAi?.skills || '',
+        editedSkills: formData?.skill || formData?.skills || '',
+        addedSkills
+      }
+    };
+  }
+
   private getEnglishMeta(skills: Array<{ name: string; level: number }>, careerGoal?: string) {
     const englishKeywords = ['english', 'tieng anh', 'ielts', 'toeic', 'toefl'];
     const matchedSkill = skills
@@ -371,6 +534,11 @@ export class ApplicationsService {
 
     const aiResponse = await this.analyzeCVDraft(jobId, cvFile);
     const rawData = aiResponse.data || {};
+    
+    // Trích xuất số năm kinh nghiệm gốc ước lượng từ CV
+    const estimatedExp = this.estimateOriginalExperience(rawData.skill || '', rawData.level || '');
+    rawData.experience = String(estimatedExp);
+
     const pythonScore = aiResponse.score || 0;
     console.log('[Python AI] Đã chấm điểm sơ bộ. Điểm số: %d/100', pythonScore);
 
@@ -453,12 +621,17 @@ export class ApplicationsService {
     const cvData = cv.cv_data || {};
     
     // Only extract 5 fields from the builder CV: position, gpa, address, level, and skill
+    const skillText = Array.isArray(cvData.skills) ? cvData.skills.join(', ') : '';
+    const levelText = cvData.desiredLevel || '';
+    const estimatedExp = this.estimateOriginalExperience(skillText, levelText);
+
     const formData = {
       position: cvData.desiredPosition || cvData.headline || '',
       address: cvData.contacts?.address || '',
       gpa: cvData.education?.gpa || '',
-      level: cvData.desiredLevel || '',
-      skill: Array.isArray(cvData.skills) ? cvData.skills.join(', ') : '',
+      level: levelText,
+      skill: skillText,
+      experience: String(estimatedExp),
     };
 
     const jdCriteria = await this.getJdCriteria(jobId);
@@ -536,7 +709,15 @@ export class ApplicationsService {
   // =================================================================
   // [VÒNG 2] NỘP FORM CHÍNH THỨC
   // =================================================================
-  async submitFinalCV(jobId: string, user: JwtUser, cvFilePath: string, formData: any, cvId?: string) {
+  async submitFinalCV(
+    jobId: string,
+    user: JwtUser,
+    cvFilePath: string,
+    formData: any,
+    cvId?: string,
+    rawAiExtractedData?: any,
+    commitmentAccepted?: boolean
+  ) {
     const { userId } = user;
     this.ensureStudentRole(user);
     if (!Types.ObjectId.isValid(jobId)) {
@@ -568,6 +749,20 @@ export class ApplicationsService {
     const { total: finalScore, details: matchDetails } = this.calculateMatchScore(formData, jdCriteria);
 
     const studentProfile = await this.getApplicantProfile(userId);
+
+    // Chạy cơ chế đối soát độ lệch dữ liệu (Anomaly/Deviation Detection)
+    let deviation_status = 'none';
+    let deviation_details = {};
+
+    if (rawAiExtractedData) {
+      const deviationResult = this.detectDeviation(formData, rawAiExtractedData);
+      deviation_status = deviationResult.deviation_status;
+      deviation_details = {
+        warnings: deviationResult.warnings,
+        addedSkills: deviationResult.addedSkills,
+        details: deviationResult.details,
+      };
+    }
     
     const applyData: any = {
       job_id: new Types.ObjectId(jobId),
@@ -586,6 +781,10 @@ export class ApplicationsService {
         major: studentProfile.major || '',
         graduation_year: studentProfile.graduation_year || '',
       },
+      raw_ai_extracted_data: rawAiExtractedData || {},
+      deviation_status,
+      deviation_details,
+      commitment_accepted: !!commitmentAccepted,
     };
 
     if (cvFilePath) {
@@ -598,7 +797,7 @@ export class ApplicationsService {
 
     await this.jobApplyModel.create(applyData);
 
-    return { status: 'Ứng tuyển thành công!', match_score: finalScore, match_details: matchDetails };
+    return { status: 'Ứng tuyển thành công!', match_score: finalScore, match_details: matchDetails, deviation_status };
   }
 
   // (GIỮ NGUYÊN HOÀN TOÀN CÁC HÀM CŨ: applyJobs, applyWithDetails, getApplicationHistory, getEmployerCandidates, getTopCandidates)
@@ -759,6 +958,10 @@ export class ApplicationsService {
           desired_salary: student?.desired_salary || '', englishLabel, englishScore, skills: candidateSkills, match_score: application.match_score || 0,
           verified_cv_data: extractedData, status: application.status, latestAppliedAt: application.applied_at, latestJobTitle: job?.title || '',
           totalApplications: 0, appliedJobs: [],
+          raw_ai_extracted_data: application.raw_ai_extracted_data || {},
+          deviation_status: application.deviation_status || 'none',
+          deviation_details: application.deviation_details || {},
+          commitment_accepted: application.commitment_accepted || false,
         });
       }
 

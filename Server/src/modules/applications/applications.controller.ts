@@ -94,7 +94,9 @@ export class ApplicationsController {
       req.user as JwtUser,
       submitDto.cvFilePath || '',
       submitDto.formData,
-      submitDto.cvId
+      submitDto.cvId,
+      submitDto.rawAiExtractedData,
+      submitDto.commitmentAccepted
     );
     return { success: true, data: result };
   }

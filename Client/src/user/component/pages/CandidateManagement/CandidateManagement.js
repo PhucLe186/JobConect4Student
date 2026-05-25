@@ -90,6 +90,7 @@ function CandidateManagement({ language = 'vi' }) {
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [compareCandidate, setCompareCandidate] = useState(null);
   const { api, user } = useContext(AuthContext);
 
   const t = trans__candidateManagement[language] || trans__candidateManagement.vi;
@@ -234,6 +235,222 @@ function CandidateManagement({ language = 'vi' }) {
 
     return [...top3, ...sortedRemaining];
   }, [filteredBySearch, selectedCriteria]);
+
+  const openSideBySide = (candidate) => {
+    setCompareCandidate(candidate);
+  };
+
+  const closeCompareModal = () => {
+    setCompareCandidate(null);
+  };
+
+  const renderCompareModal = () => {
+    if (!compareCandidate) return null;
+
+    const raw = compareCandidate.raw_ai_extracted_data || {};
+    const form = compareCandidate.verified_cv_data || {};
+    const devDetails = compareCandidate.deviation_details || {};
+    const warnings = devDetails.warnings || [];
+    const addedSkills = devDetails.addedSkills || [];
+
+    const hasDiscrepancy = (field) => {
+      if (field === 'skill') {
+        return addedSkills.length > 0;
+      }
+      if (field === 'experience') {
+        const rExp = parseInt(raw.experience || '0', 10);
+        const fExp = parseInt(form.experience || '0', 10);
+        return fExp > rExp;
+      }
+      if (field === 'gpa') {
+        const rGpa = Number(raw.gpa) || 0;
+        const fGpa = Number(form.gpa) || 0;
+        return fGpa > rGpa;
+      }
+      if (field === 'level') {
+        const levelWeights = { 'intern': 0, 'fresher': 1, 'junior': 2, 'middle': 3, 'mid': 3, 'senior': 4, 'lead': 5, 'manager': 6 };
+        const rWeight = levelWeights[normalizeText(raw.level)] !== undefined ? levelWeights[normalizeText(raw.level)] : -1;
+        const fWeight = levelWeights[normalizeText(form.level)] !== undefined ? levelWeights[normalizeText(form.level)] : -1;
+        return fWeight > rWeight && rWeight >= 0;
+      }
+      return false;
+    };
+
+    const isRedAlert = compareCandidate.deviation_status === 'flagged_red';
+    const isYellowAlert = compareCandidate.deviation_status === 'flagged_yellow';
+    const isLowDiscrepancy = compareCandidate.deviation_status === 'low';
+
+    const cvSrc = compareCandidate.cv_file_base64 || (compareCandidate.cv_file_path ? `http://localhost:5000/${compareCandidate.cv_file_path.replace(/\\/g, '/')}` : '');
+
+    return (
+      <div className={cx('modal-overlay')} onClick={closeCompareModal}>
+        <div className={cx('compare-modal')} onClick={(e) => e.stopPropagation()}>
+          <header className={cx('compare-header')}>
+            <div className={cx('compare-header-title')}>
+              <h3>🔍 {language === 'vi' ? 'HỆ THỐNG ĐỐI SOÁT HỒ SƠ SONG SONG (SIDE-BY-SIDE)' : 'SIDE-BY-SIDE CROSS-CHECK SYSTEM'}</h3>
+              <p>{language === 'vi' ? `Ứng viên: ${compareCandidate.name}` : `Candidate: ${compareCandidate.name}`}</p>
+            </div>
+            <button className={cx('close-btn')} onClick={closeCompareModal}>&times;</button>
+          </header>
+
+          <div className={cx('compare-container')}>
+            {/* Left Panel: Analytics & Comparative Table */}
+            <div className={cx('compare-panel-left')}>
+              {/* Deviation Warning Alert Banner */}
+              {(isRedAlert || isYellowAlert || isLowDiscrepancy) && (
+                <div className={cx('warning-banner', {
+                  'warning-banner--red': isRedAlert,
+                  'warning-banner--yellow': isYellowAlert,
+                  'warning-banner--low': isLowDiscrepancy
+                })}>
+                  <div className={cx('warning-banner-icon')}>
+                    {isRedAlert ? '🚨' : isYellowAlert ? '⚠️' : 'ℹ️'}
+                  </div>
+                  <div className={cx('warning-banner-content')}>
+                    <h4>
+                      {isRedAlert 
+                        ? (language === 'vi' ? 'CẢNH BÁO GIAN LẬN HỒ SƠ (ĐỘ LỆCH NẶNG)' : 'SEVERE DATA INFLATION WARNING')
+                        : isYellowAlert 
+                          ? (language === 'vi' ? 'PHÁT HIỆN LỆCH DỮ LIỆU ĐÁNG NGỜ' : 'MODERATE DATA DISCREPANCY')
+                          : (language === 'vi' ? 'Có sai lệch dữ liệu nhẹ' : 'Minor data discrepancy')}
+                    </h4>
+                    <ul>
+                      {warnings.length > 0 ? (
+                        warnings.map((warn, i) => <li key={i}>{warn}</li>)
+                      ) : (
+                        <li>{language === 'vi' ? 'Ứng viên tự chỉnh sửa kỹ năng hoặc thông tin cơ bản so với bản dịch OCR.' : 'discrepancy detected in skills or basic metadata.'}</li>
+                      )}
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              {/* Personal Integrity Commitment Banner */}
+              <div className={cx('commitment-banner', { 'commitment-banner--accepted': compareCandidate.commitment_accepted })}>
+                <div className={cx('commitment-icon')}>✓</div>
+                <div>
+                  <strong>{language === 'vi' ? 'Cam kết trung thực:' : 'Integrity Commitment:'}</strong>
+                  <p>
+                    {compareCandidate.commitment_accepted 
+                      ? (language === 'vi' ? 'Ứng viên đã tick chọn cam kết khớp dữ liệu và chịu trách nhiệm nếu gian lận.' : 'Candidate verified that the edited data fully matches the original CV.') 
+                      : (language === 'vi' ? 'Ứng viên chưa hoàn tất cam kết.' : 'No integrity commitment recorded.')}
+                  </p>
+                </div>
+              </div>
+
+              {/* Matching Score Summary Card */}
+              <div className={cx('info-card')}>
+                <div className={cx('info-card-header')}>
+                  <span>{language === 'vi' ? 'ĐIỂM SƠ TUYỂN AI' : 'AI PRE-SCREENING SCORE'}</span>
+                  <h2>{compareCandidate.match_score}%</h2>
+                </div>
+                <div className={cx('info-card-progress')}>
+                  <div style={{ width: `${compareCandidate.match_score}%`, backgroundColor: compareCandidate.match_score >= 80 ? '#10b981' : compareCandidate.match_score >= 60 ? '#f59e0b' : '#ef4444' }}></div>
+                </div>
+              </div>
+
+              {/* Comparison Table */}
+              <h4 style={{ margin: '15px 0 10px 0', color: '#1e293b' }}>
+                📊 {language === 'vi' ? 'Bảng đối soát chi tiết từng trường' : 'Field-by-field Cross-examination Table'}
+              </h4>
+              <div className={cx('compare-table-wrapper')}>
+                <table className={cx('compare-table')}>
+                  <thead>
+                    <tr>
+                      <th>{language === 'vi' ? 'Trường thông tin' : 'Metadata Field'}</th>
+                      <th>{language === 'vi' ? 'CV Gốc (OCR bóc tách)' : 'Original CV (OCR Parsed)'}</th>
+                      <th>{language === 'vi' ? 'Form đã sửa (Ứng viên nộp)' : 'Candidate Submitted Form'}</th>
+                      <th>{language === 'vi' ? 'Đối soát' : 'Cross-check'}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className={cx({ 'row-deviation': hasDiscrepancy('position') })}>
+                      <td><strong>{language === 'vi' ? 'Chức vụ' : 'Desired Position'}</strong></td>
+                      <td>{raw.position || raw.desiredPosition || <em style={{ color: '#aaa' }}>{language === 'vi' ? '(Trống)' : '(Empty)'}</em>}</td>
+                      <td>{form.position || form.desiredPosition || <em style={{ color: '#aaa' }}>{language === 'vi' ? '(Trống)' : '(Empty)'}</em>}</td>
+                      <td>{hasDiscrepancy('position') ? '⚠️ Lệch' : '✓ Khớp'}</td>
+                    </tr>
+                    <tr className={cx({ 'row-deviation': hasDiscrepancy('level') })}>
+                      <td><strong>{language === 'vi' ? 'Cấp bậc' : 'Career Level'}</strong></td>
+                      <td>{raw.level || <em style={{ color: '#aaa' }}>{language === 'vi' ? '(Trống)' : '(Empty)'}</em>}</td>
+                      <td>{form.level || <em style={{ color: '#aaa' }}>{language === 'vi' ? '(Trống)' : '(Empty)'}</em>}</td>
+                      <td>{hasDiscrepancy('level') ? '🚨 Lệch bậc' : '✓ Khớp'}</td>
+                    </tr>
+                    <tr className={cx({ 'row-deviation': hasDiscrepancy('experience') })}>
+                      <td><strong>{language === 'vi' ? 'Kinh nghiệm' : 'Experience'}</strong></td>
+                      <td>{raw.experience !== undefined ? `${raw.experience} năm` : <em style={{ color: '#aaa' }}>{language === 'vi' ? '(Trống)' : '(Empty)'}</em>}</td>
+                      <td>{form.experience !== undefined ? `${form.experience} năm` : <em style={{ color: '#aaa' }}>{language === 'vi' ? '(Trống)' : '(Empty)'}</em>}</td>
+                      <td>{hasDiscrepancy('experience') ? '🚨 Khai thêm' : '✓ Khớp'}</td>
+                    </tr>
+                    <tr className={cx({ 'row-deviation': hasDiscrepancy('gpa') })}>
+                      <td><strong>{language === 'vi' ? 'Điểm GPA' : 'GPA Score'}</strong></td>
+                      <td>{raw.gpa || <em style={{ color: '#aaa' }}>{language === 'vi' ? '(Trống)' : '(Empty)'}</em>}</td>
+                      <td>{form.gpa || <em style={{ color: '#aaa' }}>{language === 'vi' ? '(Trống)' : '(Empty)'}</em>}</td>
+                      <td>{hasDiscrepancy('gpa') ? '🚨 Nâng điểm' : '✓ Khớp'}</td>
+                    </tr>
+                    <tr className={cx({ 'row-deviation': hasDiscrepancy('skill') })}>
+                      <td><strong>{language === 'vi' ? 'Kỹ năng' : 'Core Skills'}</strong></td>
+                      <td>
+                        <div className={cx('skills-cell-text')} title={raw.skill || raw.skills || ''}>
+                          {raw.skill || raw.skills || <em style={{ color: '#aaa' }}>{language === 'vi' ? '(Trống)' : '(Empty)'}</em>}
+                        </div>
+                      </td>
+                      <td>
+                        <div className={cx('skills-cell-text')} title={form.skill || form.skillsSummary || ''}>
+                          {form.skill || form.skillsSummary || <em style={{ color: '#aaa' }}>{language === 'vi' ? '(Trống)' : '(Empty)'}</em>}
+                        </div>
+                      </td>
+                      <td>
+                        {addedSkills.length > 0 ? (
+                          <span style={{ color: '#dc2626', fontWeight: 'bold' }}>
+                            🚨 {language === 'vi' ? `Thêm ${addedSkills.length} kỹ năng` : `Added ${addedSkills.length} skills`}
+                          </span>
+                        ) : '✓ Khớp'}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>{language === 'vi' ? 'Địa chỉ' : 'Location'}</strong></td>
+                      <td>{raw.address || <em style={{ color: '#aaa' }}>{language === 'vi' ? '(Trống)' : '(Empty)'}</em>}</td>
+                      <td>{form.address || <em style={{ color: '#aaa' }}>{language === 'vi' ? '(Trống)' : '(Empty)'}</em>}</td>
+                      <td>{raw.address !== form.address ? 'ℹ️ Sửa đổi' : '✓ Khớp'}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Right Panel: Embedded Original CV Document */}
+            <div className={cx('compare-panel-right')}>
+              <div className={cx('cv-viewer-header')}>
+                <span>📄 {language === 'vi' ? 'FILE CV GỐC ĐỂ ĐỐI SOÁT TRỰC QUAN' : 'ORIGINAL CANDIDATE CV FILE'}</span>
+              </div>
+              <div className={cx('cv-viewer-body')}>
+                {cvSrc ? (
+                  cvSrc.endsWith('.pdf') || cvSrc.includes('application/pdf') || cvSrc.startsWith('data:application/pdf') ? (
+                    <iframe 
+                      src={cvSrc} 
+                      title="CV Original Viewer" 
+                      width="100%" 
+                      height="100%" 
+                      style={{ border: 'none' }}
+                    />
+                  ) : (
+                    <div className={cx('cv-image-scroll')}>
+                      <img src={cvSrc} alt="Original CV" style={{ width: '100%', height: 'auto', display: 'block' }} />
+                    </div>
+                  )
+                ) : (
+                  <div className={cx('no-cv-view')}>
+                    {language === 'vi' ? 'Không tìm thấy file CV đính kèm' : 'No CV file attached'}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   const hasSelectedCriteria = selectedCriteria.length > 0;
 
@@ -426,7 +643,19 @@ function CandidateManagement({ language = 'vi' }) {
                   />
 
                   <div className={cx('cand-card__identity')}>
-                    <div className={cx('cand-card__name')}>{candidate.name}</div>
+                    <div className={cx('cand-card__name')} style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                      {candidate.name}
+                      {candidate.deviation_status === 'flagged_red' && (
+                        <span className={cx('fraud-flag', 'fraud-flag--red')} title={language === 'vi' ? 'Sai lệch dữ liệu cực nặng!' : 'Severe data discrepancy!'}>
+                          🚨 {language === 'vi' ? 'KHAI KHỐNG' : 'FRAUD ALERT'}
+                        </span>
+                      )}
+                      {candidate.deviation_status === 'flagged_yellow' && (
+                        <span className={cx('fraud-flag', 'fraud-flag--yellow')} title={language === 'vi' ? 'Sai lệch dữ liệu nhẹ!' : 'Discrepancy detected!'}>
+                          ⚠️ {language === 'vi' ? 'SAI LỆCH' : 'SUSPICIOUS'}
+                        </span>
+                      )}
+                    </div>
                     <div className={cx('cand-card__school')}>{candidate.school || '-'}</div>
                   </div>
                 </div>
@@ -536,24 +765,34 @@ function CandidateManagement({ language = 'vi' }) {
               </div>
 
               {candidate.cv_file_base64 || candidate.cv_file_path ? (
-                <div className={cx('cand-card__cv-action')} style={{ display: 'flex', gap: '8px' }}>
-                  <a
-                    href={candidate.cv_file_base64 || `http://localhost:5000/${candidate.cv_file_path.replace(/\\/g, '/')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                <div className={cx('cand-card__cv-action')} style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                  <button
+                    type="button"
+                    onClick={() => openSideBySide(candidate)}
                     className={cx('cand-card__cv-btn')}
-                    style={{ flex: 1 }}
+                    style={{ background: 'linear-gradient(135deg, #6366f1, #4f46e5)', color: '#fff', boxShadow: '0 4px 12px rgba(99, 102, 241, 0.2)', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
                   >
-                    📄 {language === 'vi' ? 'Xem CV gốc' : 'View CV'}
-                  </a>
-                  <a
-                    href={candidate.cv_file_base64 || `http://localhost:5000/${candidate.cv_file_path.replace(/\\/g, '/')}`}
-                    download={`CV_${candidate.name.replace(/\s+/g, '_')}_original`}
-                    className={cx('cand-card__cv-btn')}
-                    style={{ flex: 1, background: 'linear-gradient(135deg, #10b981, #059669)', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.15)' }}
-                  >
-                    📥 {language === 'vi' ? 'Tải CV' : 'Download CV'}
-                  </a>
+                    🔍 {language === 'vi' ? 'Đối soát Side-by-Side' : 'Cross-check Side-by-Side'}
+                  </button>
+                  <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
+                    <a
+                      href={candidate.cv_file_base64 || `http://localhost:5000/${candidate.cv_file_path.replace(/\\/g, '/')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={cx('cand-card__cv-btn')}
+                      style={{ flex: 1 }}
+                    >
+                      📄 {language === 'vi' ? 'Xem CV gốc' : 'View CV'}
+                    </a>
+                    <a
+                      href={candidate.cv_file_base64 || `http://localhost:5000/${candidate.cv_file_path.replace(/\\/g, '/')}`}
+                      download={`CV_${candidate.name.replace(/\s+/g, '_')}_original`}
+                      className={cx('cand-card__cv-btn')}
+                      style={{ flex: 1, background: 'linear-gradient(135deg, #10b981, #059669)', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.15)' }}
+                    >
+                      📥 {language === 'vi' ? 'Tải CV' : 'Download CV'}
+                    </a>
+                  </div>
                 </div>
               ) : null}
             </article>
@@ -570,6 +809,7 @@ function CandidateManagement({ language = 'vi' }) {
           </div>
         ) : null}
       </div>
+      {renderCompareModal()}
     </div>
   );
 }
