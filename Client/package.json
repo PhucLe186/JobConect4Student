@@ -43,6 +43,7 @@
     },
     "scripts": {
         "start": "react-app-rewired start",
+        "start:network": "cross-env HOST=0.0.0.0 react-app-rewired start",
         "build": "react-app-rewired build",
         "test": "react-app-rewired test",
         "eject": "react-app-rewired eject"
@@ -67,6 +68,7 @@
     },
     "devDependencies": {
         "babel-plugin-module-resolver": "^5.0.2",
+        "cross-env": "^10.1.0",
         "cypress": "^14.4.1",
         "react-app-rewired": "^2.2.1",
         "sass": "^1.83.4",

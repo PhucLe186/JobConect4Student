@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
     
     const api = useMemo(() => {
         const instance = axios.create({
-            baseURL: "http://localhost:5000/",
+            baseURL: "http://26.11.41.172:5000/",
             withCredentials: true,
         });
 

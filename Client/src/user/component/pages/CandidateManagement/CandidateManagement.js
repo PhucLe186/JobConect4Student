@@ -96,7 +96,7 @@ function CandidateManagement({ language = 'vi' }) {
   const t = trans__candidateManagement[language] || trans__candidateManagement.vi;
 
   const handleViewCv = useCallback((candidate) => {
-    const cvSrc = candidate.cv_file_base64 || (candidate.cv_file_path ? `http://localhost:5000/${candidate.cv_file_path.replace(/\\/g, '/')}` : '');
+    const cvSrc = candidate.cv_file_base64 || (candidate.cv_file_path ? `http://26.11.41.172:5000/${candidate.cv_file_path.replace(/\\/g, '/')}` : '');
     if (!cvSrc) return;
 
     if (cvSrc.startsWith('data:')) {
@@ -325,7 +325,7 @@ function CandidateManagement({ language = 'vi' }) {
     const isYellowAlert = compareCandidate.deviation_status === 'flagged_yellow';
     const isLowDiscrepancy = compareCandidate.deviation_status === 'low';
 
-    const cvSrc = compareCandidate.cv_file_base64 || (compareCandidate.cv_file_path ? `http://localhost:5000/${compareCandidate.cv_file_path.replace(/\\/g, '/')}` : '');
+    const cvSrc = compareCandidate.cv_file_base64 || (compareCandidate.cv_file_path ? `http://26.11.41.172:5000/${compareCandidate.cv_file_path.replace(/\\/g, '/')}` : '');
 
     return (
       <div className={cx('modal-overlay')} onClick={closeCompareModal}>
@@ -823,7 +823,7 @@ function CandidateManagement({ language = 'vi' }) {
                       📄 {language === 'vi' ? 'Xem CV gốc' : 'View CV'}
                     </button>
                     <a
-                      href={candidate.cv_file_base64 || `http://localhost:5000/${candidate.cv_file_path.replace(/\\/g, '/')}`}
+                      href={candidate.cv_file_base64 || `http://26.11.41.172:5000/${candidate.cv_file_path.replace(/\\/g, '/')}`}
                       download={`CV_${candidate.name.replace(/\s+/g, '_')}_original`}
                       className={cx('cand-card__cv-btn')}
                       style={{ flex: 1, background: 'linear-gradient(135deg, #10b981, #059669)', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.15)' }}
