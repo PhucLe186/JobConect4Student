@@ -79,6 +79,7 @@ const JOB_TEMPLATES = [
         max_salary: 30000000,
         description: 'Phát triển giao diện web, dashboard và công cụ nội bộ cho các sản phẩm đang tăng trưởng.',
         requirements: 'Thành thạo React, TypeScript, HTML, CSS, REST API và tối ưu hiệu năng giao diện.',
+        skills: ['React', 'TypeScript', 'HTML', 'CSS', 'REST API'],
     },
     {
         title: 'Backend Developer',
@@ -89,6 +90,7 @@ const JOB_TEMPLATES = [
         max_salary: 34000000,
         description: 'Xây dựng API, service backend và tối ưu luồng dữ liệu cho hệ thống vận hành.',
         requirements: 'Node.js hoặc Java, SQL, Redis, API design và kinh nghiệm làm việc với cloud.',
+        skills: ['Node.js', 'SQL', 'Redis', 'API design', 'Cloud'],
     },
     {
         title: 'Product Designer',
@@ -99,6 +101,7 @@ const JOB_TEMPLATES = [
         max_salary: 26000000,
         description: 'Thiết kế luồng người dùng, wireframe và prototype cho sản phẩm web và mobile.',
         requirements: 'Figma, UX research, design system, prototype và khả năng phối hợp với dev team.',
+        skills: ['Figma', 'UX research', 'Design system', 'Prototype'],
     },
     {
         title: 'Data Analyst',
@@ -109,6 +112,7 @@ const JOB_TEMPLATES = [
         max_salary: 28000000,
         description: 'Phân tích dữ liệu, xây dựng dashboard và đề xuất cải tiến dựa trên chỉ số kinh doanh.',
         requirements: 'SQL, Excel, Power BI hoặc Tableau, tư duy phân tích và trình bày dữ liệu.',
+        skills: ['SQL', 'Excel', 'Power BI', 'Tableau'],
     },
     {
         title: 'QA Automation Engineer',
@@ -119,6 +123,7 @@ const JOB_TEMPLATES = [
         max_salary: 29000000,
         description: 'Xây dựng bộ test automation và báo cáo chất lượng cho hệ thống sản phẩm.',
         requirements: 'API testing, Selenium hoặc Cypress, bug tracking và quy trình kiểm thử phần mềm.',
+        skills: ['API testing', 'Selenium', 'Cypress', 'Kiểm thử phần mềm'],
     },
 ];
 
@@ -455,6 +460,8 @@ const buildMockJobs = (companies) =>
             workingHours: createWorkingHours(template.job_type),
             status: 'open',
             logo: company.logo,
+            skills: template.skills,
+            skillNames: template.skills,
         };
     });
 

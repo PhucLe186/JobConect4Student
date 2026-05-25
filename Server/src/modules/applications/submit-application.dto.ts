@@ -11,7 +11,6 @@ class FormDataDto {
   @IsString() @IsOptional() address?: string;
   @IsString() @IsOptional() skill?: string;
   @IsString() @IsOptional() cover_letter?: string;
-  @IsString() @IsOptional() experience?: string;
 }
 
 export class SubmitFinalCVDto {

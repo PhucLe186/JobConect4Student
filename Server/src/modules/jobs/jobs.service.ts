@@ -101,10 +101,11 @@ export class JobsService {
 
     const jobSkills = await this.jobSkillModel
       .find({ Job_id: new Types.ObjectId(id) })
-      .select('skill_id')
+      .populate('skill_id', 'name')
       .lean()
       .exec();
-    const skillIds = jobSkills.map((js: any) => js.skill_id?.toString?.() || '');
+    const skillIds = jobSkills.map((js: any) => js.skill_id?._id?.toString?.() || js.skill_id?.toString?.() || '');
+    const skillNames = jobSkills.map((js: any) => js.skill_id?.name || '').filter(Boolean);
 
     const employer = (detailJob as any).Employer;
 
@@ -118,6 +119,7 @@ export class JobsService {
       employer_name: employer?.User?.name || '',
       department: detailJob.department || '',
       skillIds,
+      skillNames,
     };
   }
 

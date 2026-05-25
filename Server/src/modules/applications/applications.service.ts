@@ -99,10 +99,12 @@ export class ApplicationsService {
 
   private detectDeviation(formData: any, rawAi: any) {
     const warnings: string[] = [];
-    let levelWarning = '';
+    let positionWarning = '';
     let gpaWarning = '';
-    let skillsWarning = '';
+    let addressWarning = '';
+    let levelWarning = '';
     let expWarning = '';
+    let skillsWarning = '';
 
     const rawGpa = this.parseGpa(rawAi?.gpa);
     const formGpa = this.parseGpa(formData?.gpa);
@@ -113,10 +115,18 @@ export class ApplicationsService {
     const rawSkillText = this.normalizeText(rawAi?.skill || rawAi?.skills || '');
     const formSkillText = this.normalizeText(formData?.skill || formData?.skills || '');
 
-    const rawExp = parseInt(rawAi?.experience || '0', 10);
-    const formExp = parseInt(formData?.experience || '0', 10);
+    // 1. Position inflation/deviation check
+    const rawPos = this.normalizeText(rawAi?.position || rawAi?.desiredPosition || rawAi?.career_goal || '');
+    const formPos = this.normalizeText(formData?.position || formData?.desiredPosition || formData?.career_goal || '');
+    if (rawPos && formPos && rawPos !== formPos) {
+      const ratio = fuzz.partial_ratio(rawPos, formPos);
+      if (ratio < 70) {
+        positionWarning = `Thay đổi vị trí ứng tuyển mong muốn lệch so với CV gốc: từ "${rawAi?.position || 'N/A'}" sang "${formData?.position || 'N/A'}"`;
+        warnings.push(positionWarning);
+      }
+    }
 
-    // 1. GPA inflation check
+    // 2. GPA inflation check
     if (formGpa > rawGpa && rawGpa > 0) {
       const diff = formGpa - rawGpa;
       if (diff > 0.5) {
@@ -128,7 +138,18 @@ export class ApplicationsService {
       }
     }
 
-    // 2. Level inflation check
+    // 3. Address deviation check
+    const rawAddr = this.cleanAddress(rawAi?.address || '');
+    const formAddr = this.cleanAddress(formData?.address || '');
+    if (rawAddr && formAddr && rawAddr !== formAddr) {
+      const ratio = fuzz.partial_ratio(rawAddr, formAddr);
+      if (ratio < 50) {
+        addressWarning = `Thay đổi địa chỉ không khớp CV gốc: từ "${rawAi?.address || 'N/A'}" sang "${formData?.address || 'N/A'}"`;
+        warnings.push(addressWarning);
+      }
+    }
+
+    // 4. Level & Experience inflation check (folded under LEVEL criteria)
     const levelWeights: Record<string, number> = {
       'intern': 0, 'fresher': 1, 'junior': 2, 'middle': 3, 'mid': 3, 'senior': 4, 'lead': 5, 'manager': 6
     };
@@ -146,19 +167,20 @@ export class ApplicationsService {
       }
     }
 
-    // 3. Experience inflation check
+    const rawExp = this.estimateOriginalExperience(rawSkillText, rawLevel);
+    const formExp = this.estimateOriginalExperience(formSkillText, formLevel);
     if (formExp > rawExp) {
       const diff = formExp - rawExp;
       if (diff >= 3) {
-        expWarning = `Khai khống số năm kinh nghiệm nghiêm trọng từ ${rawExp} năm lên ${formExp} năm (khai thêm ${diff} năm)`;
+        expWarning = `Khai khống số năm kinh nghiệm nghiêm trọng từ ${rawExp} năm lên ${formExp} năm (tăng thêm ${diff} năm)`;
         warnings.push(expWarning);
       } else if (diff >= 2) {
-        expWarning = `Tăng khống số năm kinh nghiệm từ ${rawExp} năm lên ${formExp} năm (khai thêm ${diff} năm)`;
+        expWarning = `Tăng khống số năm kinh nghiệm từ ${rawExp} năm lên ${formExp} năm (tăng thêm ${diff} năm)`;
         warnings.push(expWarning);
       }
     }
 
-    // 4. Skills inflation check (Arbitrary skills additions)
+    // 5. Skills inflation check (Arbitrary skills additions)
     const splitSkills = (text: string): string[] => {
       return text
         .split(/[,;\n|•·]/)
@@ -196,13 +218,15 @@ export class ApplicationsService {
       (formGpa - rawGpa > 0.5 && rawGpa > 0) || 
       (formWeight - rawWeight >= 3 && rawWeight >= 0) || 
       (formExp - rawExp >= 3) || 
-      addedSkills.length >= 5;
+      addedSkills.length >= 5 ||
+      positionWarning !== '';
 
     const hasMediumInflation = 
       (formGpa - rawGpa > 0.2 && rawGpa > 0) || 
       (formWeight - rawWeight >= 2 && rawWeight >= 0) || 
       (formExp - rawExp >= 2) || 
-      addedSkills.length >= 3;
+      addedSkills.length >= 3 ||
+      addressWarning !== '';
 
     if (hasSevereInflation) {
       deviation_status = 'flagged_red';
@@ -225,7 +249,11 @@ export class ApplicationsService {
         editedExperience: formExp,
         originalSkills: rawAi?.skill || rawAi?.skills || '',
         editedSkills: formData?.skill || formData?.skills || '',
-        addedSkills
+        addedSkills,
+        originalPosition: rawAi?.position || rawAi?.desiredPosition || 'N/A',
+        editedPosition: formData?.position || formData?.desiredPosition || 'N/A',
+        originalAddress: rawAi?.address || 'N/A',
+        editedAddress: formData?.address || 'N/A'
       }
     };
   }
@@ -466,12 +494,7 @@ export class ApplicationsService {
     return { total, details };
   }
 
-  // =================================================================
-  // PREVIEW SCORE: Chấm điểm từ form - KHÔNG lưu DB
-  // =================================================================
-  async previewScore(jobId: string, formData: any) {
-    const jdCriteria = await this.getJdCriteria(jobId); // đã check status open bên trong
-    const { total, details } = this.calculateMatchScore(formData, jdCriteria);
+  private formatMatchResult(total: number, details: any) {
     return {
       score: total,
       criteriaScores: [
@@ -488,6 +511,15 @@ export class ApplicationsService {
         ...(!details.address.matched && details.address.jd ? [details.address.jd] : []),
       ].filter(Boolean).slice(0, 6),
     };
+  }
+
+  // =================================================================
+  // PREVIEW SCORE: Chấm điểm từ form - KHÔNG lưu DB
+  // =================================================================
+  async previewScore(jobId: string, formData: any) {
+    const jdCriteria = await this.getJdCriteria(jobId); // đã check status open bên trong
+    const { total, details } = this.calculateMatchScore(formData, jdCriteria);
+    return this.formatMatchResult(total, details);
   }
 
   // =================================================================
@@ -512,6 +544,10 @@ export class ApplicationsService {
       const response = await axios.post(`${AI_SERVICE_URL}/api/extract-cv`, form, { headers: form.getHeaders() });
       return response.data;
     } catch (error) {
+      const serverDetail = error?.response?.data?.detail;
+      if (serverDetail) {
+        throw new BadRequestException(serverDetail);
+      }
       const message = error?.response?.data ? JSON.stringify(error.response.data) : error instanceof Error ? error.message : 'Unknown AI error';
       console.error('AI Error:', message);
       throw new BadRequestException('Hệ thống AI đang bận, không thể bóc tách tự động lúc này.');
@@ -547,17 +583,17 @@ export class ApplicationsService {
     const finalPhone = rawData.phone || applicantProfile.phone;
     const finalName = rawData.full_name || rawData.fullName || applicantProfile.fullName;
 
+    const jdCriteria = await this.getJdCriteria(jobId);
+    const { total: finalScore, details: matchDetails } = this.calculateMatchScore(
+      { ...rawData, email: finalEmail, phone: finalPhone, full_name: finalName },
+      jdCriteria
+    );
+
     const PASS_THRESHOLD = 60;
     const AUTO_APPLY_THRESHOLD = 90;
-    const isAutoApply = pythonScore >= AUTO_APPLY_THRESHOLD;
+    const isAutoApply = finalScore >= AUTO_APPLY_THRESHOLD;
 
     if (isAutoApply) {
-      const jdCriteria = await this.getJdCriteria(jobId);
-      const { details: matchDetails } = this.calculateMatchScore(
-        { ...rawData, email: finalEmail, phone: finalPhone, full_name: finalName },
-        jdCriteria
-      );
-
       const applyData: any = {
         job_id: new Types.ObjectId(jobId),
         student_id: new Types.ObjectId(userId),
@@ -567,7 +603,7 @@ export class ApplicationsService {
         cover_letter: '',
         applied_at: new Date(),
         status: 'sent',
-        match_score: pythonScore,
+        match_score: finalScore,
         cv_file_path: cvFile.path,
         cv_file_base64: this.getFileBase64DataUrl(cvFile.path),
         ai_extracted_data: {
@@ -584,17 +620,22 @@ export class ApplicationsService {
       await this.jobApplyModel.create(applyData);
     }
 
+    const matchResultFormatted = this.formatMatchResult(finalScore, matchDetails);
+
     return {
-      status: isAutoApply ? 'auto_applied' : (pythonScore >= PASS_THRESHOLD ? 'success' : 'low_score'),
+      status: isAutoApply ? 'auto_applied' : (finalScore >= PASS_THRESHOLD ? 'success' : 'low_score'),
       message: isAutoApply
-        ? `CV đạt điểm xuất sắc ${pythonScore}/100 và đã được nộp tự động thành công! Bạn có thể xem lại thông tin bên dưới.`
-        : (pythonScore >= PASS_THRESHOLD
-            ? `Hệ thống AI đánh giá độ phù hợp của bạn là ${pythonScore}/100. Hãy kiểm tra thông tin bên dưới trước khi nộp.`
-            : `Hệ thống AI đánh giá độ phù hợp của bạn là ${pythonScore}/100. Vui lòng kiểm tra và bổ sung thông tin trên Form!`),
+        ? `CV đạt điểm xuất sắc ${finalScore}/100 và đã được nộp tự động thành công! Bạn có thể xem lại thông tin bên dưới.`
+        : (finalScore >= PASS_THRESHOLD
+            ? `Hệ thống AI đánh giá độ phù hợp của bạn là ${finalScore}/100. Hãy kiểm tra thông tin bên dưới trước khi nộp.`
+            : `Hệ thống AI đánh giá độ phù hợp của bạn là ${finalScore}/100. Vui lòng kiểm tra và bổ sung thông tin trên Form!`),
       require_form: true,
-      match_score: pythonScore,
+      match_score: finalScore,
       cvFilePath: cvFile.path,
       formData: { ...rawData, email: finalEmail, phone: finalPhone, full_name: finalName },
+      criteriaScores: matchResultFormatted.criteriaScores,
+      matchedKeywords: matchResultFormatted.matchedKeywords,
+      missingKeywords: matchResultFormatted.missingKeywords,
     };
   }
 
@@ -687,6 +728,8 @@ export class ApplicationsService {
       await this.jobApplyModel.create(applyData);
     }
 
+    const matchResultFormatted = this.formatMatchResult(finalScore, matchDetails);
+
     return {
       status: isAutoApply ? 'auto_applied' : (finalScore >= PASS_THRESHOLD ? 'success' : 'low_score'),
       message: isAutoApply
@@ -703,6 +746,9 @@ export class ApplicationsService {
         email: finalEmail,
         phone: finalPhone,
       },
+      criteriaScores: matchResultFormatted.criteriaScores,
+      matchedKeywords: matchResultFormatted.matchedKeywords,
+      missingKeywords: matchResultFormatted.missingKeywords,
     };
   }
 

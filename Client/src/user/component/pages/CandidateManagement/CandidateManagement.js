@@ -95,6 +95,38 @@ function CandidateManagement({ language = 'vi' }) {
 
   const t = trans__candidateManagement[language] || trans__candidateManagement.vi;
 
+  const handleViewCv = useCallback((candidate) => {
+    const cvSrc = candidate.cv_file_base64 || (candidate.cv_file_path ? `http://localhost:5000/${candidate.cv_file_path.replace(/\\/g, '/')}` : '');
+    if (!cvSrc) return;
+
+    if (cvSrc.startsWith('data:')) {
+      try {
+        const parts = cvSrc.split(';base64,');
+        const contentType = parts[0].split(':')[1];
+        const raw = window.atob(parts[1]);
+        const rawLength = raw.length;
+        const uInt8Array = new Uint8Array(rawLength);
+        for (let i = 0; i < rawLength; ++i) {
+          uInt8Array[i] = raw.charCodeAt(i);
+        }
+        const blob = new Blob([uInt8Array], { type: contentType });
+        const blobUrl = URL.createObjectURL(blob);
+        window.open(blobUrl, '_blank');
+      } catch (e) {
+        console.error('Failed to open base64 Blob:', e);
+        const win = window.open('', '_blank');
+        if (win) {
+          win.document.write(
+            `<iframe src="${cvSrc}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`
+          );
+          win.document.title = `CV_${candidate.name}`;
+        }
+      }
+    } else {
+      window.open(cvSrc, '_blank');
+    }
+  }, []);
+
   const fetchCandidates = useCallback(async () => {
     if (!user) {
       setCandidates([]);
@@ -257,21 +289,34 @@ function CandidateManagement({ language = 'vi' }) {
       if (field === 'skill') {
         return addedSkills.length > 0;
       }
-      if (field === 'experience') {
-        const rExp = parseInt(raw.experience || '0', 10);
-        const fExp = parseInt(form.experience || '0', 10);
-        return fExp > rExp;
-      }
       if (field === 'gpa') {
         const rGpa = Number(raw.gpa) || 0;
         const fGpa = Number(form.gpa) || 0;
-        return fGpa > rGpa;
+        return fGpa > rGpa && rGpa > 0;
       }
       if (field === 'level') {
         const levelWeights = { 'intern': 0, 'fresher': 1, 'junior': 2, 'middle': 3, 'mid': 3, 'senior': 4, 'lead': 5, 'manager': 6 };
         const rWeight = levelWeights[normalizeText(raw.level)] !== undefined ? levelWeights[normalizeText(raw.level)] : -1;
         const fWeight = levelWeights[normalizeText(form.level)] !== undefined ? levelWeights[normalizeText(form.level)] : -1;
-        return fWeight > rWeight && rWeight >= 0;
+        const levelDiscrepancy = fWeight > rWeight && rWeight >= 0;
+        const rExp = parseInt(raw.experience || '0', 10);
+        const fExp = parseInt(form.experience || '0', 10);
+        const expDiscrepancy = fExp > rExp && rExp > 0;
+        return levelDiscrepancy || expDiscrepancy;
+      }
+      if (field === 'position') {
+        const rPos = normalizeText(raw.position || raw.desiredPosition || '');
+        const fPos = normalizeText(form.position || form.desiredPosition || '');
+        if (!rPos && !fPos) return false;
+        if (!rPos || !fPos) return true;
+        return rPos !== fPos && !rPos.includes(fPos) && !fPos.includes(rPos);
+      }
+      if (field === 'address') {
+        const rAddr = normalizeText(raw.address || '');
+        const fAddr = normalizeText(form.address || '');
+        if (!rAddr && !fAddr) return false;
+        if (!rAddr || !fAddr) return true;
+        return rAddr !== fAddr && !rAddr.includes(fAddr) && !fAddr.includes(rAddr);
       }
       return false;
     };
@@ -376,12 +421,6 @@ function CandidateManagement({ language = 'vi' }) {
                       <td>{form.level || <em style={{ color: '#aaa' }}>{language === 'vi' ? '(Trống)' : '(Empty)'}</em>}</td>
                       <td>{hasDiscrepancy('level') ? '🚨 Lệch bậc' : '✓ Khớp'}</td>
                     </tr>
-                    <tr className={cx({ 'row-deviation': hasDiscrepancy('experience') })}>
-                      <td><strong>{language === 'vi' ? 'Kinh nghiệm' : 'Experience'}</strong></td>
-                      <td>{raw.experience !== undefined ? `${raw.experience} năm` : <em style={{ color: '#aaa' }}>{language === 'vi' ? '(Trống)' : '(Empty)'}</em>}</td>
-                      <td>{form.experience !== undefined ? `${form.experience} năm` : <em style={{ color: '#aaa' }}>{language === 'vi' ? '(Trống)' : '(Empty)'}</em>}</td>
-                      <td>{hasDiscrepancy('experience') ? '🚨 Khai thêm' : '✓ Khớp'}</td>
-                    </tr>
                     <tr className={cx({ 'row-deviation': hasDiscrepancy('gpa') })}>
                       <td><strong>{language === 'vi' ? 'Điểm GPA' : 'GPA Score'}</strong></td>
                       <td>{raw.gpa || <em style={{ color: '#aaa' }}>{language === 'vi' ? '(Trống)' : '(Empty)'}</em>}</td>
@@ -408,11 +447,11 @@ function CandidateManagement({ language = 'vi' }) {
                         ) : '✓ Khớp'}
                       </td>
                     </tr>
-                    <tr>
+                    <tr className={cx({ 'row-deviation': hasDiscrepancy('address') })}>
                       <td><strong>{language === 'vi' ? 'Địa chỉ' : 'Location'}</strong></td>
                       <td>{raw.address || <em style={{ color: '#aaa' }}>{language === 'vi' ? '(Trống)' : '(Empty)'}</em>}</td>
                       <td>{form.address || <em style={{ color: '#aaa' }}>{language === 'vi' ? '(Trống)' : '(Empty)'}</em>}</td>
-                      <td>{raw.address !== form.address ? 'ℹ️ Sửa đổi' : '✓ Khớp'}</td>
+                      <td>{hasDiscrepancy('address') ? '⚠️ Lệch' : '✓ Khớp'}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -775,15 +814,14 @@ function CandidateManagement({ language = 'vi' }) {
                     🔍 {language === 'vi' ? 'Đối soát Side-by-Side' : 'Cross-check Side-by-Side'}
                   </button>
                   <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
-                    <a
-                      href={candidate.cv_file_base64 || `http://localhost:5000/${candidate.cv_file_path.replace(/\\/g, '/')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button
+                      type="button"
+                      onClick={() => handleViewCv(candidate)}
                       className={cx('cand-card__cv-btn')}
-                      style={{ flex: 1 }}
+                      style={{ flex: 1, border: 'none', cursor: 'pointer' }}
                     >
                       📄 {language === 'vi' ? 'Xem CV gốc' : 'View CV'}
-                    </a>
+                    </button>
                     <a
                       href={candidate.cv_file_base64 || `http://localhost:5000/${candidate.cv_file_path.replace(/\\/g, '/')}`}
                       download={`CV_${candidate.name.replace(/\s+/g, '_')}_original`}

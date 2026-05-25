@@ -18,7 +18,6 @@ const INITIAL_APPLICATION_FORM = {
     gpa: '',
     level: '',
     skillsSummary: '',
-    experience: '',
 };
 const LEVEL_OPTIONS = ['Intern', 'Fresher', 'Junior', 'Middle', 'Senior'];
 const MAX_CV_FILE_SIZE = 5 * 1024 * 1024;
@@ -287,7 +286,6 @@ const Job = () => {
         level: String(formState.level || '').trim(),
         skill: formState.skillsSummary.trim(),
         cover_letter: coverLetter.trim(),
-        experience: String(formState.experience || '0').trim(),
     });
 
 
@@ -371,19 +369,17 @@ const Job = () => {
                     gpa: result.formData.gpa || prev.gpa,
                     level: result.formData.level || prev.level,
                     skillsSummary: result.formData.skill || prev.skillsSummary,
-                    experience: result.formData.experience || prev.experience || '0',
                 }));
             }
 
             setApplyOption('form');
-            setFormScoreResult(normalizedResult);
             if (result?.status === 'auto_applied') {
                 setApplicationSubmitted(true);
             }
             setApplyNotice(
                 result?.message ||
                 (language === 'vi'
-                    ? `CV đang được AI chấm ${normalizedResult.score}%. Bạn nên bổ sung form để hệ thống chấm lại chính xác hơn.`
+                    ? `Mức độ phù hợp sơ bộ đạt ${normalizedResult.score}%. Bạn nên bổ sung thông tin trên form để hệ thống đánh giá chính xác hơn.`
                     : `Your CV scored ${normalizedResult.score}%. Please complete the quick form for a more accurate score.`),
             );
             return;
@@ -415,9 +411,10 @@ const Job = () => {
             setFormScoreResult(null);
             setApplyNotice('');
             setCvAnalysisError(
-                language === 'vi'
+                serverMessage ||
+                (language === 'vi'
                     ? 'AI chưa sẵn sàng'
-                    : 'AI is not ready',
+                    : 'AI is not ready')
             );
         } finally {
             setIsAnalyzingCv(false);
@@ -471,19 +468,17 @@ const Job = () => {
                     gpa: result.formData.gpa || prev.gpa,
                     level: result.formData.level || prev.level,
                     skillsSummary: result.formData.skill || prev.skillsSummary,
-                    experience: result.formData.experience || prev.experience || '0',
                 }));
             }
 
             setApplyOption('form');
-            setFormScoreResult(normalizedResult);
             if (result?.status === 'auto_applied') {
                 setApplicationSubmitted(true);
             }
             setApplyNotice(
                 result?.message ||
                 (language === 'vi'
-                    ? `CV đang được chấm ${normalizedResult.score}%. Bạn nên bổ sung form để hệ thống chấm lại chính xác hơn.`
+                    ? `Mức độ phù hợp sơ bộ đạt ${normalizedResult.score}%. Bạn nên bổ sung thông tin trên form để hệ thống đánh giá chính xác hơn.`
                     : `Your CV scored ${normalizedResult.score}%. Please complete the quick form for a more accurate score.`),
             );
             return;
@@ -564,8 +559,8 @@ const Job = () => {
             setFormScoreResult(result);
             setApplyNotice(
                 language === 'vi'
-                    ? `Form được NestJS chấm được ${result.score}%. Kiểm tra kết quả bên dưới rồi bấm Nộp CV để hoàn tất.`
-                    : `NestJS scored your form ${result.score}%. Review the result below then click Submit to finish.`,
+                    ? `Mức độ phù hợp đạt ${result.score}%. Kiểm tra kết quả bên dưới rồi bấm Nộp CV để hoàn tất.`
+                    : `Matching score is ${result.score}%. Review the result below then click Submit to finish.`,
             );
         } catch (error) {
             console.error('Preview score error:', error);
@@ -755,86 +750,56 @@ const Job = () => {
 
     const buildReadableFeedbackSummary = (result) => {
         const criteriaScores = Array.isArray(result.criteriaScores) ? result.criteriaScores : [];
-        const lowCriteriaItems = criteriaScores.filter((criterion) => criterion.score < 60);
-        const lowCriterionKeys = lowCriteriaItems.map((criterion) => criterion.key);
-        const lowCriteriaLabels = lowCriterionKeys.map((key) => getFeedbackCriterionLabel(key, language));
-
-        const missingKeywords = sanitizeFeedbackKeywords(
-            criteriaScores.flatMap((criterion) => criterion.missingKeywords || []),
-        ).slice(0, 4);
-
-        const resolvedMissing = missingKeywords.length > 0
-            ? missingKeywords
-            : sanitizeFeedbackKeywords(result.missingKeywords || []).slice(0, 4);
-
-        const highlightKeywords = sanitizeFeedbackKeywords(
-            criteriaScores.flatMap((criterion) => criterion.matchedKeywords || []),
-        ).slice(0, 3);
-
-        const resolvedHighlight = highlightKeywords.length > 0
-            ? highlightKeywords
-            : sanitizeFeedbackKeywords(result.matchedKeywords || []).slice(0, 3);
-
-        const skillKeywords = sanitizeFeedbackKeywords(
-            criteriaScores.find((criterion) => criterion.key === 'skills')?.missingKeywords || [],
-        ).slice(0, 3);
-
-        const actionLabels = unique(
-            lowCriterionKeys.map((key) => getCriterionActionLabel(key, language, { skillKeywords })),
-        ).filter(Boolean);
-
         const feedback = [];
 
-        feedback.push(
-            language === 'vi'
-                ? result.score >= 80
-                    ? 'Nhận xét: CV đang thể hiện mức độ phù hợp tốt với vị trí này.'
-                    : result.score >= 60
-                        ? 'Nhận xét: CV đã có nền tảng phù hợp, nhưng vẫn còn vài điểm cần làm rõ thêm.'
-                        : result.score >= 40
-                            ? 'Nhận xét: CV mới thể hiện một phần mức độ phù hợp với vị trí này.'
-                            : 'Nhận xét: CV hiện chưa cho thấy mức độ phù hợp rõ ràng với vị trí này.'
-                : result.score >= 80
-                    ? 'Feedback: your CV already shows a strong fit for this role.'
-                    : result.score >= 60
-                        ? 'Feedback: your CV has a solid base, but a few points still need clarification.'
-                        : result.score >= 40
-                            ? 'Feedback: your CV currently shows only a partial match for this role.'
-                            : 'Feedback: your CV does not clearly show a strong match for this role yet.',
-        );
-
-        if (lowCriteriaLabels.length > 0) {
-            feedback.push(
-                language === 'vi'
-                    ? `Các mục cần bổ sung hoặc làm rõ thêm: ${formatFeedbackList(lowCriteriaLabels, language)}.`
-                    : `Areas that still need to be clarified: ${formatFeedbackList(lowCriteriaLabels, language)}.`,
-            );
-
-            if (actionLabels.length > 0) {
-                feedback.push(
-                    language === 'vi'
-                        ? `Bạn nên ghi rõ hơn ${formatFeedbackList(actionLabels, language)} trong CV để hệ thống đánh giá chính xác hơn.`
-                        : `You should make ${formatFeedbackList(actionLabels, language)} clearer in your CV for a more accurate review.`,
-                );
+        criteriaScores.forEach((criterion) => {
+            const { key, matched, jd, cv, missingKeywords, score, max } = criterion;
+            
+            // Nếu chưa khớp hoặc điểm chưa đạt tuyệt đối
+            if (!matched || score < max) {
+                if (key === 'position') {
+                    feedback.push(
+                        language === 'vi'
+                            ? `Thiếu chức vụ: Yêu cầu "${jd}" (CV đang là "${cv || '--'}")`
+                            : `Missing position: Requires "${jd}" (CV shows "${cv || '--'}")`
+                    );
+                } else if (key === 'level') {
+                    feedback.push(
+                        language === 'vi'
+                            ? `Thiếu cấp bậc (level): Yêu cầu "${jd}" (CV đang là "${cv || '--'}")`
+                            : `Missing level: Requires "${jd}" (CV shows "${cv || '--'}")`
+                    );
+                } else if (key === 'address') {
+                    feedback.push(
+                        language === 'vi'
+                            ? `Thiếu địa chỉ: Yêu cầu "${jd}" (CV đang là "${cv || '--'}")`
+                            : `Missing location: Requires "${jd}" (CV shows "${cv || '--'}")`
+                    );
+                } else if (key === 'gpa') {
+                    feedback.push(
+                        language === 'vi'
+                            ? `Thiếu điểm GPA: Yêu cầu tối thiểu ${jd} (CV đang là ${cv || '0.0'})`
+                            : `Missing GPA: Requires minimum ${jd} (CV shows ${cv || '0.0'})`
+                    );
+                } else if (key === 'skills') {
+                    const missing = Array.isArray(missingKeywords) ? missingKeywords.filter(Boolean) : [];
+                    if (missing.length > 0) {
+                        feedback.push(
+                            language === 'vi'
+                                ? `Thiếu kỹ năng: ${missing.slice(0, 6).join(', ')}`
+                                : `Missing skills: ${missing.slice(0, 6).join(', ')}`
+                        );
+                    }
+                }
             }
+        });
 
-            return feedback;
-        }
-
-        if (resolvedMissing.length > 0) {
+        if (feedback.length === 0) {
             feedback.push(
                 language === 'vi'
-                    ? `Bạn có thể bổ sung thêm: ${formatFeedbackList(resolvedMissing, language)}.`
-                    : `You can still add: ${formatFeedbackList(resolvedMissing, language)}.`,
+                    ? '🎉 Hồ sơ của bạn đã đáp ứng đầy đủ tất cả các tiêu chí!'
+                    : '🎉 Your profile perfectly matches all requirements!'
             );
-        } else if (resolvedHighlight.length > 0) {
-            feedback.push(
-                language === 'vi'
-                    ? `Điểm đang thể hiện khá rõ: ${formatFeedbackList(resolvedHighlight, language)}.`
-                    : `Current strengths shown clearly: ${formatFeedbackList(resolvedHighlight, language)}.`,
-            );
-        } else if (result.note) {
-            feedback.push(result.note);
         }
 
         return feedback;
@@ -975,7 +940,18 @@ const Job = () => {
                             </div>
                             <div className={cx('skillColumn')}>
                                 <div className={cx('skillItem')}><span>{t.Experience}</span><p>{jobData.experience}</p></div>
-                                <div className={cx('skillItem')}><span>{t.programmingLang}</span><p>{jobData.requirements}</p></div>
+                                <div className={cx('skillItem')}>
+                                    <span>{t.programmingLang}</span>
+                                    <p>
+                                        {Array.isArray(jobData.skillNames) && jobData.skillNames.length > 0
+                                            ? jobData.skillNames.join(', ')
+                                            : (Array.isArray(jobData.skills) && jobData.skills.length > 0
+                                                ? jobData.skills.join(', ')
+                                                : (typeof jobData.skills === 'string' && jobData.skills
+                                                    ? jobData.skills
+                                                    : '--'))}
+                                    </p>
+                                </div>
                                 <div className={cx('skillItem')}><span>{t.industry}</span><p>{jobData.industry}</p></div>
                             </div>
                         </div>
@@ -1194,10 +1170,6 @@ const Job = () => {
                                                 <option value="">{language === 'vi' ? 'Chọn level' : 'Choose level'}</option>
                                                 {LEVEL_OPTIONS.map((level) => <option key={level} value={level}>{level}</option>)}
                                             </select>
-                                        </div>
-                                        <div className={cx('popup-field')}>
-                                            <label className={cx('popup-label')}>{language === 'vi' ? 'Số năm kinh nghiệm' : 'Years of Experience'} <span className={cx('required')}>*</span></label>
-                                            <input className={cx('popup-input')} type="number" min="0" max="40" value={applicationForm.experience} onChange={(event) => setApplicationForm((prev) => ({ ...prev, experience: event.target.value }))} placeholder={language === 'vi' ? 'Ví dụ: 2' : 'Ex: 2'} />
                                         </div>
                                     </div>
 
