@@ -19,6 +19,18 @@ JobConect4Student/
 
 ---
 
+## 1. Vấn đề địa chỉ IP (Tùy chọn)
+
+Để thay đổi địa chỉ IP kết nối từ Client đến Server API (ví dụ khi cần đổi IP mạng nội bộ Radmin VPN hoặc chuyển về chạy trên máy cục bộ với `localhost`):
+
+- Bạn **không** cần tạo file `.env` ở thư mục Client.
+- Hãy mở file [config.js](file:///c:/JobConect4Student/Client/src/config.js) và cập nhật giá trị của `API_BASE_URL`:
+  ```javascript
+  export const API_BASE_URL = 'http://localhost:5000/';
+  ```
+
+---
+
 ## Cách chạy
 
 ### 1. Clone và cài dependencies

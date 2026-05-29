@@ -1,7 +1,8 @@
 import axios from "axios"
+import { API_BASE_URL } from '../config'
 
 const api= axios.create({
-    baseURL: 'http://26.11.41.172:5000/',
+    baseURL: API_BASE_URL,
     withCredentials: true,
 })
 

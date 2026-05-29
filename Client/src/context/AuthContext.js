@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { createContext, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../config';
 
 export const AuthContext = createContext();
 
@@ -13,7 +14,7 @@ export const AuthProvider = ({ children }) => {
     
     const api = useMemo(() => {
         const instance = axios.create({
-            baseURL: "http://26.11.41.172:5000/",
+            baseURL: API_BASE_URL,
             withCredentials: true,
         });
 
