@@ -21,13 +21,38 @@ JobConect4Student/
 
 ## Cấu hình Địa chỉ IP kết nối (Tùy chọn)
 
-Để thay đổi địa chỉ IP kết nối từ Client đến Server API (ví dụ khi cần đổi IP mạng nội bộ Radmin VPN hoặc chuyển về chạy trên máy cục bộ với `localhost`):
+Nếu bạn muốn truy cập ứng dụng từ **thiết bị khác trong cùng mạng nội bộ** (ví dụ: qua Radmin VPN, WiFi chung, hoặc từ điện thoại), hãy thực hiện 2 bước sau:
+
+### Bước 1: Cập nhật IP của Server API trong Client
 
 - Bạn **không** cần tạo file `.env` ở thư mục Client.
-- Hãy mở file [config.js](file:///c:/JobConect4Student/Client/src/config.js) và cập nhật giá trị của `API_BASE_URL`:
+- Hãy mở file [config.js](file:///c:/JobConect4Student/Client/src/config.js) và cập nhật giá trị của `API_BASE_URL` thành IP máy chạy Server:
   ```javascript
+  // Nếu chạy trên máy cục bộ (mặc định):
   export const API_BASE_URL = 'http://localhost:5000/';
+
+  // Nếu truy cập từ thiết bị khác qua mạng nội bộ / Radmin VPN:
+  export const API_BASE_URL = 'http://<IP-MÁY-CHỦ>:5000/';
+  // Ví dụ: export const API_BASE_URL = 'http://192.168.1.100:5000/';
   ```
+
+### Bước 2: Chạy Client ở chế độ Network
+
+Thay vì dùng `npm start` (chỉ cho phép truy cập từ `localhost`), hãy chạy:
+
+```bash
+cd Client
+npm run start:network
+```
+
+> Lệnh này sẽ khởi động Client với `HOST=0.0.0.0`, cho phép các thiết bị khác trong mạng truy cập qua địa chỉ IP của máy bạn (ví dụ: `http://192.168.1.100:3000`).
+
+**Tóm tắt:**
+
+| Trường hợp | `API_BASE_URL` trong config.js | Lệnh chạy Client |
+|---|---|---|
+| Chạy trên máy cục bộ | `http://localhost:5000/` | `npm start` |
+| Truy cập từ thiết bị khác trong mạng | `http://<IP-MÁY-CHỦ>:5000/` | `npm run start:network` |
 
 ---
 
