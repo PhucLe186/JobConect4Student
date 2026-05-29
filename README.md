@@ -14,12 +14,12 @@ Hệ thống tuyển dụng thông minh dành cho sinh viên, tích hợp AI l�
 JobConect4Student/
 ├── Client/          # React frontend (port 3000)
 ├── Server/          # NestJS backend (port 5000)
-└── DetectCVLasted/  # Python AI service (port 8000) — repo riêng
+└── tool_GetPointCV/  # Python AI service (port 8000) — repo riêng
 ```
 
 ---
 
-## 1. Vấn đề địa chỉ IP (Tùy chọn)
+## Cấu hình Địa chỉ IP kết nối (Tùy chọn)
 
 Để thay đổi địa chỉ IP kết nối từ Client đến Server API (ví dụ khi cần đổi IP mạng nội bộ Radmin VPN hoặc chuyển về chạy trên máy cục bộ với `localhost`):
 
@@ -36,7 +36,7 @@ JobConect4Student/
 ### 1. Clone và cài dependencies
 
 ```bash
-git clone <repo-url>
+git clone -b Final https://github.com/PhucLe186/JobConect4Student.git
 cd JobConect4Student
 
 # Cài Server
@@ -66,7 +66,9 @@ Mở file `.env` và điền:
 > Nếu không chạy Python, hệ thống vẫn hoạt động bình thường với luồng fallback.
 
 ```bash
-cd DetectCVLasted   # clone repo Python riêng
+# Clone repo Python riêng
+git clone -b PhongAI https://github.com/RosianLoc/tool_GetPointCV.git
+cd tool_GetPointCV
 pip install -r requirements.txt
 python main.py
 ```
@@ -127,3 +129,20 @@ node seed-mock-data.js        # Seed jobs và users mẫu
 | `JWT_SECRET` | Secret key cho JWT | ✅ |
 | `PORT` | Port NestJS (mặc định 5000) | ❌ |
 | `AI_SERVICE_URL` | URL Python AI (mặc định http://localhost:8000) | ❌ |
+
+---
+
+## Tài khoản demo phục vụ chạy thử (Tùy chọn)
+
+Sau khi chạy các tập lệnh seed dữ liệu mẫu thành công, bạn có thể sử dụng các tài khoản có sẵn dưới đây để đăng nhập nhanh mà không cần tạo mới:
+
+### 1. Tài khoản Nhà tuyển dụng (Employer)
+*   **Từ script `seed-page1-real-companies.js`:**
+    *   **Email:** `google.vietnam@company.jobconnect4students.local`
+    *   **Mật khẩu:** `Employer@2026!`
+*   **Từ script `seed-mock-data.js`:**
+    *   **Email:** `google-vietnam-tech-center@seed.jobconnect4students.local` (hoặc `grab-vietnam-digital-hub@seed.jobconnect4students.local`)
+    *   **Mật khẩu:** `SeedEmployer@123`
+
+### 2. Tài khoản Sinh viên (Student)
+*   Để thử nghiệm đầy đủ quy trình tải CV lên và nhận điểm từ AI, bạn nên đăng ký trực tiếp một tài khoản sinh viên mới trên giao diện (trong mục đăng ký) và điền thông tin thực tế của mình.
