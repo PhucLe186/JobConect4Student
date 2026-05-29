@@ -134,8 +134,8 @@ node seed-mock-data.js        # Seed jobs và users mẫu
 1. Đăng ký tài khoản **sinh viên**
 2. Vào trang chi tiết job → click **Ứng tuyển ngay**
 3. Upload CV (PDF/PNG/JPG) → AI chấm điểm
-4. Nếu điểm < 60%: điền form bổ sung → chấm lại → nộp
-5. Nếu điểm ≥ 60%: tự động nộp thành công
+4. Nếu điểm < 90%: điền form bổ sung → chấm lại → nộp
+5. Nếu điểm ≥ 90%: tự động nộp thành công
 
 ### Nhà tuyển dụng
 1. Đăng ký tài khoản **nhà tuyển dụng**
